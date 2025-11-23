@@ -1,0 +1,20 @@
+{
+  "name": "new-project",
+  "version": "1.0.0",
+  "description": "새로운 프로젝트",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler pages dev public",
+    "deploy": "wrangler pages deploy public --project-name new-project",
+    "deploy:prod": "wrangler pages deploy public --project-name new-project --branch main"
+  },
+  "dependencies": {
+    "hono": "^4.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241106.0",
+    "typescript": "^5.3.0",
+    "wrangler": "^3.0.0"
+  }
+}
+
