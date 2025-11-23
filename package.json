@@ -1,20 +1,28 @@
 {
-  "name": "new-project",
+  "name": "hancut-concert",
   "version": "1.0.0",
-  "description": "새로운 프로젝트",
-  "type": "module",
+  "description": "한동훈과 한 컷 토크콘서트 신청 시스템",
+  "private": true,
   "scripts": {
-    "dev": "wrangler pages dev public",
-    "deploy": "wrangler pages deploy public --project-name new-project",
-    "deploy:prod": "wrangler pages deploy public --project-name new-project --branch main"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
   "dependencies": {
-    "hono": "^4.0.0"
+    "@supabase/supabase-js": "^2.39.0",
+    "lucide-react": "^0.309.0",
+    "next": "14.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20241106.0",
-    "typescript": "^5.3.0",
-    "wrangler": "^3.0.0"
+    "@types/node": "^20.11.0",
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
+    "autoprefixer": "^10.4.17",
+    "postcss": "^8.4.33",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.3.3"
   }
 }
-
