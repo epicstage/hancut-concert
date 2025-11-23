@@ -182,31 +182,134 @@ api.put('/admin/participants/:id/payment', async (c) => {
   }
 });
 
-// 관리자: 좌석 구역 및 번호 배정
+// 관리자: 좌석 배정 (그룹-열-좌석번호)
 api.put('/admin/participants/:id/seat', async (c) => {
   try {
     const id = parseInt(c.req.param('id'));
     const body = await c.req.json<{
-      seat_zone: string;
+      seat_group: string;
+      seat_row: string;
       seat_number: string;
     }>();
 
-    const validZones = ['가', '나', '다', '라', '마', '바', '사', '아', '자', '차', '카', '타', '파', '하'];
+    const validGroups = ['가', '나', '다', '라', '마', '바', '사', '아', '자', '차', '카', '타', '파', '하'];
     
-    if (body.seat_zone && !validZones.includes(body.seat_zone)) {
-      return c.json({ error: '유효하지 않은 구역입니다. (가~하)' }, 400);
+    if (body.seat_group && !validGroups.includes(body.seat_group)) {
+      return c.json({ error: '유효하지 않은 그룹입니다. (가~하)' }, 400);
+    }
+
+    // 전체 좌석 번호 생성 (가-2-5 형태)
+    let seatFull = null;
+    if (body.seat_group && body.seat_row && body.seat_number) {
+      seatFull = `${body.seat_group}-${body.seat_row}-${body.seat_number}`;
     }
 
     await c.env.DB.prepare(
-      'UPDATE participants SET seat_zone = ?, seat_number = ? WHERE id = ?'
+      'UPDATE participants SET seat_group = ?, seat_row = ?, seat_number = ?, seat_full = ? WHERE id = ?'
     )
-      .bind(body.seat_zone || null, body.seat_number || null, id)
+      .bind(
+        body.seat_group || null,
+        body.seat_row || null,
+        body.seat_number || null,
+        seatFull,
+        id
+      )
       .run();
 
-    return c.json({ success: true, message: '좌석이 배정되었습니다.' });
+    return c.json({ success: true, message: '좌석이 배정되었습니다.', seat_full: seatFull });
   } catch (error) {
     console.error('Error updating seat:', error);
     return c.json({ error: '좌석 배정 중 오류가 발생했습니다.' }, 500);
+  }
+});
+
+// 관리자: 랜덤 좌석 배정 (입금 완료된 참가자들)
+api.post('/admin/participants/random-seats', async (c) => {
+  try {
+    const body = await c.req.json<{
+      groups: string[];  // ['가', '나', ...]
+      rowsPerGroup: number;  // 그룹당 열 수
+      seatsPerRow: number;   // 열당 좌석 수
+    }>();
+
+    if (!body.groups || !body.rowsPerGroup || !body.seatsPerRow) {
+      return c.json({ error: '그룹, 열 수, 좌석 수는 필수입니다.' }, 400);
+    }
+
+    // 입금 완료된 참가자 조회
+    const paidParticipants = await c.env.DB.prepare(
+      'SELECT id FROM participants WHERE is_paid = 1 AND (seat_full IS NULL OR seat_full = "") ORDER BY created_at ASC'
+    )
+      .all<{ id: number }>();
+
+    if (!paidParticipants.results || paidParticipants.results.length === 0) {
+      return c.json({ error: '좌석을 배정할 입금 완료 참가자가 없습니다.' }, 400);
+    }
+
+    // 사용 가능한 좌석 생성
+    const availableSeats: Array<{ group: string; row: string; number: string }> = [];
+    for (const group of body.groups) {
+      for (let row = 1; row <= body.rowsPerGroup; row++) {
+        for (let seat = 1; seat <= body.seatsPerRow; seat++) {
+          availableSeats.push({
+            group,
+            row: row.toString(),
+            number: seat.toString(),
+          });
+        }
+      }
+    }
+
+    // 이미 배정된 좌석 조회
+    const assignedSeats = await c.env.DB.prepare(
+      'SELECT seat_full FROM participants WHERE seat_full IS NOT NULL AND seat_full != ""'
+    )
+      .all<{ seat_full: string }>();
+
+    const assignedSet = new Set(assignedSeats.results?.map(s => s.seat_full) || []);
+
+    // 사용 가능한 좌석만 필터링
+    const freeSeats = availableSeats.filter(seat => {
+      const seatFull = `${seat.group}-${seat.row}-${seat.number}`;
+      return !assignedSet.has(seatFull);
+    });
+
+    if (freeSeats.length < paidParticipants.results.length) {
+      return c.json({ 
+        error: `사용 가능한 좌석(${freeSeats.length}개)이 참가자 수(${paidParticipants.results.length}명)보다 적습니다.` 
+      }, 400);
+    }
+
+    // 랜덤 셔플
+    for (let i = freeSeats.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [freeSeats[i], freeSeats[j]] = [freeSeats[j], freeSeats[i]];
+    }
+
+    // 좌석 배정
+    let assignedCount = 0;
+    for (let i = 0; i < paidParticipants.results.length && i < freeSeats.length; i++) {
+      const participant = paidParticipants.results[i];
+      const seat = freeSeats[i];
+      const seatFull = `${seat.group}-${seat.row}-${seat.number}`;
+
+      await c.env.DB.prepare(
+        'UPDATE participants SET seat_group = ?, seat_row = ?, seat_number = ?, seat_full = ? WHERE id = ?'
+      )
+        .bind(seat.group, seat.row, seat.number, seatFull, participant.id)
+        .run();
+
+      assignedCount++;
+    }
+
+    return c.json({ 
+      success: true, 
+      message: `${assignedCount}명의 참가자에게 좌석이 랜덤 배정되었습니다.`,
+      assigned_count: assignedCount
+    });
+  } catch (error) {
+    console.error('Error random seat assignment:', error);
+    return c.json({ error: '랜덤 좌석 배정 중 오류가 발생했습니다.' }, 500);
   }
 });
 
@@ -240,23 +343,30 @@ api.get('/seat/:phone', async (c) => {
     }
 
     const participant = await c.env.DB.prepare(
-      'SELECT seat_zone, seat_number FROM participants WHERE phone = ?'
+      'SELECT seat_full, seat_group, seat_row, seat_number FROM participants WHERE phone = ?'
     )
       .bind(phone)
-      .first<{ seat_zone: string | null; seat_number: string | null }>();
+      .first<{ 
+        seat_full: string | null; 
+        seat_group: string | null; 
+        seat_row: string | null; 
+        seat_number: string | null;
+      }>();
 
     if (!participant) {
       return c.json({ error: '신청 내역을 찾을 수 없습니다.' }, 404);
     }
 
-    if (!participant.seat_zone || !participant.seat_number) {
+    if (!participant.seat_full) {
       return c.json({ error: '아직 좌석이 배정되지 않았습니다.' }, 404);
     }
 
     return c.json({
       success: true,
-      seat: `${participant.seat_zone}구역 ${participant.seat_number}번`,
-      seat_zone: participant.seat_zone,
+      seat: participant.seat_full,
+      seat_full: participant.seat_full,
+      seat_group: participant.seat_group,
+      seat_row: participant.seat_row,
       seat_number: participant.seat_number,
     });
   } catch (error) {

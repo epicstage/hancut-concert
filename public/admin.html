@@ -37,6 +37,31 @@
       </header>
 
       <main class="max-w-7xl mx-auto px-4 py-8">
+        <!-- 랜덤 배정 패널 -->
+        <div class="glass-card mb-6">
+          <h3 class="text-lg font-bold text-gray-900 mb-4">랜덤 좌석 배정</h3>
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">그룹 (가~하)</label>
+              <input type="text" id="randomGroups" class="input-glass" placeholder="가,나,다,라" value="가,나,다,라,마,바,사,아,자,차,카,타,파,하" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">그룹당 열 수</label>
+              <input type="number" id="rowsPerGroup" class="input-glass" placeholder="10" value="10" min="1" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">열당 좌석 수</label>
+              <input type="number" id="seatsPerRow" class="input-glass" placeholder="20" value="20" min="1" />
+            </div>
+            <div class="flex items-end">
+              <button onclick="randomAssignSeats()" class="btn-primary-glass w-full">
+                랜덤 배정
+              </button>
+            </div>
+          </div>
+          <p class="text-sm text-gray-500">입금 완료된 참가자들에게 자동으로 좌석을 배정합니다.</p>
+        </div>
+
         <div class="glass-card mb-6">
           <div class="relative">
             <input
@@ -59,8 +84,10 @@
                 <th>이름</th>
                 <th>전화번호</th>
                 <th>입금 상태</th>
-                <th>좌석 구역</th>
-                <th>좌석 번호</th>
+                <th>좌석 그룹</th>
+                <th>열</th>
+                <th>좌석번호</th>
+                <th>전체 좌석</th>
                 <th>신청 일시</th>
                 <th>작업</th>
               </tr>
@@ -174,23 +201,33 @@
             </label>
           </td>
           <td>
-            <select class="zone-select" id="zone-${p.id}" onchange="updateSeat(${p.id})">
+            <select class="zone-select" id="group-${p.id}" onchange="updateSeat(${p.id})">
               <option value="">선택</option>
-              <option value="가" ${p.seat_zone === '가' ? 'selected' : ''}>가</option>
-              <option value="나" ${p.seat_zone === '나' ? 'selected' : ''}>나</option>
-              <option value="다" ${p.seat_zone === '다' ? 'selected' : ''}>다</option>
-              <option value="라" ${p.seat_zone === '라' ? 'selected' : ''}>라</option>
-              <option value="마" ${p.seat_zone === '마' ? 'selected' : ''}>마</option>
-              <option value="바" ${p.seat_zone === '바' ? 'selected' : ''}>바</option>
-              <option value="사" ${p.seat_zone === '사' ? 'selected' : ''}>사</option>
-              <option value="아" ${p.seat_zone === '아' ? 'selected' : ''}>아</option>
-              <option value="자" ${p.seat_zone === '자' ? 'selected' : ''}>자</option>
-              <option value="차" ${p.seat_zone === '차' ? 'selected' : ''}>차</option>
-              <option value="카" ${p.seat_zone === '카' ? 'selected' : ''}>카</option>
-              <option value="타" ${p.seat_zone === '타' ? 'selected' : ''}>타</option>
-              <option value="파" ${p.seat_zone === '파' ? 'selected' : ''}>파</option>
-              <option value="하" ${p.seat_zone === '하' ? 'selected' : ''}>하</option>
+              <option value="가" ${p.seat_group === '가' ? 'selected' : ''}>가</option>
+              <option value="나" ${p.seat_group === '나' ? 'selected' : ''}>나</option>
+              <option value="다" ${p.seat_group === '다' ? 'selected' : ''}>다</option>
+              <option value="라" ${p.seat_group === '라' ? 'selected' : ''}>라</option>
+              <option value="마" ${p.seat_group === '마' ? 'selected' : ''}>마</option>
+              <option value="바" ${p.seat_group === '바' ? 'selected' : ''}>바</option>
+              <option value="사" ${p.seat_group === '사' ? 'selected' : ''}>사</option>
+              <option value="아" ${p.seat_group === '아' ? 'selected' : ''}>아</option>
+              <option value="자" ${p.seat_group === '자' ? 'selected' : ''}>자</option>
+              <option value="차" ${p.seat_group === '차' ? 'selected' : ''}>차</option>
+              <option value="카" ${p.seat_group === '카' ? 'selected' : ''}>카</option>
+              <option value="타" ${p.seat_group === '타' ? 'selected' : ''}>타</option>
+              <option value="파" ${p.seat_group === '파' ? 'selected' : ''}>파</option>
+              <option value="하" ${p.seat_group === '하' ? 'selected' : ''}>하</option>
             </select>
+          </td>
+          <td>
+            <input
+              type="text"
+              class="seat-input"
+              id="row-${p.id}"
+              value="${p.seat_row || ''}"
+              placeholder="열"
+              onchange="updateSeat(${p.id})"
+            />
           </td>
           <td>
             <input
@@ -202,6 +239,7 @@
               onchange="updateSeat(${p.id})"
             />
           </td>
+          <td class="font-semibold text-red-600">${p.seat_full || '-'}</td>
           <td class="text-sm text-gray-600">${new Date(p.created_at).toLocaleString('ko-KR')}</td>
           <td>
             <button onclick="deleteParticipant(${p.id})" class="p-2 text-red-600 hover:text-red-700">
@@ -232,14 +270,15 @@
     }
 
     async function updateSeat(id) {
-      const zone = document.getElementById(`zone-${id}`).value;
+      const group = document.getElementById(`group-${id}`).value;
+      const row = document.getElementById(`row-${id}`).value;
       const number = document.getElementById(`seat-${id}`).value;
 
       try {
         const response = await fetch(`/api/admin/participants/${id}/seat`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ seat_zone: zone, seat_number: number }),
+          body: JSON.stringify({ seat_group: group, seat_row: row, seat_number: number }),
         });
 
         const data = await response.json();
@@ -248,6 +287,41 @@
         }
       } catch (err) {
         alert('좌석 배정 중 오류가 발생했습니다.');
+      }
+    }
+
+    async function randomAssignSeats() {
+      const groupsInput = document.getElementById('randomGroups').value;
+      const rowsPerGroup = parseInt(document.getElementById('rowsPerGroup').value);
+      const seatsPerRow = parseInt(document.getElementById('seatsPerRow').value);
+
+      if (!groupsInput || !rowsPerGroup || !seatsPerRow) {
+        alert('모든 필드를 입력해주세요.');
+        return;
+      }
+
+      const groups = groupsInput.split(',').map(g => g.trim()).filter(g => g);
+
+      if (!confirm(`입금 완료된 참가자들에게 랜덤으로 좌석을 배정하시겠습니까?\n\n그룹: ${groups.join(', ')}\n그룹당 열 수: ${rowsPerGroup}\n열당 좌석 수: ${seatsPerRow}`)) {
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/participants/random-seats', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ groups, rowsPerGroup, seatsPerRow }),
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          alert(data.message);
+          loadParticipants();
+        } else {
+          alert(data.error || '랜덤 배정 중 오류가 발생했습니다.');
+        }
+      } catch (err) {
+        alert('랜덤 배정 중 오류가 발생했습니다.');
       }
     }
 

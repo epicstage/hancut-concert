@@ -79,6 +79,7 @@
           <div id="seatInfo" class="hidden">
             <label class="block text-sm font-medium text-gray-500 mb-1">좌석 번호</label>
             <p id="seatNumber" class="text-4xl font-bold text-red-600"></p>
+            <p class="text-sm text-gray-500 mt-2">(그룹-열-좌석번호)</p>
           </div>
 
           <div>
@@ -172,9 +173,9 @@
         statusBadge.textContent = '입금 확인 중';
       }
 
-      if (participant.seat_zone && participant.seat_number) {
+      if (participant.seat_full) {
         document.getElementById('seatInfo').classList.remove('hidden');
-        document.getElementById('seatNumber').textContent = `${participant.seat_zone}구역 ${participant.seat_number}번`;
+        document.getElementById('seatNumber').textContent = participant.seat_full;
       } else {
         document.getElementById('seatInfo').classList.add('hidden');
       }
