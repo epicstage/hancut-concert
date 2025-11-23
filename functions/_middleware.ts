@@ -313,16 +313,34 @@ api.post('/admin/participants/random-seats', async (c) => {
   }
 });
 
-// 관리자: 참가자 삭제
+// 관리자: 참가자 삭제 (아무때나 삭제 가능)
 api.delete('/admin/participants/:id', async (c) => {
   try {
     const id = parseInt(c.req.param('id'));
 
+    if (isNaN(id)) {
+      return c.json({ error: '유효하지 않은 참가자 ID입니다.' }, 400);
+    }
+
+    // 참가자 존재 여부 확인
+    const participant = await c.env.DB.prepare('SELECT id, user_name FROM participants WHERE id = ?')
+      .bind(id)
+      .first<{ id: number; user_name: string }>();
+
+    if (!participant) {
+      return c.json({ error: '참가자를 찾을 수 없습니다.' }, 404);
+    }
+
+    // 삭제 실행
     await c.env.DB.prepare('DELETE FROM participants WHERE id = ?')
       .bind(id)
       .run();
 
-    return c.json({ success: true, message: '삭제되었습니다.' });
+    return c.json({ 
+      success: true, 
+      message: `"${participant.user_name}" 참가자 정보가 삭제되었습니다.`,
+      deleted_id: id
+    });
   } catch (error) {
     console.error('Error deleting participant:', error);
     return c.json({ error: '삭제 중 오류가 발생했습니다.' }, 500);
