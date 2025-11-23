@@ -10,44 +10,133 @@
 
 @layer base {
   body {
-    @apply bg-gray-50 text-gray-900;
+    @apply bg-gradient-to-br from-red-50 via-white to-sky-50 text-gray-900;
     font-family: 'Pretendard', 'Noto Sans KR', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
   }
 }
 
 @layer components {
-  .card {
-    @apply bg-white rounded-xl shadow-md p-6;
+  /* 글래스모피즘 카드 */
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20;
+    @apply p-8;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.6) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
   }
-  
-  .btn-primary {
-    @apply bg-red-600 hover:bg-red-700 text-white font-semibold py-4 px-8 rounded-lg transition-colors duration-200;
-    @apply text-lg h-14 min-h-[56px];
+
+  /* 둥근 이미지 컨테이너 */
+  .rounded-image-container {
+    @apply rounded-full overflow-hidden;
+    @apply shadow-2xl;
+    @apply border-4 border-white/50;
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.1) 0%, rgba(14, 165, 233, 0.1) 100%);
   }
-  
-  .btn-secondary {
-    @apply bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-4 px-8 rounded-lg transition-colors duration-200;
-    @apply text-lg h-14 min-h-[56px];
+
+  /* 메인 버튼 (글래스모피즘) */
+  .btn-primary-glass {
+    @apply bg-gradient-to-r from-red-600 to-red-500 text-white font-bold py-5 px-10 rounded-2xl;
+    @apply text-lg h-16 min-h-[64px];
+    @apply shadow-xl hover:shadow-2xl;
+    @apply transition-all duration-300;
+    @apply hover:scale-105 active:scale-95;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px 0 rgba(220, 38, 38, 0.3);
   }
-  
-  .input-field {
-    @apply w-full h-14 px-4 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all;
-    @apply text-lg;
+
+  /* 보조 버튼 (글래스모피즘) */
+  .btn-secondary-glass {
+    @apply bg-white/60 backdrop-blur-md text-gray-700 font-semibold py-5 px-10 rounded-2xl;
+    @apply text-lg h-16 min-h-[64px];
+    @apply shadow-lg hover:shadow-xl border border-white/30;
+    @apply transition-all duration-300;
+    @apply hover:scale-105 active:scale-95;
   }
-  
+
+  /* 입력 필드 (글래스모피즘) */
+  .input-glass {
+    @apply w-full h-16 px-6 rounded-2xl;
+    @apply bg-white/60 backdrop-blur-md;
+    @apply border-2 border-white/40;
+    @apply focus:border-red-500 focus:ring-4 focus:ring-red-200/50;
+    @apply outline-none transition-all duration-300;
+    @apply text-lg shadow-lg;
+    @apply placeholder:text-gray-400;
+  }
+
+  /* 태그 (하늘색) */
   .tag-sky {
-    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
-    @apply bg-sky-100 text-sky-700;
+    @apply inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold;
+    @apply bg-sky-100/80 backdrop-blur-sm text-sky-700;
+    @apply border border-sky-200/50;
+    @apply shadow-md;
   }
-  
+
+  /* 배지 (회색) */
   .badge-gray {
-    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
-    @apply bg-gray-200 text-gray-700;
+    @apply inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold;
+    @apply bg-gray-200/80 backdrop-blur-sm text-gray-700;
+    @apply border border-gray-300/50;
+    @apply shadow-md;
   }
-  
+
+  /* 배지 (빨간색) */
   .badge-red {
-    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
-    @apply bg-red-100 text-red-700;
+    @apply inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold;
+    @apply bg-red-100/80 backdrop-blur-sm text-red-700;
+    @apply border border-red-200/50;
+    @apply shadow-md;
+  }
+
+  /* 헤더 (글래스모피즘) */
+  .glass-header {
+    @apply bg-white/50 backdrop-blur-xl;
+    @apply border-b border-white/20;
+    @apply shadow-lg;
+  }
+
+  /* 로고 (둥근) */
+  .logo-rounded {
+    @apply w-16 h-16 rounded-2xl;
+    @apply bg-gradient-to-br from-red-600 to-red-500;
+    @apply flex items-center justify-center;
+    @apply shadow-2xl;
+    @apply border-4 border-white/50;
   }
 }
 
+/* 애니메이션 */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 1000px 100%;
+}

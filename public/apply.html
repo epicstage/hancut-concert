@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>참가 신청 - 한동훈과 한 컷 토크콘서트</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="min-h-screen bg-gradient-to-br from-red-50 via-white to-sky-50">
+    <header class="glass-header">
+      <div class="max-w-4xl mx-auto px-4 py-4">
+        <a href="/" class="inline-flex items-center gap-2 text-gray-700 hover:text-gray-900" style="text-decoration: none;">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+          <span>돌아가기</span>
+        </a>
+      </div>
+    </header>
+
+    <main class="max-w-2xl mx-auto px-4 py-8">
+      <div class="glass-card">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">참가 신청</h2>
+
+        <form id="applyForm" class="space-y-6">
+          <div>
+            <label for="name" class="block text-lg font-medium text-gray-700 mb-2">이름</label>
+            <input
+              id="name"
+              type="text"
+              class="input-glass"
+              placeholder="이름을 입력하세요"
+              required
+            />
+          </div>
+
+          <div>
+            <label for="phone" class="block text-lg font-medium text-gray-700 mb-2">전화번호</label>
+            <input
+              id="phone"
+              type="tel"
+              class="input-glass"
+              placeholder="010-1234-5678"
+              maxlength="13"
+              required
+            />
+            <p class="mt-2 text-sm text-gray-500">숫자만 입력하세요 (11자리)</p>
+          </div>
+
+          <div class="p-4 bg-sky-50/80 backdrop-blur-sm rounded-xl border border-sky-200/50">
+            <label class="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                id="privacyAgree"
+                class="mt-1 w-5 h-5 text-red-600 rounded focus:ring-red-500"
+                required
+              />
+              <span class="text-sm text-gray-700">
+                <span class="font-semibold text-red-600">[필수]</span> 개인정보 수집 및 활용에 동의합니다.
+                <br>
+                <span class="text-xs text-gray-500 mt-1 block">
+                  신청을 위해 이름과 전화번호를 수집하며, 행사 안내 및 좌석 배정 목적으로만 사용됩니다.
+                </span>
+              </span>
+            </label>
+          </div>
+
+          <div id="error" class="hidden p-4 bg-red-50 border border-red-200 rounded-lg text-red-700"></div>
+
+          <button type="submit" class="btn-primary-glass w-full" id="submitBtn">
+            신청하기
+          </button>
+        </form>
+      </div>
+    </main>
+
+    <!-- 푸터 (나중에 배포사/운영사 정보 추가 예정) -->
+    <footer class="mt-16 py-8 border-t border-white/20">
+      <div class="max-w-4xl mx-auto px-4 text-center text-sm text-gray-600">
+        <!-- 배포사/운영사 정보는 추후 추가 예정 -->
+      </div>
+    </footer>
+
+    <!-- 성공 모달 -->
+    <div id="successModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div class="glass-card max-w-md w-full mx-4 text-center">
+        <div class="mb-6 flex justify-center">
+          <div class="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center" style="animation: bounce 1s infinite;">
+            <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">신청이 완료되었습니다!</h2>
+        <p class="text-lg text-gray-700 mb-6">신청내역 확인 페이지로 이동합니다...</p>
+      </div>
+    </div>
+
+    <script>
+      const phoneInput = document.getElementById('phone');
+      const nameInput = document.getElementById('name');
+      const form = document.getElementById('applyForm');
+      const errorDiv = document.getElementById('error');
+      const submitBtn = document.getElementById('submitBtn');
+      const successModal = document.getElementById('successModal');
+
+      // 전화번호 숫자만 입력
+      phoneInput.addEventListener('input', (e) => {
+        const value = e.target.value.replace(/[^0-9]/g, '');
+        if (value.length <= 11) {
+          phoneInput.value = formatPhone(value);
+        }
+      });
+
+      function formatPhone(value) {
+        if (value.length <= 3) return value;
+        if (value.length <= 7) return `${value.slice(0, 3)}-${value.slice(3)}`;
+        return `${value.slice(0, 3)}-${value.slice(3, 7)}-${value.slice(7, 11)}`;
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorDiv.classList.add('hidden');
+        
+        const name = nameInput.value.trim();
+        const phone = phoneInput.value.replace(/[^0-9]/g, '');
+
+        if (!name) {
+          showError('이름을 입력해주세요.');
+          return;
+        }
+
+        if (phone.length !== 11) {
+          showError('전화번호를 정확히 입력해주세요. (11자리)');
+          return;
+        }
+
+        const privacyAgree = document.getElementById('privacyAgree').checked;
+        if (!privacyAgree) {
+          showError('개인정보 활용동의는 필수입니다.');
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = '신청 중...';
+
+        try {
+          const response = await fetch('/api/participants', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_name: name, phone }),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || '신청 중 오류가 발생했습니다.');
+          }
+
+          successModal.classList.remove('hidden');
+          setTimeout(() => {
+            window.location.href = '/check.html';
+          }, 2000);
+        } catch (err) {
+          showError(err.message);
+          submitBtn.disabled = false;
+          submitBtn.textContent = '신청하기';
+        }
+      });
+
+      function showError(message) {
+        errorDiv.textContent = message;
+        errorDiv.classList.remove('hidden');
+      }
+    </script>
+  </div>
+</body>
+</html>
+
