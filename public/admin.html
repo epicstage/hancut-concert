@@ -3,8 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>관리자 페이지 - 한동훈과 한 컷 토크콘서트</title>
+  <title>관리자 페이지 - 한동훈 토크콘서트</title>
   <link rel="stylesheet" href="/styles.css" />
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
     table { width: 100%; border-collapse: collapse; }
     th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid rgba(0,0,0,0.1); }
@@ -24,7 +25,7 @@
             <label for="password" class="block text-sm font-medium text-gray-700 mb-2">비밀번호</label>
             <input id="password" type="password" class="input-glass" required />
           </div>
-          <button type="submit" class="btn-primary-glass w-full">로그인</button>
+          <button type="submit" class="btn-primary-glass w-full" id="loginBtn">로그인</button>
         </form>
       </div>
     </div>
@@ -32,18 +33,51 @@
     <div id="adminScreen" class="hidden">
       <header class="glass-header">
         <div class="max-w-7xl mx-auto px-4 py-4">
-          <h1 class="text-2xl font-bold text-gray-900">관리자 페이지</h1>
+          <div class="flex items-center justify-between">
+            <h1 class="text-2xl font-bold text-gray-900">관리자 페이지</h1>
+            <div id="statistics" class="flex gap-4 text-sm">
+              <div class="text-gray-600">
+                <span class="font-semibold text-gray-900">신청 인원:</span>
+                <span id="totalCount" class="ml-1 text-gray-700">0</span>명
+              </div>
+              <div class="text-gray-600">
+                <span class="font-semibold text-red-600">입금 확인:</span>
+                <span id="paidCount" class="ml-1 text-red-600">0</span>명
+              </div>
+            </div>
+          </div>
         </div>
       </header>
 
       <main class="max-w-7xl mx-auto px-4 py-8">
-        <!-- 랜덤 배정 패널 -->
+        <!-- 탭 메뉴 -->
         <div class="glass-card mb-6">
-          <h3 class="text-lg font-bold text-gray-900 mb-4">랜덤 좌석 배정</h3>
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+          <div class="flex gap-4 border-b border-gray-200">
+            <button onclick="showParticipantsTab()" id="participantsTab" class="px-4 py-2 font-semibold text-red-600 border-b-2 border-red-600">
+              참가자 관리
+            </button>
+            <button onclick="showPaymentTab()" id="paymentTab" class="px-4 py-2 font-semibold text-gray-600 hover:text-red-600">
+              입금확인
+            </button>
+            <button onclick="showInquiriesTab()" id="inquiriesTab" class="px-4 py-2 font-semibold text-gray-600 hover:text-red-600">
+              문의 관리
+            </button>
+            <button onclick="showCheckinTab()" id="checkinTab" class="px-4 py-2 font-semibold text-gray-600 hover:text-red-600">
+              QR 체크인
+            </button>
+          </div>
+        </div>
+
+        <!-- 참가자 관리 탭 -->
+        <div id="participantsSection">
+        <!-- 좌석 배정 패널 -->
+        <div class="glass-card mb-6">
+          <h3 class="text-lg font-bold text-gray-900 mb-4">좌석 배정</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">그룹 (가~하)</label>
-              <input type="text" id="randomGroups" class="input-glass" placeholder="가,나,다,라" value="가,나,다,라,마,바,사,아,자,차,카,타,파,하" />
+              <label class="block text-sm font-medium text-gray-700 mb-2">그룹 개수</label>
+              <input type="number" id="groupCount" class="input-glass" placeholder="14" value="14" min="1" max="14" onchange="updateGroupDisplay()" />
+              <p class="text-xs text-gray-500 mt-1" id="groupDisplay">가,나,다,라,마,바,사,아,자,차,카,타,파,하</p>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">그룹당 열 수</label>
@@ -53,26 +87,40 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">열당 좌석 수</label>
               <input type="number" id="seatsPerRow" class="input-glass" placeholder="20" value="20" min="1" />
             </div>
-            <div class="flex items-end">
-              <button onclick="randomAssignSeats()" class="btn-primary-glass w-full">
-                랜덤 배정
-              </button>
-            </div>
           </div>
-          <p class="text-sm text-gray-500">입금 완료된 참가자들에게 자동으로 좌석을 배정합니다.</p>
+          <div class="flex gap-3 flex-wrap mb-4">
+            <button onclick="randomAssignSeats()" class="btn-primary-glass px-6">
+              랜덤 배정
+            </button>
+            <button onclick="ageBasedAssignSeats()" class="btn-primary-glass px-6">
+              연령대 고려 배정
+            </button>
+            <button onclick="resetAllSeats()" class="btn-secondary-glass px-6" style="background: rgba(239, 68, 68, 0.1); color: #dc2626; border-color: rgba(220, 38, 38, 0.3);">
+              전체 초기화
+            </button>
+          </div>
+          <p class="text-sm text-gray-500">입금 완료된 참가자들에게 자동으로 좌석을 배정합니다. 연령대 고려 배정은 00년대생 → 90년대생 → 80년대생 순으로 앞좌석에 배정됩니다.</p>
         </div>
 
         <div class="glass-card mb-6">
-          <div class="relative">
-            <input
-              type="text"
-              id="searchInput"
-              class="input-glass pl-10"
-              placeholder="이름 또는 전화번호로 검색..."
-            />
-            <svg class="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+          <div class="flex gap-3 items-center">
+            <div class="relative flex-1 min-w-0">
+              <input
+                type="text"
+                id="searchInput"
+                class="input-glass pl-10 w-full"
+                placeholder="이름 또는 전화번호로 검색..."
+              />
+              <svg class="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <button onclick="loadParticipants(true)" title="새로고침" style="background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(10px); color: #374151; font-weight: 600; padding: 0.75rem 1rem; border-radius: 0.75rem; font-size: 0.875rem; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); cursor: pointer; transition: all 0.3s ease; white-space: nowrap; flex-shrink: 0; display: flex; align-items: center; gap: 0.5rem;" onmouseover="this.style.background='rgba(255, 255, 255, 0.8)'; this.style.transform='scale(1.02)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.6)'; this.style.transform='scale(1)'">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span class="hidden md:inline">새로고침</span>
+            </button>
           </div>
         </div>
 
@@ -81,14 +129,52 @@
           <table id="participantsTable" class="hidden">
             <thead>
               <tr>
-                <th>이름</th>
-                <th>전화번호</th>
-                <th>입금 상태</th>
-                <th>좌석 그룹</th>
-                <th>열</th>
-                <th>좌석번호</th>
-                <th>전체 좌석</th>
-                <th>신청 일시</th>
+                <th class="text-center" style="width: 60px;">
+                  연번
+                </th>
+                <th class="sortable" data-sort="user_name" onclick="sortTable('user_name')">
+                  이름
+                  <span class="sort-icon" id="sort-icon-user_name"></span>
+                </th>
+                <th>
+                  대리신청
+                </th>
+                <th class="sortable" data-sort="phone" onclick="sortTable('phone')">
+                  전화번호
+                  <span class="sort-icon" id="sort-icon-phone"></span>
+                </th>
+                <th class="sortable" data-sort="ssn_first" onclick="sortTable('ssn_first')">
+                  주민번호 앞자리
+                  <span class="sort-icon" id="sort-icon-ssn_first"></span>
+                </th>
+                <th class="sortable" data-sort="is_paid" onclick="sortTable('is_paid')">
+                  입금 상태
+                  <span class="sort-icon" id="sort-icon-is_paid"></span>
+                </th>
+                <th class="sortable" data-sort="is_checked_in" onclick="sortTable('is_checked_in')">
+                  입장 확인
+                  <span class="sort-icon" id="sort-icon-is_checked_in"></span>
+                </th>
+                <th class="sortable" data-sort="seat_group" onclick="sortTable('seat_group')">
+                  좌석 그룹
+                  <span class="sort-icon" id="sort-icon-seat_group"></span>
+                </th>
+                <th class="sortable" data-sort="seat_row" onclick="sortTable('seat_row')">
+                  열
+                  <span class="sort-icon" id="sort-icon-seat_row"></span>
+                </th>
+                <th class="sortable" data-sort="seat_number" onclick="sortTable('seat_number')">
+                  좌석번호
+                  <span class="sort-icon" id="sort-icon-seat_number"></span>
+                </th>
+                <th class="sortable" data-sort="seat_full" onclick="sortTable('seat_full')">
+                  전체 좌석
+                  <span class="sort-icon" id="sort-icon-seat_full"></span>
+                </th>
+                <th class="sortable" data-sort="created_at" onclick="sortTable('created_at')">
+                  신청 일시
+                  <span class="sort-icon" id="sort-icon-created_at"></span>
+                </th>
                 <th>작업</th>
               </tr>
             </thead>
@@ -98,6 +184,175 @@
         </div>
 
         <div class="mt-4 text-sm text-gray-600" id="countText"></div>
+        </div>
+
+        <!-- 입금확인 탭 -->
+        <div id="paymentSection" class="hidden">
+          <div class="glass-card mb-6">
+            <h3 class="text-lg font-bold text-gray-900 mb-4">입금 내역 확인</h3>
+            <p class="text-sm text-gray-600 mb-4">엑셀에서 데이터를 복사(Ctrl+C)한 후 아래 테이블에 붙여넣기(Ctrl+V)하거나 직접 입력하세요.</p>
+            
+            <div id="paymentTableContainer" class="overflow-x-auto mb-4">
+              <table id="paymentTable" class="w-full border-collapse border border-gray-300 bg-white">
+                <thead>
+                  <tr class="bg-gray-100">
+                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700">연번</th>
+                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700">거래일시</th>
+                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700">구분</th>
+                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700">거래금액</th>
+                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700">거래 후 잔액</th>
+                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700">거래구분</th>
+                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700">내용</th>
+                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700">메모</th>
+                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700">매칭된 신청자</th>
+                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700">예상되는 신청자</th>
+                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700">비고</th>
+                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700">상태</th>
+                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700">작업</th>
+                  </tr>
+                </thead>
+                <tbody id="paymentTableBody">
+                  <!-- 빈 행 하나 추가 -->
+                  <tr>
+                    <td class="border border-gray-300 px-2 py-1 text-sm text-center text-gray-500">1</td>
+                    <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
+                    <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
+                    <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
+                    <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
+                    <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
+                    <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this); reMatchPaymentFromInput(this)" /></td>
+                    <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
+                    <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">-</td>
+                    <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">-</td>
+                    <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">-</td>
+                    <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">대기중</td>
+                    <td class="border border-gray-300 px-2 py-2">
+                      <div class="flex gap-2">
+                        <button onclick="approvePaymentFromTable(0)" style="background-color: #22c55e; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: bold; font-size: 0.875rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#16a34a'" onmouseout="this.style.backgroundColor='#22c55e'">승인</button>
+                        <button onclick="removePaymentRowFromTable(this)" style="background-color: #ef4444; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: bold; font-size: 0.875rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#dc2626'" onmouseout="this.style.backgroundColor='#ef4444'">삭제</button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="flex gap-3 flex-wrap">
+              <button onclick="addPaymentRow()" style="background-color: #475569; color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: bold; box-shadow: 0 10px 15px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s; border: none;" onmouseover="this.style.backgroundColor='#334155'" onmouseout="this.style.backgroundColor='#475569'">
+                + 행 추가
+              </button>
+              <button onclick="savePaymentData()" style="background-color: #3b82f6; color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: bold; box-shadow: 0 10px 15px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s; border: none;" onmouseover="this.style.backgroundColor='#2563eb'" onmouseout="this.style.backgroundColor='#3b82f6'">
+                💾 저장하기
+              </button>
+              <button onclick="resetPaymentTable()" style="background-color: #f97316; color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: bold; box-shadow: 0 10px 15px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s; border: none;" onmouseover="this.style.backgroundColor='#ea580c'" onmouseout="this.style.backgroundColor='#f97316'">
+                🗑️ 초기화
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- QR 체크인 탭 -->
+        <div id="checkinSection" class="hidden">
+          <div class="glass-card mb-6">
+            <h3 class="text-lg font-bold text-gray-900 mb-4">QR 코드 체크인</h3>
+            
+            <!-- 통계 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <div class="text-sm text-blue-600 mb-1">입금 완료 인원</div>
+                <div class="text-2xl font-bold text-blue-900" id="checkinTotal">0</div>
+              </div>
+              <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                <div class="text-sm text-green-600 mb-1">입장 확인</div>
+                <div class="text-2xl font-bold text-green-900" id="checkinCount">0</div>
+              </div>
+              <div class="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                <div class="text-sm text-orange-600 mb-1">남은 인원</div>
+                <div class="text-2xl font-bold text-orange-900" id="checkinRemaining">0</div>
+              </div>
+            </div>
+
+            <!-- QR 코드 스캐너 -->
+            <div class="mb-6">
+              <div class="flex gap-4 mb-4">
+                <button onclick="startQRScanner()" id="startScannerBtn" class="btn-primary-glass px-6">
+                  카메라 스캔 시작
+                </button>
+                <button onclick="stopQRScanner()" id="stopScannerBtn" class="btn-secondary-glass px-6 hidden">
+                  스캔 중지
+                </button>
+                <button onclick="loadCheckinStats()" class="btn-secondary-glass px-6">
+                  통계 새로고침
+                </button>
+              </div>
+              
+              <div id="qrScannerContainer" class="hidden mb-4">
+                <div id="qrReader" class="max-w-md mx-auto bg-white p-4 rounded-lg border border-gray-300" style="min-height: 300px; position: relative;"></div>
+                <p class="text-sm text-gray-600 text-center mt-2">QR 코드를 카메라에 비춰주세요</p>
+              </div>
+
+              <!-- 수동 입력 -->
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">QR 코드 데이터 직접 입력</label>
+                <div class="flex gap-2">
+                  <input 
+                    type="text" 
+                    id="manualQRInput" 
+                    class="input-glass flex-1" 
+                    placeholder="QR 코드 데이터를 붙여넣거나 입력하세요"
+                    onkeypress="if(event.key==='Enter') processManualCheckin()"
+                  />
+                  <button onclick="processManualCheckin()" class="btn-primary-glass px-6">
+                    확인
+                  </button>
+                </div>
+              </div>
+
+              <!-- 결과 메시지 -->
+              <div id="checkinResult" class="hidden mb-4 p-4 rounded-lg"></div>
+
+              <!-- 최근 체크인 내역 -->
+              <div class="mt-6">
+                <h4 class="text-md font-bold text-gray-900 mb-3">최근 체크인 내역</h4>
+                <div id="recentCheckins" class="space-y-2 max-h-64 overflow-y-auto">
+                  <p class="text-sm text-gray-500 text-center">체크인 내역이 없습니다.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 문의 관리 탭 -->
+        <div id="inquiriesSection" class="hidden">
+          <div class="glass-card mb-6">
+            <div class="flex gap-3">
+              <div class="relative flex-1">
+                <input
+                  type="text"
+                  id="inquirySearchInput"
+                  class="input-glass pl-10"
+                  placeholder="이름 또는 전화번호로 검색..."
+                />
+                <svg class="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <button onclick="loadInquiries()" class="btn-secondary-glass px-6 flex items-center gap-2" title="새로고침">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span class="hidden md:inline">새로고침</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="glass-card overflow-x-auto">
+            <div id="inquiryLoading" class="text-center py-8 text-gray-500">로딩 중...</div>
+            <div id="inquiriesList" class="hidden space-y-4"></div>
+            <div id="inquiryEmptyMessage" class="hidden text-center py-8 text-gray-500"></div>
+          </div>
+
+          <div class="mt-4 text-sm text-gray-600" id="inquiryCountText"></div>
+        </div>
       </main>
 
       <!-- 푸터 (나중에 배포사/운영사 정보 추가 예정) -->
@@ -112,54 +367,314 @@
   <script>
     let participants = [];
     let isAuthenticated = false;
+    let currentSort = { column: null, direction: 'asc' };
+    let filteredParticipants = [];
+    let participantsCache = null;
+    let participantsCacheTime = null;
+    const CACHE_DURATION = 30000; // 30초 캐시
+    let savePaymentDataTimeout = null; // localStorage 저장 debounce용
 
-    const loginScreen = document.getElementById('loginScreen');
-    const adminScreen = document.getElementById('adminScreen');
-    const loginForm = document.getElementById('loginForm');
-    const searchInput = document.getElementById('searchInput');
+    // 에러/성공 메시지 표시 함수
+    function showError(message) {
+      alert('오류: ' + message);
+      console.error(message);
+    }
 
-    loginForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const password = document.getElementById('password').value;
-      // 간단한 인증 (실제로는 서버에서 처리해야 함)
-      if (password === 'admin123' || password.length > 0) {
-        isAuthenticated = true;
-        loginScreen.classList.add('hidden');
-        adminScreen.classList.remove('hidden');
-        loadParticipants();
-      } else {
-        alert('비밀번호가 올바르지 않습니다.');
+    function showSuccess(message) {
+      alert(message);
+    }
+
+    // 로그인 처리 함수
+    function performLogin() {
+      console.log('performLogin called');
+      
+      try {
+        const passwordInput = document.getElementById('password');
+        if (!passwordInput) {
+          alert('비밀번호 입력 필드를 찾을 수 없습니다.');
+          console.error('Password input element not found');
+          return false;
+        }
+        
+        const password = passwordInput.value.trim();
+        console.log('Login attempt, password:', password);
+        console.log('Expected: admin123');
+        console.log('Match:', password === 'admin123');
+        
+        // 비밀번호 검증
+        if (password === 'admin123') {
+          console.log('Password correct');
+          isAuthenticated = true;
+          
+          const loginScreen = document.getElementById('loginScreen');
+          const adminScreen = document.getElementById('adminScreen');
+          
+          if (!loginScreen) {
+            console.error('Login screen element not found');
+            alert('로그인 화면 요소를 찾을 수 없습니다.');
+            return false;
+          }
+          
+          if (!adminScreen) {
+            console.error('Admin screen element not found');
+            alert('관리자 화면 요소를 찾을 수 없습니다.');
+            return false;
+          }
+          
+          console.log('Hiding login, showing admin');
+          loginScreen.classList.add('hidden');
+          adminScreen.classList.remove('hidden');
+          console.log('Loading participants');
+          loadParticipants();
+          return true;
+        } else {
+          console.log('Password incorrect');
+          alert('비밀번호가 올바르지 않습니다.');
+          passwordInput.value = '';
+          passwordInput.focus();
+          return false;
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        alert('로그인 중 오류가 발생했습니다: ' + error.message);
+        return false;
       }
-    });
+    }
 
-    searchInput.addEventListener('input', () => {
-      filterParticipants();
-    });
+    // DOM이 로드된 후 실행
+    function initAdmin() {
+      const loginScreen = document.getElementById('loginScreen');
+      const adminScreen = document.getElementById('adminScreen');
+      const loginForm = document.getElementById('loginForm');
+      const searchInput = document.getElementById('searchInput');
 
-    async function loadParticipants() {
+      console.log('Initializing admin page...');
+      console.log('loginScreen:', loginScreen);
+      console.log('adminScreen:', adminScreen);
+      console.log('loginForm:', loginForm);
+
+      if (!loginForm) {
+        console.error('Login form not found');
+        alert('로그인 폼을 찾을 수 없습니다. 페이지를 새로고침해주세요.');
+        return;
+      }
+
+      if (!loginScreen) {
+        console.error('Login screen not found');
+      }
+
+      if (!adminScreen) {
+        console.error('Admin screen not found');
+      }
+
+      // 폼 제출 이벤트 리스너
+      loginForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('Form submit event triggered');
+        performLogin();
+        return false;
+      });
+
+      // 로그인 버튼 클릭 이벤트 (백업)
+      const loginBtn = document.getElementById('loginBtn');
+      if (loginBtn) {
+        loginBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          console.log('Login button clicked');
+          performLogin();
+          return false;
+        });
+      }
+
+      console.log('Login form event listener attached');
+
+      if (searchInput) {
+        searchInput.addEventListener('input', () => {
+          filterParticipants();
+        });
+      }
+    }
+
+    // 페이지 로드 시 초기화
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initAdmin);
+    } else {
+      // DOM이 이미 로드된 경우 즉시 실행
+      initAdmin();
+    }
+
+    async function loadParticipants(forceRefresh = false) {
+      // 캐시 확인
+      const now = Date.now();
+      if (!forceRefresh && participantsCache && participantsCacheTime && (now - participantsCacheTime) < CACHE_DURATION) {
+        participants = participantsCache;
+        filteredParticipants = participants;
+        updateStatistics();
+        filterParticipants();
+        return;
+      }
+
+      const loading = document.getElementById('loading');
+      if (loading) loading.classList.remove('hidden');
+      
       try {
         const response = await fetch('/api/admin/participants');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
         
         if (data.success) {
-          participants = data.participants;
+          participants = data.participants || [];
+          filteredParticipants = participants;
+          // 캐시 업데이트
+          participantsCache = participants;
+          participantsCacheTime = now;
+          updateStatistics();
           filterParticipants();
+        } else {
+          console.error('API error:', data.error);
+          showError('참가자 목록을 불러오는 중 오류가 발생했습니다: ' + (data.error || '알 수 없는 오류'));
         }
       } catch (err) {
         console.error('Error loading participants:', err);
+        showError('참가자 목록을 불러오는 중 오류가 발생했습니다.\n네트워크 연결을 확인해주세요.');
+      } finally {
+        if (loading) loading.classList.add('hidden');
       }
+    }
+
+    function updateStatistics() {
+      const totalCountEl = document.getElementById('totalCount');
+      const paidCountEl = document.getElementById('paidCount');
+      
+      if (!totalCountEl || !paidCountEl) return;
+      
+      // 전체 신청 인원수 (1인 신청은 1명, 2인 신청은 2명으로 계산)
+      let totalCount = 0;
+      let paidCount = 0;
+      
+      participants.forEach(function(p) {
+        const ticketCount = p.ticket_count || 1;
+        totalCount += ticketCount;
+        
+        // 입금 완료된 경우
+        if (p.is_paid) {
+          paidCount += ticketCount;
+        }
+      });
+      
+      totalCountEl.textContent = totalCount;
+      paidCountEl.textContent = paidCount;
     }
 
     function filterParticipants() {
       const search = searchInput.value.toLowerCase();
-      const filtered = search
+      filteredParticipants = search
         ? participants.filter(p => 
             p.user_name.toLowerCase().includes(search) || 
-            p.phone.includes(search)
+            p.phone.includes(search) ||
+            (p.ssn_first && p.ssn_first.includes(search))
           )
         : participants;
 
-      displayParticipants(filtered);
+      // 정렬 적용
+      if (currentSort.column) {
+        sortData(filteredParticipants, currentSort.column, currentSort.direction);
+      }
+
+      displayParticipants(filteredParticipants);
+    }
+
+    function sortTable(column) {
+      // 같은 컬럼 클릭 시 방향 전환, 다른 컬럼 클릭 시 오름차순으로 시작
+      if (currentSort.column === column) {
+        currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+      } else {
+        currentSort.column = column;
+        currentSort.direction = 'asc';
+      }
+
+      // 정렬 아이콘 업데이트
+      updateSortIcons();
+
+      // 데이터 정렬
+      sortData(filteredParticipants, currentSort.column, currentSort.direction);
+      displayParticipants(filteredParticipants);
+    }
+
+    function sortData(data, column, direction) {
+      data.sort((a, b) => {
+        let aVal = a[column];
+        let bVal = b[column];
+
+        // null/undefined 처리
+        if (aVal === null || aVal === undefined || aVal === '') aVal = '';
+        if (bVal === null || bVal === undefined || bVal === '') bVal = '';
+
+        let comparison = 0;
+
+        switch (column) {
+          case 'user_name':
+          case 'phone':
+          case 'ssn_first':
+          case 'seat_group':
+          case 'seat_full':
+            // 문자열 정렬
+            comparison = String(aVal).localeCompare(String(bVal), 'ko');
+            break;
+          
+          case 'is_paid':
+          case 'is_checked_in':
+            // boolean 정렬 (true가 먼저)
+            comparison = (bVal ? 1 : 0) - (aVal ? 1 : 0);
+            break;
+          
+          case 'seat_row':
+          case 'seat_number':
+            // 숫자 정렬 (빈 값은 뒤로)
+            if (aVal === '' && bVal === '') return 0;
+            if (aVal === '') return 1;
+            if (bVal === '') return -1;
+            comparison = parseInt(aVal) - parseInt(bVal);
+            break;
+          
+          case 'created_at':
+            // 날짜 정렬
+            comparison = new Date(aVal) - new Date(bVal);
+            break;
+          
+          default:
+            comparison = String(aVal).localeCompare(String(bVal), 'ko');
+        }
+
+        return direction === 'asc' ? comparison : -comparison;
+      });
+    }
+
+    function updateSortIcons() {
+      // 모든 아이콘 초기화
+      document.querySelectorAll('.sort-icon').forEach(icon => {
+        icon.innerHTML = '';
+      });
+
+      // 현재 정렬 컬럼 아이콘 표시
+      if (currentSort.column) {
+        const iconId = `sort-icon-${currentSort.column}`;
+        const icon = document.getElementById(iconId);
+        if (icon) {
+          if (currentSort.direction === 'asc') {
+            icon.innerHTML = ' ↑';
+            icon.style.color = '#dc2626';
+          } else {
+            icon.innerHTML = ' ↓';
+            icon.style.color = '#dc2626';
+          }
+        }
+      }
     }
 
     function displayParticipants(list) {
@@ -181,18 +696,71 @@
 
       table.classList.remove('hidden');
       emptyMessage.classList.add('hidden');
-      countText.textContent = `총 ${list.length}명`;
+      
+      // 실제 참가자 수 계산 (ticket_count 합산)
+      let totalCount = 0;
+      list.forEach(function(p) {
+        const ticketCount = p.ticket_count || 1;
+        totalCount += ticketCount;
+      });
+      countText.textContent = `총 ${totalCount}명`;
 
-      tableBody.innerHTML = list.map(p => `
-        <tr>
-          <td>${p.user_name}</td>
-          <td>${formatPhone(p.phone)}</td>
+      // 참가자 목록을 평탄화하여 2번째 참가자도 별도 행으로 표시
+      const flattenedList = [];
+      list.forEach(p => {
+        // 1번째 참가자 행
+        flattenedList.push({
+          ...p,
+          is_guest: false,
+          display_name: p.user_name,
+          display_phone: p.phone,
+          display_ssn: p.ssn_first,
+          original_id: p.id,
+          representative_name: '', // 1인 신청자는 대리신청 없음
+          display_seat: p.seat_full || '-', // 첫 번째 좌석
+          display_checked_in: p.is_checked_in || false // 입장 확인 상태
+        });
+        
+        // 2번째 참가자가 있는 경우 (2인 신청)
+        // ticket_count가 2이거나, guest2_name이 있으면 2인 신청
+        const isTwoPerson = (p.ticket_count === 2) || p.guest2_name;
+        
+        if (isTwoPerson) {
+          // 2번째 참가자 행 추가
+          // 이름: guest2_name이 있으면 실제 이름, 없으면 "첫번째신청자_2" 형식
+          // 대리신청: 첫 번째 신청자의 이름
+          // 좌석: 두 번째 좌석 (seat_full_2)
+          flattenedList.push({
+            ...p,
+            is_guest: true,
+            display_name: p.guest2_name || `${p.user_name}_2`,
+            display_phone: p.guest2_phone || p.phone,
+            display_ssn: p.guest2_ssn_first || p.ssn_first || '-',
+            original_id: p.id,
+            is_guest2_pending: !p.guest2_name, // 아직 입력 안됨
+            representative_name: p.user_name, // 대리신청자 이름 (첫 번째 신청자)
+            display_seat: p.seat_full_2 || '-', // 두 번째 좌석
+            display_checked_in: p.is_checked_in_2 || false // 두 번째 참가자 입장 확인 상태
+          });
+        }
+      });
+      
+      tableBody.innerHTML = flattenedList.map((p, index) => {
+        const rowClass = p.is_guest2_pending ? 'opacity-60' : '';
+        
+        return `
+        <tr class="${rowClass}">
+          <td class="text-center text-gray-500">${index + 1}</td>
+          <td>${p.display_name}${p.is_guest2_pending ? ' <span class="text-xs text-gray-400">(입력 대기)</span>' : ''}</td>
+          <td>${p.representative_name || '-'}</td>
+          <td>${formatPhone(p.display_phone)}</td>
+          <td>${p.display_ssn || '-'}</td>
           <td>
             <label class="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
                 ${p.is_paid ? 'checked' : ''}
-                onchange="togglePayment(${p.id}, ${p.is_paid})"
+                onchange="togglePayment(${p.original_id}, ${p.is_paid})"
                 style="width: 1.25rem; height: 1.25rem;"
               />
               <span class="${p.is_paid ? 'text-red-600 font-medium' : 'text-gray-500'}">
@@ -201,7 +769,12 @@
             </label>
           </td>
           <td>
-            <select class="zone-select" id="group-${p.id}" onchange="updateSeat(${p.id})">
+            <span class="${p.display_checked_in ? 'text-green-600 font-medium' : 'text-gray-400'}">
+              ${p.display_checked_in ? '✓ 입장완료' : '-'}
+            </span>
+          </td>
+          <td>
+            <select class="zone-select" id="group-${p.original_id}${p.is_guest ? '-2' : ''}" onchange="updateSeat(${p.original_id}, ${p.is_guest ? 'true' : 'false'})">
               <option value="">선택</option>
               <option value="가" ${p.seat_group === '가' ? 'selected' : ''}>가</option>
               <option value="나" ${p.seat_group === '나' ? 'selected' : ''}>나</option>
@@ -223,37 +796,52 @@
             <input
               type="text"
               class="seat-input"
-              id="row-${p.id}"
+              id="row-${p.original_id}${p.is_guest ? '-2' : ''}"
               value="${p.seat_row || ''}"
               placeholder="열"
-              onchange="updateSeat(${p.id})"
+              onchange="updateSeat(${p.original_id}, ${p.is_guest ? 'true' : 'false'})"
             />
           </td>
           <td>
             <input
               type="text"
               class="seat-input"
-              id="seat-${p.id}"
+              id="seat-${p.original_id}${p.is_guest ? '-2' : ''}"
               value="${p.seat_number || ''}"
               placeholder="번호"
-              onchange="updateSeat(${p.id})"
+              onchange="updateSeat(${p.original_id}, ${p.is_guest ? 'true' : 'false'})"
             />
           </td>
-          <td class="font-semibold text-red-600">${p.seat_full || '-'}</td>
-          <td class="text-sm text-gray-600">${new Date(p.created_at).toLocaleString('ko-KR')}</td>
+          <td class="font-semibold text-red-600">${p.display_seat || p.seat_full || '-'}</td>
+          <td class="text-sm text-gray-600">${formatDateTime(p.created_at)}</td>
           <td>
-            <button 
-              onclick="deleteParticipant(${p.id}, '${p.user_name}')" 
-              class="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
-              title="삭제"
-            >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-            </button>
+            <div class="flex gap-2">
+              ${p.seat_full && !p.is_guest ? `
+                <button 
+                  onclick="resetParticipantSeat(${p.original_id}, '${p.display_name}')" 
+                  class="p-2 text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded transition-colors"
+                  title="좌석 초기화"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                </button>
+              ` : ''}
+              <button 
+                onclick="deleteParticipant(${p.original_id}, '${p.display_name}')" 
+                class="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+                title="삭제"
+                ${p.is_guest ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
           </td>
         </tr>
-      `).join('');
+      `;
+      }).join('');
     }
 
     async function togglePayment(id, currentStatus) {
@@ -273,59 +861,130 @@
       }
     }
 
-    async function updateSeat(id) {
-      const group = document.getElementById(`group-${id}`).value;
-      const row = document.getElementById(`row-${id}`).value;
-      const number = document.getElementById(`seat-${id}`).value;
+    async function updateSeat(id, isGuest) {
+      const idSuffix = isGuest ? '-2' : '';
+      const group = document.getElementById(`group-${id}${idSuffix}`)?.value || '';
+      const row = document.getElementById(`row-${id}${idSuffix}`)?.value || '';
+      const number = document.getElementById(`seat-${id}${idSuffix}`)?.value || '';
 
       try {
         const response = await fetch(`/api/admin/participants/${id}/seat`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ seat_group: group, seat_row: row, seat_number: number }),
+          body: JSON.stringify({ 
+            seat_group: group, 
+            seat_row: row, 
+            seat_number: number,
+            is_guest: isGuest || false
+          }),
         });
 
         const data = await response.json();
         if (data.success) {
           loadParticipants();
+        } else {
+          alert(data.error || '좌석 배정 중 오류가 발생했습니다.');
         }
       } catch (err) {
+        console.error('Error updating seat:', err);
         alert('좌석 배정 중 오류가 발생했습니다.');
       }
     }
 
-    async function randomAssignSeats() {
-      const groupsInput = document.getElementById('randomGroups').value;
+    function updateGroupDisplay() {
+      const groupCount = parseInt(document.getElementById('groupCount').value) || 14;
+      const groupNames = ['가', '나', '다', '라', '마', '바', '사', '아', '자', '차', '카', '타', '파', '하'];
+      const selectedGroups = groupNames.slice(0, Math.min(groupCount, 14));
+      document.getElementById('groupDisplay').textContent = selectedGroups.join(',');
+    }
+
+
+    // 좌석 배정 공통 로직
+    function getSeatAssignmentParams() {
+      const groupCount = parseInt(document.getElementById('groupCount').value) || 14;
       const rowsPerGroup = parseInt(document.getElementById('rowsPerGroup').value);
       const seatsPerRow = parseInt(document.getElementById('seatsPerRow').value);
 
-      if (!groupsInput || !rowsPerGroup || !seatsPerRow) {
-        alert('모든 필드를 입력해주세요.');
+      if (!groupCount || !rowsPerGroup || !seatsPerRow) {
+        return null;
+      }
+
+      const groupNames = ['가', '나', '다', '라', '마', '바', '사', '아', '자', '차', '카', '타', '파', '하'];
+      const groups = groupNames.slice(0, Math.min(groupCount, 14));
+
+      return { groupCount, rowsPerGroup, seatsPerRow, groups };
+    }
+
+    async function assignSeatsCommon(endpoint, confirmMessage) {
+      const params = getSeatAssignmentParams();
+      if (!params) {
+        showError('모든 필드를 입력해주세요.');
         return;
       }
 
-      const groups = groupsInput.split(',').map(g => g.trim()).filter(g => g);
-
-      if (!confirm(`입금 완료된 참가자들에게 랜덤으로 좌석을 배정하시겠습니까?\n\n그룹: ${groups.join(', ')}\n그룹당 열 수: ${rowsPerGroup}\n열당 좌석 수: ${seatsPerRow}`)) {
+      if (!confirm(confirmMessage)) {
         return;
       }
 
       try {
-        const response = await fetch('/api/admin/participants/random-seats', {
+        const response = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ groups, rowsPerGroup, seatsPerRow }),
+          body: JSON.stringify({ 
+            groups: params.groups, 
+            rowsPerGroup: params.rowsPerGroup, 
+            seatsPerRow: params.seatsPerRow 
+          }),
         });
 
         const data = await response.json();
         if (data.success) {
-          alert(data.message);
+          showSuccess(data.message);
           loadParticipants();
         } else {
-          alert(data.error || '랜덤 배정 중 오류가 발생했습니다.');
+          showError(data.error || '좌석 배정 중 오류가 발생했습니다.');
         }
       } catch (err) {
-        alert('랜덤 배정 중 오류가 발생했습니다.');
+        console.error('Seat assignment error:', err);
+        showError('좌석 배정 중 오류가 발생했습니다.');
+      }
+    }
+
+    async function randomAssignSeats() {
+      const params = getSeatAssignmentParams();
+      if (!params) {
+        showError('모든 필드를 입력해주세요.');
+        return;
+      }
+
+      const confirmMessage = `입금 완료된 참가자들에게 랜덤으로 좌석을 배정하시겠습니까?\n\n그룹: ${params.groups.join(', ')}\n그룹당 열 수: ${params.rowsPerGroup}\n열당 좌석 수: ${params.seatsPerRow}`;
+      await assignSeatsCommon('/api/admin/participants/random-seats', confirmMessage);
+    }
+
+    async function resetParticipantSeat(id, userName) {
+      const confirmMessage = userName 
+        ? `"${userName}" 참가자의 좌석을 초기화하시겠습니까?`
+        : '이 참가자의 좌석을 초기화하시겠습니까?';
+      
+      if (!confirm(confirmMessage)) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/admin/participants/${id}/seat`, {
+          method: 'DELETE',
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          alert('좌석이 초기화되었습니다.');
+          loadParticipants();
+        } else {
+          alert(data.error || '좌석 초기화 중 오류가 발생했습니다.');
+        }
+      } catch (err) {
+        console.error('Reset seat error:', err);
+        alert('좌석 초기화 중 오류가 발생했습니다.');
       }
     }
 
@@ -354,10 +1013,2082 @@
       }
     }
 
+    async function ageBasedAssignSeats() {
+      const params = getSeatAssignmentParams();
+      if (!params) {
+        showError('모든 필드를 입력해주세요.');
+        return;
+      }
+
+      const confirmMessage = `입금 완료된 참가자들에게 연령대별로 좌석을 배정하시겠습니까?\n\n00년대생 → 90년대생 → 80년대생 순으로 앞좌석에 배정됩니다.\n\n그룹: ${params.groups.join(', ')}\n그룹당 열 수: ${params.rowsPerGroup}\n열당 좌석 수: ${params.seatsPerRow}`;
+      await assignSeatsCommon('/api/admin/participants/age-based-seats', confirmMessage);
+    }
+
+    async function resetAllSeats() {
+      if (!confirm('모든 참가자의 좌석을 초기화하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.')) {
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/participants/reset-seats', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          alert(data.message || '모든 좌석이 초기화되었습니다.');
+          loadParticipants();
+        } else {
+          alert(data.error || '초기화 중 오류가 발생했습니다.');
+        }
+      } catch (err) {
+        console.error('Reset seats error:', err);
+        alert('초기화 중 오류가 발생했습니다.');
+      }
+    }
+
     function formatPhone(value) {
       if (value.length <= 3) return value;
       if (value.length <= 7) return `${value.slice(0, 3)}-${value.slice(3)}`;
       return `${value.slice(0, 3)}-${value.slice(3, 7)}-${value.slice(7, 11)}`;
+    }
+
+    function formatDateTime(dateTimeStr) {
+      if (!dateTimeStr) return '-';
+      try {
+        // YYYY-MM-DD HH:mm:ss 형식을 파싱
+        const dateStr = dateTimeStr.replace(' ', 'T');
+        const date = new Date(dateStr);
+        // 한국 시간대로 표시
+        return date.toLocaleString('ko-KR', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+          timeZone: 'Asia/Seoul'
+        });
+      } catch (e) {
+        return dateTimeStr;
+      }
+    }
+
+    // 탭 전환 함수
+    function showParticipantsTab() {
+      document.getElementById('participantsSection').classList.remove('hidden');
+      document.getElementById('paymentSection').classList.add('hidden');
+      document.getElementById('inquiriesSection').classList.add('hidden');
+      document.getElementById('checkinSection').classList.add('hidden');
+      document.getElementById('checkinSection').classList.add('hidden');
+      document.getElementById('participantsTab').classList.add('text-red-600', 'border-b-2', 'border-red-600');
+      document.getElementById('participantsTab').classList.remove('text-gray-600');
+      document.getElementById('paymentTab').classList.remove('text-red-600', 'border-b-2', 'border-red-600');
+      document.getElementById('paymentTab').classList.add('text-gray-600');
+      document.getElementById('inquiriesTab').classList.remove('text-red-600', 'border-b-2', 'border-red-600');
+      document.getElementById('inquiriesTab').classList.add('text-gray-600');
+    }
+
+    function showPaymentTab() {
+      document.getElementById('participantsSection').classList.add('hidden');
+      document.getElementById('paymentSection').classList.remove('hidden');
+      document.getElementById('inquiriesSection').classList.add('hidden');
+      document.getElementById('checkinSection').classList.add('hidden');
+      document.getElementById('checkinSection').classList.add('hidden');
+      document.getElementById('paymentTab').classList.add('text-red-600', 'border-b-2', 'border-red-600');
+      document.getElementById('paymentTab').classList.remove('text-gray-600');
+      document.getElementById('participantsTab').classList.remove('text-red-600', 'border-b-2', 'border-red-600');
+      document.getElementById('participantsTab').classList.add('text-gray-600');
+      document.getElementById('inquiriesTab').classList.remove('text-red-600', 'border-b-2', 'border-red-600');
+      document.getElementById('inquiriesTab').classList.add('text-gray-600');
+      
+      // 저장된 데이터 복원
+      if (paymentDataList.length === 0) {
+        loadPaymentDataFromStorage();
+      }
+    }
+
+    function showInquiriesTab() {
+      document.getElementById('participantsSection').classList.add('hidden');
+      document.getElementById('paymentSection').classList.add('hidden');
+      document.getElementById('inquiriesSection').classList.remove('hidden');
+      document.getElementById('inquiriesTab').classList.add('text-red-600', 'border-b-2', 'border-red-600');
+      document.getElementById('inquiriesTab').classList.remove('text-gray-600');
+      document.getElementById('participantsTab').classList.remove('text-red-600', 'border-b-2', 'border-red-600');
+      document.getElementById('participantsTab').classList.add('text-gray-600');
+      document.getElementById('paymentTab').classList.remove('text-red-600', 'border-b-2', 'border-red-600');
+      document.getElementById('paymentTab').classList.add('text-gray-600');
+      document.getElementById('checkinTab').classList.remove('text-red-600', 'border-b-2', 'border-red-600');
+      document.getElementById('checkinTab').classList.add('text-gray-600');
+      document.getElementById('checkinSection').classList.add('hidden');
+      loadInquiries();
+    }
+
+    function showCheckinTab() {
+      document.getElementById('participantsSection').classList.add('hidden');
+      document.getElementById('paymentSection').classList.add('hidden');
+      document.getElementById('inquiriesSection').classList.add('hidden');
+      document.getElementById('checkinSection').classList.remove('hidden');
+      document.getElementById('checkinTab').classList.add('text-red-600', 'border-b-2', 'border-red-600');
+      document.getElementById('checkinTab').classList.remove('text-gray-600');
+      document.getElementById('participantsTab').classList.remove('text-red-600', 'border-b-2', 'border-red-600');
+      document.getElementById('participantsTab').classList.add('text-gray-600');
+      document.getElementById('paymentTab').classList.remove('text-red-600', 'border-b-2', 'border-red-600');
+      document.getElementById('paymentTab').classList.add('text-gray-600');
+      document.getElementById('inquiriesTab').classList.remove('text-red-600', 'border-b-2', 'border-red-600');
+      document.getElementById('inquiriesTab').classList.add('text-gray-600');
+      
+      // 체크인 통계 로드
+      loadCheckinStats();
+    }
+
+    // 문의 목록 로드
+    let inquiries = [];
+    let filteredInquiries = [];
+
+    async function loadInquiries() {
+      const loading = document.getElementById('inquiryLoading');
+      if (loading) loading.classList.remove('hidden');
+      
+      try {
+        const response = await fetch('/api/admin/inquiries');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          inquiries = data.inquiries || [];
+          filteredInquiries = inquiries;
+          displayInquiries(inquiries);
+        } else {
+          console.error('API error:', data.error);
+          alert('문의 목록을 불러오는 중 오류가 발생했습니다: ' + (data.error || '알 수 없는 오류'));
+        }
+      } catch (err) {
+        console.error('Error loading inquiries:', err);
+        alert('문의 목록을 불러오는 중 오류가 발생했습니다.\n콘솔을 확인해주세요.');
+      } finally {
+        if (loading) loading.classList.add('hidden');
+      }
+    }
+
+    function displayInquiries(list) {
+      const inquiriesList = document.getElementById('inquiriesList');
+      const loading = document.getElementById('inquiryLoading');
+      const emptyMessage = document.getElementById('inquiryEmptyMessage');
+      const countText = document.getElementById('inquiryCountText');
+
+      loading.classList.add('hidden');
+      
+      if (list.length === 0) {
+        inquiriesList.classList.add('hidden');
+        emptyMessage.classList.remove('hidden');
+        emptyMessage.textContent = '문의 내역이 없습니다.';
+        countText.textContent = '';
+        return;
+      }
+
+      inquiriesList.classList.remove('hidden');
+      emptyMessage.classList.add('hidden');
+      countText.textContent = `총 ${list.length}건`;
+
+      inquiriesList.innerHTML = list.map(inq => `
+        <div class="glass-card p-6 ${inq.is_answered ? 'bg-green-50/50' : 'bg-white'}">
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <div class="flex items-center gap-3 mb-2">
+                <span class="font-semibold text-gray-900">${inq.user_name}</span>
+                <span class="text-sm text-gray-500">${formatPhone(inq.phone)}</span>
+                <span class="text-xs text-gray-400">${formatDateTime(inq.created_at)}</span>
+              </div>
+              ${inq.is_answered ? '<span class="badge-green text-xs">답변 완료</span>' : '<span class="badge-red text-xs">답변 대기</span>'}
+            </div>
+            <button 
+              onclick="deleteInquiry(${inq.id}, '${inq.user_name}')" 
+              class="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+              title="삭제"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          </div>
+          
+          <div class="mb-4">
+            <p class="text-sm font-medium text-gray-700 mb-2">문의내용</p>
+            <p class="text-gray-900 whitespace-pre-wrap">${inq.content}</p>
+          </div>
+
+          ${inq.is_answered ? `
+            <div class="mt-4 pt-4 border-t border-gray-200">
+              <p class="text-sm font-medium text-gray-700 mb-2">답변</p>
+              <p class="text-gray-900 whitespace-pre-wrap">${inq.answer}</p>
+              <p class="text-xs text-gray-400 mt-2">답변일시: ${formatDateTime(inq.answered_at)}</p>
+            </div>
+          ` : `
+            <div class="mt-4 pt-4 border-t border-gray-200">
+              <textarea
+                id="answer-${inq.id}"
+                class="input-glass w-full"
+                rows="3"
+                placeholder="답변을 입력하세요..."
+              ></textarea>
+              <button 
+                onclick="submitAnswer(${inq.id})" 
+                class="btn-primary-glass mt-2"
+              >
+                답변 등록
+              </button>
+            </div>
+          `}
+        </div>
+      `).join('');
+
+      // 검색 이벤트 리스너
+      const inquirySearchInput = document.getElementById('inquirySearchInput');
+      if (inquirySearchInput) {
+        inquirySearchInput.addEventListener('input', () => {
+          const search = inquirySearchInput.value.toLowerCase();
+          filteredInquiries = search
+            ? inquiries.filter(i => 
+                i.user_name.toLowerCase().includes(search) || 
+                i.phone.includes(search) ||
+                i.content.toLowerCase().includes(search)
+              )
+            : inquiries;
+          displayInquiries(filteredInquiries);
+        });
+      }
+    }
+
+    async function submitAnswer(id) {
+      const answerInput = document.getElementById(`answer-${id}`);
+      if (!answerInput || !answerInput.value.trim()) {
+        alert('답변 내용을 입력해주세요.');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/admin/inquiries/${id}/answer`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ answer: answerInput.value.trim() }),
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          alert('답변이 등록되었습니다.');
+          loadInquiries();
+        } else {
+          alert(data.error || '답변 등록 중 오류가 발생했습니다.');
+        }
+      } catch (err) {
+        console.error('Submit answer error:', err);
+        alert('답변 등록 중 오류가 발생했습니다.');
+      }
+    }
+
+    async function deleteInquiry(id, userName) {
+      if (!confirm(`"${userName}"님의 문의를 정말 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`)) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/admin/inquiries/${id}`, {
+          method: 'DELETE',
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          alert('삭제되었습니다.');
+          loadInquiries();
+        } else {
+          alert(data.error || '삭제 중 오류가 발생했습니다.');
+        }
+      } catch (err) {
+        console.error('Delete inquiry error:', err);
+        alert('삭제 중 오류가 발생했습니다.');
+      }
+    }
+
+    // 입금 데이터 파싱 및 매칭
+    let paymentDataList = [];
+    let allParticipants = [];
+
+    // localStorage에 입금 데이터 저장 (debounce 적용)
+    function savePaymentDataToStorage() {
+      // 이전 타이머 취소
+      if (savePaymentDataTimeout) {
+        clearTimeout(savePaymentDataTimeout);
+      }
+      
+      // 500ms 후 저장 (debounce)
+      savePaymentDataTimeout = setTimeout(function() {
+        try {
+          // matchedParticipant는 객체이므로 ID만 저장
+          const dataToSave = paymentDataList.map(function(item) {
+            return {
+              date: item.date,
+              type: item.type,
+              amount: item.amount,
+              balance: item.balance,
+              transactionType: item.transactionType,
+              content: item.content,
+              memo: item.memo,
+              matchedName: item.matchedName,
+              matchedPhoneLast4: item.matchedPhoneLast4,
+              matchedParticipantId: item.matchedParticipant ? item.matchedParticipant.id : null,
+              expectedParticipantIds: item.expectedParticipants ? item.expectedParticipants.map(function(p) { return p.id; }) : [],
+              approved: item.approved
+            };
+          });
+          localStorage.setItem('paymentDataList', JSON.stringify(dataToSave));
+        } catch (err) {
+          console.error('Error saving payment data to storage:', err);
+        }
+      }, 500);
+    }
+
+    // localStorage에서 입금 데이터 복원
+    function loadPaymentDataFromStorage() {
+      try {
+        const saved = localStorage.getItem('paymentDataList');
+        if (!saved) return false;
+
+        const savedData = JSON.parse(saved);
+        if (!Array.isArray(savedData) || savedData.length === 0) return false;
+
+        // 참가자 목록 로드 (매칭을 위해 필요)
+        fetch('/api/admin/participants')
+          .then(function(response) { return response.json(); })
+          .then(function(data) {
+            if (data.success) {
+              allParticipants = data.participants || [];
+              
+              // 저장된 데이터 복원 (matchedParticipant와 expectedParticipants는 ID로 복원)
+              paymentDataList = savedData.map(function(item) {
+                let matchedParticipant = null;
+                if (item.matchedParticipantId) {
+                  matchedParticipant = allParticipants.find(function(p) {
+                    return p.id === item.matchedParticipantId;
+                  });
+                }
+                
+                let expectedParticipants = [];
+                if (item.expectedParticipantIds && item.expectedParticipantIds.length > 0) {
+                  expectedParticipants = allParticipants.filter(function(p) {
+                    return item.expectedParticipantIds.indexOf(p.id) !== -1;
+                  });
+                }
+                
+                return {
+                  date: item.date || '',
+                  type: item.type || '',
+                  amount: item.amount || '',
+                  balance: item.balance || '',
+                  transactionType: item.transactionType || '',
+                  content: item.content || '',
+                  memo: item.memo || '',
+                  matchedName: item.matchedName || '',
+                  matchedPhoneLast4: item.matchedPhoneLast4 || '',
+                  matchedParticipant: matchedParticipant,
+                  expectedParticipants: expectedParticipants,
+                  approved: item.approved || false
+                };
+              });
+
+              // 테이블에 복원된 데이터 표시
+              restorePaymentTableFromData();
+            }
+          })
+          .catch(function(err) {
+            console.error('Error loading participants for payment data:', err);
+          });
+
+        return true;
+      } catch (err) {
+        console.error('Error loading payment data from storage:', err);
+        return false;
+      }
+    }
+
+    // 저장된 데이터를 테이블에 복원
+    function restorePaymentTableFromData() {
+      const tbody = document.getElementById('paymentTableBody');
+      if (!tbody || paymentDataList.length === 0) return;
+
+      tbody.innerHTML = '';
+
+      paymentDataList.forEach(function(item, index) {
+        const row = document.createElement('tr');
+        const hasMatch = item.matchedParticipant !== null;
+        const hasPhoneLast4 = item.matchedPhoneLast4 !== '';
+        
+        row.className = hasMatch ? '' : 'bg-yellow-50';
+        row.innerHTML = `
+          <td class="border border-gray-300 px-2 py-1 text-sm text-center text-gray-500">${index + 1}</td>
+          <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" value="${item.date || ''}" onchange="updatePaymentDataFromInput(this)" /></td>
+          <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" value="${item.type || ''}" onchange="updatePaymentDataFromInput(this)" /></td>
+          <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" value="${item.amount || ''}" onchange="updatePaymentDataFromInput(this)" /></td>
+          <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" value="${item.balance || ''}" onchange="updatePaymentDataFromInput(this)" /></td>
+          <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" value="${item.transactionType || ''}" onchange="updatePaymentDataFromInput(this)" /></td>
+          <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" value="${item.content || ''}" onchange="updatePaymentDataFromInput(this); reMatchPaymentFromInput(this)" /></td>
+          <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" value="${item.memo || ''}" onchange="updatePaymentDataFromInput(this)" /></td>
+          <td class="border border-gray-300 px-2 py-1">
+            ${hasMatch ? `
+              <div class="text-green-600 font-semibold text-sm">
+                ✓ ${item.matchedParticipant.user_name} (${formatPhone(item.matchedParticipant.phone)})
+              </div>
+            ` : hasPhoneLast4 ? `
+              <div class="text-red-600 text-sm">
+                ✗ 매칭되지 않음 (${item.matchedName}${item.matchedPhoneLast4})
+              </div>
+            ` : `
+              <div class="text-orange-600 text-sm">
+                ⚠ 전화번호 뒷자리 없음
+              </div>
+            `}
+          </td>
+          <td class="border border-gray-300 px-2 py-1">
+            ${!item.matchedParticipant && item.expectedParticipants && item.expectedParticipants.length > 0 ? (
+              item.expectedParticipants.length === 1 ? `
+                <div class="text-blue-600 text-sm">
+                  ${item.expectedParticipants[0].user_name} (${formatPhone(item.expectedParticipants[0].phone)})
+                </div>
+              ` : `
+                <div class="text-orange-600 font-semibold text-sm">
+                  ⚠ 동명이인 발생, 연락 후 입금확인 필요
+                </div>
+              `
+            ) : '<span class="text-gray-400 text-sm">-</span>'}
+          </td>
+          <td class="border border-gray-300 px-2 py-1">
+            ${item.expectedParticipants && item.expectedParticipants.length > 1 ? (() => {
+              // expectedParticipants가 2명 이상일 때만 동명이인 목록 표시
+              // 이미 매칭된 참가자를 제외한 동명이인 목록
+              const unapprovedDuplicates = item.expectedParticipants.filter(function(p) {
+                if (item.matchedParticipant && item.matchedParticipant.id === p.id) {
+                  return false;
+                }
+                return true;
+              });
+              
+              if (unapprovedDuplicates.length > 0) {
+                return '<div class="text-sm space-y-2">' + unapprovedDuplicates.map(function(p, pIndex) {
+                  return '<div class="flex items-center justify-between gap-2 p-2 bg-gray-50 rounded border border-gray-200"><span class="text-gray-700">' + p.user_name + ' (' + formatPhone(p.phone) + ')</span><button onclick="approveDuplicateParticipant(' + index + ', ' + p.id + ')" style="background-color: #22c55e; color: white; padding: 0.25rem 0.75rem; border-radius: 0.25rem; font-weight: bold; font-size: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s; white-space: nowrap;" onmouseover="this.style.backgroundColor=\'#16a34a\'" onmouseout="this.style.backgroundColor=\'#22c55e\'">승인</button></div>';
+                }).join('') + '</div>';
+              } else {
+                return '<span class="text-gray-400 text-sm">-</span>';
+              }
+            })() : '<span class="text-gray-400 text-sm">-</span>'}
+          </td>
+          <td class="border border-gray-300 px-2 py-1">
+            ${item.approved ? '<span class="text-green-600 font-semibold text-sm">승인됨</span>' : '<span class="text-gray-500 text-sm">대기중</span>'}
+          </td>
+          <td class="border border-gray-300 px-2 py-2">
+            <div class="flex gap-2">
+              ${!item.approved ? `
+                <button onclick="approvePaymentFromTable(${index})" style="background-color: #22c55e; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: bold; font-size: 0.875rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#16a34a'" onmouseout="this.style.backgroundColor='#22c55e'">
+                  승인
+                </button>
+              ` : `
+                <span style="background-color: #dcfce7; color: #166534; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: bold; font-size: 0.875rem; display: inline-block;">✓ 승인됨</span>
+              `}
+              <button onclick="removePaymentRowFromTable(this)" style="background-color: #ef4444; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: bold; font-size: 0.875rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#dc2626'" onmouseout="this.style.backgroundColor='#ef4444'">
+                삭제
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    // 입금 데이터 저장하기
+    async function savePaymentData() {
+      const tbody = document.getElementById('paymentTableBody');
+      if (!tbody) return;
+
+      // 참가자 목록이 없으면 먼저 로드
+      if (allParticipants.length === 0) {
+        try {
+          const response = await fetch('/api/admin/participants');
+          const data = await response.json();
+          if (data.success) {
+            allParticipants = data.participants || [];
+          }
+        } catch (err) {
+          console.error('Error loading participants:', err);
+          alert('참가자 목록을 불러오는 중 오류가 발생했습니다.');
+          return;
+        }
+      }
+
+      // 테이블에서 직접 데이터를 읽어서 paymentDataList 업데이트
+      const rows = tbody.querySelectorAll('tr');
+      const updatedList = [];
+
+      rows.forEach(function(row, rowIndex) {
+        const inputs = row.querySelectorAll('input[type="text"]');
+        if (inputs.length < 7) return;
+
+        const date = inputs[0].value.trim();
+        const type = inputs[1].value.trim();
+        const amount = inputs[2].value.trim();
+        const balance = inputs[3].value.trim();
+        const transactionType = inputs[4].value.trim();
+        const content = inputs[5].value.trim();
+        const memo = inputs[6].value.trim();
+
+        // 빈 행은 제외
+        if (!date && !type && !amount && !content) return;
+
+        // 기존 paymentDataList에서 해당 인덱스의 데이터 가져오기 (있는 경우)
+        // paymentDataList가 충분히 크지 않으면 확장
+        while (paymentDataList.length <= rowIndex) {
+          paymentDataList.push({
+            date: '',
+            type: '',
+            amount: '',
+            balance: '',
+            transactionType: '',
+            content: '',
+            memo: '',
+            matchedName: '',
+            matchedPhoneLast4: '',
+            matchedParticipant: null,
+            expectedParticipants: [],
+            approved: false
+          });
+        }
+        const existingItem = paymentDataList[rowIndex] || null;
+
+        // 내용에서 이름과 전화번호 뒷자리 4개 추출
+        const nameMatch = content.match(/^([가-힣a-zA-Z\s]+)(\d{4})?/);
+        let matchedName = '';
+        let matchedPhoneLast4 = '';
+        
+        if (nameMatch) {
+          matchedName = nameMatch[1].trim();
+          matchedPhoneLast4 = nameMatch[2] || '';
+        }
+
+        // 신청자 매칭
+        let matchedParticipant = null;
+        if (matchedName && matchedPhoneLast4) {
+          matchedParticipant = allParticipants.find(function(p) {
+            // 이름 매칭: 정확히 일치하거나, 한쪽이 다른 쪽을 포함하는 경우
+            // 단, 한글과 영문이 섞인 경우는 매칭하지 않음
+            const pName = p.user_name.trim();
+            const matchedNameTrimmed = matchedName.trim();
+            
+            // 정확히 일치
+            if (pName === matchedNameTrimmed) {
+              const phoneLast4 = p.phone.slice(-4);
+              return phoneLast4 === matchedPhoneLast4;
+            }
+            
+            // 한쪽이 다른 쪽을 포함하는 경우 (같은 문자 체계만)
+            const pNameHasHangul = /[가-힣]/.test(pName);
+            const matchedNameHasHangul = /[가-힣]/.test(matchedNameTrimmed);
+            const pNameHasEnglish = /[a-zA-Z]/.test(pName);
+            const matchedNameHasEnglish = /[a-zA-Z]/.test(matchedNameTrimmed);
+            
+            // 한글과 영문이 섞인 경우는 매칭하지 않음
+            if ((pNameHasHangul && matchedNameHasEnglish) || (pNameHasEnglish && matchedNameHasHangul)) {
+              return false;
+            }
+            
+            // 같은 문자 체계인 경우에만 포함 여부 확인
+            const nameMatch = pName.includes(matchedNameTrimmed) || matchedNameTrimmed.includes(pName);
+            if (nameMatch) {
+              const phoneLast4 = p.phone.slice(-4);
+              return phoneLast4 === matchedPhoneLast4;
+            }
+            
+            return false;
+          });
+        }
+
+        // 예상되는 신청자 찾기 (이름만으로 매칭, 전화번호 뒷자리는 무시)
+        let expectedParticipants = [];
+        if (matchedName) {
+          expectedParticipants = allParticipants.filter(function(p) {
+            const pName = p.user_name.trim();
+            const matchedNameTrimmed = matchedName.trim();
+            
+            // 정확히 일치하는 경우 (전화번호 뒷자리 무시)
+            if (pName === matchedNameTrimmed) {
+              return true;
+            }
+            
+            // 한쪽이 다른 쪽을 포함하는 경우 (같은 문자 체계만, 전화번호 뒷자리 무시)
+            const pNameHasHangul = /[가-힣]/.test(pName);
+            const matchedNameHasHangul = /[가-힣]/.test(matchedNameTrimmed);
+            const pNameHasEnglish = /[a-zA-Z]/.test(pName);
+            const matchedNameHasEnglish = /[a-zA-Z]/.test(matchedNameTrimmed);
+            
+            // 한글과 영문이 섞인 경우는 매칭하지 않음
+            if ((pNameHasHangul && matchedNameHasEnglish) || (pNameHasEnglish && matchedNameHasHangul)) {
+              return false;
+            }
+            
+            // 같은 문자 체계인 경우에만 포함 여부 확인 (전화번호 뒷자리 무시)
+            const nameMatch = pName.includes(matchedNameTrimmed) || matchedNameTrimmed.includes(pName);
+            if (nameMatch) {
+              return true;
+            }
+            
+            return false;
+          });
+        }
+
+        // 기존 데이터의 approved 상태 유지 (없으면 false)
+        const approved = existingItem ? existingItem.approved : false;
+
+        updatedList.push({
+          date: date,
+          type: type,
+          amount: amount,
+          balance: balance,
+          transactionType: transactionType,
+          content: content,
+          memo: memo,
+          matchedName: matchedName,
+          matchedPhoneLast4: matchedPhoneLast4,
+          matchedParticipant: matchedParticipant,
+          expectedParticipants: expectedParticipants,
+          approved: approved
+        });
+      });
+
+      if (updatedList.length === 0) {
+        alert('저장할 데이터가 없습니다.');
+        return;
+      }
+
+      // paymentDataList 업데이트
+      paymentDataList = updatedList;
+
+      // localStorage에 저장
+      savePaymentDataToStorage();
+
+      // 테이블 업데이트
+      updatePaymentTableWithMatches();
+
+      alert('입금 내역이 저장되었습니다.');
+    }
+
+    // 테이블에서 데이터 읽기 및 매칭
+    async function parsePaymentDataFromTable() {
+      const tbody = document.getElementById('paymentTableBody');
+      if (!tbody) return;
+
+      // 참가자 목록 로드
+      try {
+        const response = await fetch('/api/admin/participants');
+        const data = await response.json();
+        if (data.success) {
+          allParticipants = data.participants || [];
+        }
+      } catch (err) {
+        console.error('Error loading participants:', err);
+        alert('참가자 목록을 불러오는 중 오류가 발생했습니다.');
+        return;
+      }
+
+      const rows = tbody.querySelectorAll('tr');
+      paymentDataList = [];
+
+      rows.forEach(function(row) {
+        const inputs = row.querySelectorAll('input[type="text"]');
+        if (inputs.length < 7) return;
+
+        const date = inputs[0].value.trim();
+        const type = inputs[1].value.trim();
+        const amount = inputs[2].value.trim();
+        const balance = inputs[3].value.trim();
+        const transactionType = inputs[4].value.trim();
+        const content = inputs[5].value.trim();
+        const memo = inputs[6].value.trim();
+
+        // 빈 행은 제외
+        if (!date && !type && !amount && !content) return;
+
+        // 내용에서 이름과 전화번호 뒷자리 4개 추출
+        const nameMatch = content.match(/^([가-힣a-zA-Z\s]+)(\d{4})?/);
+        let matchedName = '';
+        let matchedPhoneLast4 = '';
+        
+        if (nameMatch) {
+          matchedName = nameMatch[1].trim();
+          matchedPhoneLast4 = nameMatch[2] || '';
+        }
+
+        // 신청자 매칭
+        let matchedParticipant = null;
+        if (matchedName && matchedPhoneLast4) {
+          matchedParticipant = allParticipants.find(function(p) {
+            // 이름 매칭: 정확히 일치하거나, 한쪽이 다른 쪽을 포함하는 경우
+            // 단, 한글과 영문이 섞인 경우는 매칭하지 않음
+            const pName = p.user_name.trim();
+            const matchedNameTrimmed = matchedName.trim();
+            
+            // 정확히 일치
+            if (pName === matchedNameTrimmed) {
+              const phoneLast4 = p.phone.slice(-4);
+              return phoneLast4 === matchedPhoneLast4;
+            }
+            
+            // 한쪽이 다른 쪽을 포함하는 경우 (같은 문자 체계만)
+            const pNameHasHangul = /[가-힣]/.test(pName);
+            const matchedNameHasHangul = /[가-힣]/.test(matchedNameTrimmed);
+            const pNameHasEnglish = /[a-zA-Z]/.test(pName);
+            const matchedNameHasEnglish = /[a-zA-Z]/.test(matchedNameTrimmed);
+            
+            // 한글과 영문이 섞인 경우는 매칭하지 않음
+            if ((pNameHasHangul && matchedNameHasEnglish) || (pNameHasEnglish && matchedNameHasHangul)) {
+              return false;
+            }
+            
+            // 같은 문자 체계인 경우에만 포함 여부 확인
+            const nameMatch = pName.includes(matchedNameTrimmed) || matchedNameTrimmed.includes(pName);
+            if (nameMatch) {
+              const phoneLast4 = p.phone.slice(-4);
+              return phoneLast4 === matchedPhoneLast4;
+            }
+            
+            return false;
+          });
+        }
+
+        // 예상되는 신청자 찾기 (이름만으로 매칭, 전화번호 뒷자리는 무시)
+        let expectedParticipants = [];
+        if (matchedName) {
+          expectedParticipants = allParticipants.filter(function(p) {
+            const pName = p.user_name.trim();
+            const matchedNameTrimmed = matchedName.trim();
+            
+            // 정확히 일치하는 경우 (전화번호 뒷자리 무시)
+            if (pName === matchedNameTrimmed) {
+              return true;
+            }
+            
+            // 한쪽이 다른 쪽을 포함하는 경우 (같은 문자 체계만, 전화번호 뒷자리 무시)
+            const pNameHasHangul = /[가-힣]/.test(pName);
+            const matchedNameHasHangul = /[가-힣]/.test(matchedNameTrimmed);
+            const pNameHasEnglish = /[a-zA-Z]/.test(pName);
+            const matchedNameHasEnglish = /[a-zA-Z]/.test(matchedNameTrimmed);
+            
+            // 한글과 영문이 섞인 경우는 매칭하지 않음
+            if ((pNameHasHangul && matchedNameHasEnglish) || (pNameHasEnglish && matchedNameHasHangul)) {
+              return false;
+            }
+            
+            // 같은 문자 체계인 경우에만 포함 여부 확인 (전화번호 뒷자리 무시)
+            const nameMatch = pName.includes(matchedNameTrimmed) || matchedNameTrimmed.includes(pName);
+            if (nameMatch) {
+              return true;
+            }
+            
+            return false;
+          });
+        }
+
+        // 기존 paymentDataList에서 해당 인덱스의 approved 상태 확인
+        const currentIndex = paymentDataList.length;
+        const existingItem = paymentDataList[currentIndex] || null;
+        const approved = existingItem ? existingItem.approved : false;
+
+        paymentDataList.push({
+          date: date,
+          type: type,
+          amount: amount,
+          balance: balance,
+          transactionType: transactionType,
+          content: content,
+          memo: memo,
+          matchedName: matchedName,
+          matchedPhoneLast4: matchedPhoneLast4,
+          matchedParticipant: matchedParticipant,
+          expectedParticipants: expectedParticipants,
+          approved: approved
+        });
+      });
+
+      // 매칭 결과를 테이블에 반영
+      updatePaymentTableWithMatches();
+      // localStorage에 저장
+      savePaymentDataToStorage();
+    }
+
+    function updatePaymentTableWithMatches() {
+      const tbody = document.getElementById('paymentTableBody');
+      if (!tbody) return;
+
+      const rows = tbody.querySelectorAll('tr');
+      rows.forEach(function(row, index) {
+        const item = paymentDataList[index];
+        if (!item) return;
+
+        // 연번 업데이트 (첫 번째 셀)
+        const numberCell = row.cells[0];
+        if (numberCell) {
+          numberCell.textContent = index + 1;
+        }
+
+        // 매칭 결과 셀 업데이트
+        // 셀 인덱스: 0=연번, 1=거래일시, 2=구분, 3=거래금액, 4=거래후잔액, 5=거래구분, 6=내용, 7=메모, 8=매칭된신청자, 9=예상되는신청자, 10=비고, 11=상태, 12=작업
+        const matchCell = row.cells[8];
+        const expectedCell = row.cells[9];
+        const noteCell = row.cells[10];
+        const statusCell = row.cells[11];
+        const actionCell = row.cells[12];
+
+        if (matchCell) {
+          const hasMatch = item.matchedParticipant !== null;
+          const hasPhoneLast4 = item.matchedPhoneLast4 !== '';
+          
+          if (hasMatch) {
+            matchCell.innerHTML = '<div class="text-green-600 font-semibold text-sm">✓ ' + item.matchedParticipant.user_name + ' (' + formatPhone(item.matchedParticipant.phone) + ')</div>';
+            row.className = '';
+          } else if (hasPhoneLast4) {
+            matchCell.innerHTML = '<div class="text-red-600 text-sm">✗ 매칭되지 않음 (' + item.matchedName + item.matchedPhoneLast4 + ')</div>';
+            row.className = 'bg-yellow-50';
+          } else {
+            matchCell.innerHTML = '<div class="text-orange-600 text-sm">⚠ 전화번호 뒷자리 없음</div>';
+            row.className = 'bg-yellow-50';
+          }
+        }
+
+        if (expectedCell) {
+          // matchedParticipant가 없을 때만 예상되는 신청자 표시
+          if (!item.matchedParticipant && item.expectedParticipants && item.expectedParticipants.length > 0) {
+            if (item.expectedParticipants.length === 1) {
+              expectedCell.innerHTML = '<div class="text-blue-600 text-sm">' + item.expectedParticipants[0].user_name + ' (' + formatPhone(item.expectedParticipants[0].phone) + ')</div>';
+            } else {
+              expectedCell.innerHTML = '<div class="text-orange-600 font-semibold text-sm">⚠ 동명이인 발생, 연락 후 입금확인 필요</div>';
+            }
+          } else {
+            expectedCell.innerHTML = '<span class="text-gray-400 text-sm">-</span>';
+          }
+        }
+
+        if (noteCell) {
+          // expectedParticipants가 2명 이상일 때 비고 란에 동명이인 목록 표시
+          // matchedParticipant가 있어도 동명이인이 있으면 표시 (이미 승인된 참가자는 제외)
+          if (item.expectedParticipants && item.expectedParticipants.length > 1) {
+            // 이미 승인된 참가자를 제외한 동명이인 목록
+            const unapprovedDuplicates = item.expectedParticipants.filter(function(p) {
+              // matchedParticipant가 있고, 그 참가자가 이미 승인된 경우는 제외
+              if (item.matchedParticipant && item.matchedParticipant.id === p.id) {
+                return false;
+              }
+              return true;
+            });
+            
+            if (unapprovedDuplicates.length > 0) {
+              let noteHtml = '<div class="text-sm space-y-2">';
+              unapprovedDuplicates.forEach(function(p) {
+                noteHtml += '<div class="flex items-center justify-between gap-2 p-2 bg-gray-50 rounded border border-gray-200"><span class="text-gray-700">' + p.user_name + ' (' + formatPhone(p.phone) + ')</span><button onclick="approveDuplicateParticipant(' + index + ', ' + p.id + ')" style="background-color: #22c55e; color: white; padding: 0.25rem 0.75rem; border-radius: 0.25rem; font-weight: bold; font-size: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s; white-space: nowrap;" onmouseover="this.style.backgroundColor=\'#16a34a\'" onmouseout="this.style.backgroundColor=\'#22c55e\'">승인</button></div>';
+              });
+              noteHtml += '</div>';
+              noteCell.innerHTML = noteHtml;
+            } else {
+              // 모든 동명이인이 승인된 경우
+              noteCell.innerHTML = '<span class="text-gray-400 text-sm">-</span>';
+            }
+          } else {
+            noteCell.innerHTML = '<span class="text-gray-400 text-sm">-</span>';
+          }
+        }
+
+        if (statusCell) {
+          statusCell.innerHTML = item.approved ? '<span class="text-green-600 font-semibold text-sm">승인됨</span>' : '<span class="text-gray-500 text-sm">대기중</span>';
+        }
+
+        if (actionCell) {
+          const approveBtn = !item.approved 
+            ? '<button onclick="approvePaymentFromTable(' + index + ')" style="background-color: #22c55e; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: bold; font-size: 0.875rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor=\'#16a34a\'" onmouseout="this.style.backgroundColor=\'#22c55e\'">승인</button>' 
+            : '<span style="background-color: #dcfce7; color: #166534; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: bold; font-size: 0.875rem; display: inline-block;">✓ 승인됨</span>';
+          const deleteBtn = '<button onclick="removePaymentRowFromTable(this)" style="background-color: #ef4444; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: bold; font-size: 0.875rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor=\'#dc2626\'" onmouseout="this.style.backgroundColor=\'#ef4444\'">삭제</button>';
+          actionCell.innerHTML = '<div class="flex gap-2">' + approveBtn + deleteBtn + '</div>';
+        }
+      });
+    }
+
+    function updatePaymentDataFromInput(input) {
+      // 테이블에서 직접 입력 시 paymentDataList 업데이트는 savePaymentData()에서 처리
+      // 여기서는 즉시 저장하지 않고, 저장 버튼을 눌렀을 때 한 번에 처리
+    }
+
+    async function reMatchPaymentFromInput(input) {
+      // 내용 필드 변경 시 자동 재매칭
+      const row = input.closest('tr');
+      if (!row) return;
+      
+      // 참가자 목록 로드 (없으면)
+      if (allParticipants.length === 0) {
+        try {
+          const response = await fetch('/api/admin/participants');
+          const data = await response.json();
+          if (data.success) {
+            allParticipants = data.participants || [];
+          }
+        } catch (err) {
+          console.error('Error loading participants:', err);
+          return;
+        }
+      }
+      
+      // 행의 인덱스 찾기
+      const tbody = document.getElementById('paymentTableBody');
+      if (!tbody) return;
+      const rows = tbody.querySelectorAll('tr');
+      const rowIndex = Array.from(rows).indexOf(row);
+      if (rowIndex < 0) return;
+      
+      // 해당 행의 모든 입력값 읽기
+      const inputs = row.querySelectorAll('input[type="text"]');
+      if (inputs.length < 7) return;
+      
+      const date = inputs[0].value.trim();
+      const type = inputs[1].value.trim();
+      const amount = inputs[2].value.trim();
+      const balance = inputs[3].value.trim();
+      const transactionType = inputs[4].value.trim();
+      const content = inputs[5].value.trim();
+      const memo = inputs[6].value.trim();
+      
+      // 내용에서 이름과 전화번호 뒷자리 4개 추출
+      const nameMatch = content.match(/^([가-힣a-zA-Z\s]+)(\d{4})?/);
+      let matchedName = '';
+      let matchedPhoneLast4 = '';
+      
+      if (nameMatch) {
+        matchedName = nameMatch[1].trim();
+        matchedPhoneLast4 = nameMatch[2] || '';
+      }
+      
+      // 신청자 매칭
+      let matchedParticipant = null;
+      if (matchedName && matchedPhoneLast4) {
+        matchedParticipant = allParticipants.find(function(p) {
+          // 이름 매칭: 정확히 일치하거나, 한쪽이 다른 쪽을 포함하는 경우
+          // 단, 한글과 영문이 섞인 경우는 매칭하지 않음
+          const pName = p.user_name.trim();
+          const matchedNameTrimmed = matchedName.trim();
+          
+          // 정확히 일치
+          if (pName === matchedNameTrimmed) {
+            const phoneLast4 = p.phone.slice(-4);
+            return phoneLast4 === matchedPhoneLast4;
+          }
+          
+          // 한쪽이 다른 쪽을 포함하는 경우 (같은 문자 체계만)
+          const pNameHasHangul = /[가-힣]/.test(pName);
+          const matchedNameHasHangul = /[가-힣]/.test(matchedNameTrimmed);
+          const pNameHasEnglish = /[a-zA-Z]/.test(pName);
+          const matchedNameHasEnglish = /[a-zA-Z]/.test(matchedNameTrimmed);
+          
+          // 한글과 영문이 섞인 경우는 매칭하지 않음
+          if ((pNameHasHangul && matchedNameHasEnglish) || (pNameHasEnglish && matchedNameHasHangul)) {
+            return false;
+          }
+          
+          // 같은 문자 체계인 경우에만 포함 여부 확인
+          const nameMatch = pName.includes(matchedNameTrimmed) || matchedNameTrimmed.includes(pName);
+          if (nameMatch) {
+            const phoneLast4 = p.phone.slice(-4);
+            return phoneLast4 === matchedPhoneLast4;
+          }
+          
+          return false;
+        });
+      }
+      
+      // 예상되는 신청자 찾기 (이름만으로 매칭, 전화번호 뒷자리는 무시)
+      let expectedParticipants = [];
+      if (matchedName) {
+        expectedParticipants = allParticipants.filter(function(p) {
+          const pName = p.user_name.trim();
+          const matchedNameTrimmed = matchedName.trim();
+          
+          // 정확히 일치하는 경우 (전화번호 뒷자리 무시)
+          if (pName === matchedNameTrimmed) {
+            return true;
+          }
+          
+          // 한쪽이 다른 쪽을 포함하는 경우 (같은 문자 체계만, 전화번호 뒷자리 무시)
+          const pNameHasHangul = /[가-힣]/.test(pName);
+          const matchedNameHasHangul = /[가-힣]/.test(matchedNameTrimmed);
+          const pNameHasEnglish = /[a-zA-Z]/.test(pName);
+          const matchedNameHasEnglish = /[a-zA-Z]/.test(matchedNameTrimmed);
+          
+          // 한글과 영문이 섞인 경우는 매칭하지 않음
+          if ((pNameHasHangul && matchedNameHasEnglish) || (pNameHasEnglish && matchedNameHasHangul)) {
+            return false;
+          }
+          
+          // 같은 문자 체계인 경우에만 포함 여부 확인 (전화번호 뒷자리 무시)
+          const nameMatch = pName.includes(matchedNameTrimmed) || matchedNameTrimmed.includes(pName);
+          if (nameMatch) {
+            return true;
+          }
+          
+          return false;
+        });
+      }
+      
+      // 기존 paymentDataList에서 해당 인덱스의 데이터 가져오기 (있는 경우)
+      // paymentDataList가 충분히 크지 않으면 확장
+      while (paymentDataList.length <= rowIndex) {
+        paymentDataList.push({
+          date: '',
+          type: '',
+          amount: '',
+          balance: '',
+          transactionType: '',
+          content: '',
+          memo: '',
+          matchedName: '',
+          matchedPhoneLast4: '',
+          matchedParticipant: null,
+          expectedParticipants: [],
+          approved: false
+        });
+      }
+      
+      const existingItem = paymentDataList[rowIndex] || null;
+      const approved = existingItem ? existingItem.approved : false;
+      
+      // paymentDataList 업데이트 (해당 인덱스만)
+      paymentDataList[rowIndex] = {
+        date: date,
+        type: type,
+        amount: amount,
+        balance: balance,
+        transactionType: transactionType,
+        content: content,
+        memo: memo,
+        matchedName: matchedName,
+        matchedPhoneLast4: matchedPhoneLast4,
+        matchedParticipant: matchedParticipant,
+        expectedParticipants: expectedParticipants,
+        approved: approved
+      };
+      
+      // 해당 행만 업데이트
+      updateSinglePaymentRow(row, rowIndex, paymentDataList[rowIndex]);
+      
+      // localStorage에 저장
+      savePaymentDataToStorage();
+    }
+    
+    function updateSinglePaymentRow(row, index, item) {
+      if (!row || !item) return;
+      
+      // 매칭 결과 셀 업데이트
+      // 셀 인덱스: 0=연번, 1=거래일시, 2=구분, 3=거래금액, 4=거래후잔액, 5=거래구분, 6=내용, 7=메모, 8=매칭된신청자, 9=예상되는신청자, 10=비고, 11=상태, 12=작업
+      const matchCell = row.cells[8];
+      const expectedCell = row.cells[9];
+      const noteCell = row.cells[10];
+      const statusCell = row.cells[11];
+      const actionCell = row.cells[12];
+      
+      if (matchCell) {
+        const hasMatch = item.matchedParticipant !== null;
+        const hasPhoneLast4 = item.matchedPhoneLast4 !== '';
+        
+        if (hasMatch) {
+          matchCell.innerHTML = '<div class="text-green-600 font-semibold text-sm">✓ ' + item.matchedParticipant.user_name + ' (' + formatPhone(item.matchedParticipant.phone) + ')</div>';
+          row.className = '';
+        } else if (hasPhoneLast4) {
+          matchCell.innerHTML = '<div class="text-red-600 text-sm">✗ 매칭되지 않음 (' + item.matchedName + item.matchedPhoneLast4 + ')</div>';
+          row.className = 'bg-yellow-50';
+        } else {
+          matchCell.innerHTML = '<div class="text-orange-600 text-sm">⚠ 전화번호 뒷자리 없음</div>';
+          row.className = 'bg-yellow-50';
+        }
+      }
+      
+      if (expectedCell) {
+        // matchedParticipant가 없을 때만 예상되는 신청자 표시
+        if (!item.matchedParticipant && item.expectedParticipants && item.expectedParticipants.length > 0) {
+          if (item.expectedParticipants.length === 1) {
+            expectedCell.innerHTML = '<div class="text-blue-600 text-sm">' + item.expectedParticipants[0].user_name + ' (' + formatPhone(item.expectedParticipants[0].phone) + ')</div>';
+          } else {
+            expectedCell.innerHTML = '<div class="text-orange-600 font-semibold text-sm">⚠ 동명이인 발생, 연락 후 입금확인 필요</div>';
+          }
+        } else {
+          expectedCell.innerHTML = '<span class="text-gray-400 text-sm">-</span>';
+        }
+      }
+      
+      if (noteCell) {
+        // expectedParticipants가 2명 이상일 때만 비고란 표시
+        if (item.expectedParticipants && item.expectedParticipants.length > 1) {
+          // 이미 매칭된 참가자를 제외한 동명이인 목록
+          const unapprovedDuplicates = item.expectedParticipants.filter(function(p) {
+            // matchedParticipant가 있고, 그 참가자가 이미 매칭된 경우는 제외
+            if (item.matchedParticipant && item.matchedParticipant.id === p.id) {
+              return false;
+            }
+            return true;
+          });
+          
+          if (unapprovedDuplicates.length > 0) {
+            let noteHtml = '<div class="text-sm space-y-2">';
+            unapprovedDuplicates.forEach(function(p) {
+              noteHtml += '<div class="flex items-center justify-between gap-2 p-2 bg-gray-50 rounded border border-gray-200"><span class="text-gray-700">' + p.user_name + ' (' + formatPhone(p.phone) + ')</span><button onclick="approveDuplicateParticipant(' + index + ', ' + p.id + ')" style="background-color: #22c55e; color: white; padding: 0.25rem 0.75rem; border-radius: 0.25rem; font-weight: bold; font-size: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s; white-space: nowrap;" onmouseover="this.style.backgroundColor=\'#16a34a\'" onmouseout="this.style.backgroundColor=\'#22c55e\'">승인</button></div>';
+            });
+            noteHtml += '</div>';
+            noteCell.innerHTML = noteHtml;
+          } else {
+            // 모든 동명이인이 매칭된 경우
+            noteCell.innerHTML = '<span class="text-gray-400 text-sm">-</span>';
+          }
+        } else {
+          // 동명이인이 2명 미만이면 비고란 비우기
+          noteCell.innerHTML = '<span class="text-gray-400 text-sm">-</span>';
+        }
+      }
+      
+      if (statusCell) {
+        statusCell.innerHTML = item.approved ? '<span class="text-green-600 font-semibold text-sm">승인됨</span>' : '<span class="text-gray-500 text-sm">대기중</span>';
+      }
+      
+      if (actionCell) {
+        const approveBtn = !item.approved 
+          ? '<button onclick="approvePaymentFromTable(' + index + ')" style="background-color: #22c55e; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: bold; font-size: 0.875rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor=\'#16a34a\'" onmouseout="this.style.backgroundColor=\'#22c55e\'">승인</button>' 
+          : '<span style="background-color: #dcfce7; color: #166534; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: bold; font-size: 0.875rem; display: inline-block;">✓ 승인됨</span>';
+        const deleteBtn = '<button onclick="removePaymentRowFromTable(this)" style="background-color: #ef4444; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: bold; font-size: 0.875rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor=\'#dc2626\'" onmouseout="this.style.backgroundColor=\'#ef4444\'">삭제</button>';
+        actionCell.innerHTML = '<div class="flex gap-2">' + approveBtn + deleteBtn + '</div>';
+      }
+    }
+
+    function removePaymentRowFromTable(button) {
+      const row = button.closest('tr');
+      if (row && confirm('이 행을 삭제하시겠습니까?')) {
+        row.remove();
+        // paymentDataList에서도 제거
+        const tbody = document.getElementById('paymentTableBody');
+        if (tbody) {
+          const rows = tbody.querySelectorAll('tr');
+          const index = Array.from(rows).indexOf(row);
+          if (index >= 0 && paymentDataList[index]) {
+            paymentDataList.splice(index, 1);
+          }
+          // 연번 재정렬
+          updatePaymentRowNumbers();
+          // localStorage에 저장
+          savePaymentDataToStorage();
+        }
+      }
+    }
+
+    async function approveDuplicateParticipant(paymentIndex, participantId) {
+      const item = paymentDataList[paymentIndex];
+      if (!item) return;
+
+      // 선택한 참가자 찾기
+      const selectedParticipant = allParticipants.find(function(p) {
+        return p.id === participantId;
+      });
+
+      if (!selectedParticipant) {
+        alert('참가자를 찾을 수 없습니다.');
+        return;
+      }
+
+      // 매칭된 참가자로 설정
+      item.matchedParticipant = selectedParticipant;
+      item.matchedName = selectedParticipant.user_name;
+      item.matchedPhoneLast4 = selectedParticipant.phone.slice(-4);
+      // 동명이인 승인 후 expectedParticipants는 유지하되, 비고 란은 matchedParticipant가 있으면 표시되지 않음
+
+      // 입금 확인 처리
+      try {
+        const response = await fetch('/api/admin/participants/' + selectedParticipant.id + '/payment', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ is_paid: 1 }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || '입금 확인 중 오류가 발생했습니다.');
+        }
+
+        item.approved = true;
+        
+        // 테이블 업데이트
+        const tbody = document.getElementById('paymentTableBody');
+        if (tbody) {
+          const rows = tbody.querySelectorAll('tr');
+          if (rows[paymentIndex]) {
+            updateSinglePaymentRow(rows[paymentIndex], paymentIndex, item);
+          }
+        }
+        
+        savePaymentDataToStorage();
+        alert('입금이 확인되었습니다.');
+      } catch (err) {
+        console.error('Error approving payment:', err);
+        alert(err.message || '입금 확인 중 오류가 발생했습니다.');
+      }
+    }
+
+    async function approvePaymentFromTable(index) {
+      const item = paymentDataList[index];
+      if (!item) return;
+
+      if (!item.matchedParticipant && item.matchedPhoneLast4) {
+        if (!confirm('매칭된 신청자가 없습니다.\n내용: ' + item.content + '\n\n수동으로 승인하시겠습니까?')) {
+          return;
+        }
+      } else if (!item.matchedPhoneLast4) {
+        if (!confirm('전화번호 뒷자리가 없습니다.\n내용: ' + item.content + '\n\n수동으로 승인하시겠습니까?')) {
+          return;
+        }
+      }
+
+      if (item.matchedParticipant) {
+        try {
+          const response = await fetch('/api/admin/participants/' + item.matchedParticipant.id + '/payment', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ is_paid: 1 }),
+          });
+
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.error || '입금 확인 중 오류가 발생했습니다.');
+          }
+
+          item.approved = true;
+          updatePaymentTableWithMatches();
+          savePaymentDataToStorage();
+          alert('입금이 확인되었습니다.');
+        } catch (err) {
+          console.error('Error approving payment:', err);
+          alert(err.message || '입금 확인 중 오류가 발생했습니다.');
+        }
+      } else {
+        item.approved = true;
+        updatePaymentTableWithMatches();
+        savePaymentDataToStorage();
+        alert('수동으로 승인되었습니다. 참가자 관리에서 직접 확인해주세요.');
+      }
+    }
+
+    // 테이블에 붙여넣기 지원
+    document.addEventListener('DOMContentLoaded', function() {
+      const paymentTable = document.getElementById('paymentTable');
+      if (paymentTable) {
+        paymentTable.addEventListener('paste', function(e) {
+          e.preventDefault();
+          const paste = (e.clipboardData || window.clipboardData).getData('text');
+          const rows = paste.split('\n').filter(function(row) { return row.trim(); });
+          
+          if (rows.length === 0) return;
+
+          const tbody = document.getElementById('paymentTableBody');
+          if (!tbody) return;
+
+          // 현재 포커스된 셀 찾기
+          const activeElement = document.activeElement;
+          if (!activeElement || activeElement.tagName !== 'INPUT') return;
+
+          const currentRow = activeElement.closest('tr');
+          if (!currentRow) return;
+
+          const currentInputs = currentRow.querySelectorAll('input[type="text"]');
+          const startCol = Array.from(currentInputs).indexOf(activeElement);
+          if (startCol < 0) return;
+
+          // 첫 번째 행의 첫 번째 셀에 붙여넣을 때는 항상 첫 번째 열부터 시작
+          const isFirstCell = startCol === 0 && currentRow === tbody.querySelector('tr:first-child');
+          const actualStartCol = isFirstCell ? 0 : startCol;
+
+          rows.forEach(function(row, rowIndex) {
+            // 탭으로 구분 (엑셀은 탭으로 구분)
+            const values = row.split('\t').map(function(v) { return v.trim(); });
+            
+            // 빈 행은 건너뛰기
+            if (values.length === 0 || (values.length === 1 && !values[0])) return;
+            
+            let targetRow = currentRow;
+            if (rowIndex > 0 || (rowIndex === 0 && isFirstCell)) {
+              // 첫 번째 행의 첫 번째 셀에 붙여넣을 때는 새 행부터 시작
+              if (rowIndex === 0 && isFirstCell) {
+                // 첫 번째 행은 현재 행에 덮어쓰기
+                targetRow = currentRow;
+              } else if (rowIndex > 0) {
+                // 새 행 추가
+                const newRow = currentRow.cloneNode(true);
+                const newInputs = newRow.querySelectorAll('input[type="text"]');
+                newInputs.forEach(function(input) { input.value = ''; });
+                // 매칭 결과 셀들도 초기화 (비고 열 추가로 인덱스 변경)
+                const newCells = newRow.querySelectorAll('td');
+                if (newCells.length >= 13) {
+                  newCells[8].innerHTML = '<span class="text-sm text-gray-400">-</span>';
+                  newCells[9].innerHTML = '<span class="text-sm text-gray-400">-</span>';
+                  newCells[10].innerHTML = '<span class="text-sm text-gray-400">-</span>';
+                  newCells[11].innerHTML = '<span class="text-sm text-gray-400">대기중</span>';
+                  newCells[12].innerHTML = '<div class="flex gap-2"><button onclick="approvePaymentFromTable(' + (paymentDataList.length) + ')" style="background-color: #22c55e; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: bold; font-size: 0.875rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor=\'#16a34a\'" onmouseout="this.style.backgroundColor=\'#22c55e\'">승인</button><button onclick="removePaymentRowFromTable(this)" style="background-color: #ef4444; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: bold; font-size: 0.875rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor=\'#dc2626\'" onmouseout="this.style.backgroundColor=\'#ef4444\'">삭제</button></div>';
+                }
+                tbody.appendChild(newRow);
+                targetRow = newRow;
+              }
+            }
+
+            const inputs = targetRow.querySelectorAll('input[type="text"]');
+            values.forEach(function(value, colIndex) {
+              const targetCol = actualStartCol + colIndex;
+              if (targetCol < inputs.length && value) {
+                inputs[targetCol].value = value;
+                // 내용 필드(인덱스 5) 변경 시 자동 매칭
+                if (targetCol === 5) {
+                  reMatchPaymentFromInput(inputs[targetCol]);
+                }
+              }
+            });
+          });
+
+          // 연번 재정렬
+          updatePaymentRowNumbers();
+
+          // 마지막 행의 내용 필드에서 자동 매칭 실행
+          setTimeout(function() {
+            parsePaymentDataFromTable();
+            // localStorage에 저장
+            savePaymentDataToStorage();
+          }, 100);
+        });
+      }
+    });
+
+    async function parsePaymentData() {
+      const input = document.getElementById('paymentDataInput');
+      if (!input) {
+        alert('입력 필드를 찾을 수 없습니다.');
+        return;
+      }
+
+      const inputValue = input.value.trim();
+      if (!inputValue) {
+        alert('데이터를 입력해주세요.');
+        return;
+      }
+
+      // 참가자 목록 로드
+      try {
+        const response = await fetch('/api/admin/participants');
+        const data = await response.json();
+        if (data.success) {
+          allParticipants = data.participants || [];
+        }
+      } catch (err) {
+        console.error('Error loading participants:', err);
+        alert('참가자 목록을 불러오는 중 오류가 발생했습니다.');
+        return;
+      }
+
+      // 데이터 파싱 (탭 또는 쉼표로 구분)
+      const lines = inputValue.split('\n').filter(line => line.trim());
+      if (lines.length < 2) {
+        alert('헤더와 최소 1개의 데이터 행이 필요합니다.');
+        return;
+      }
+
+      // 헤더 파싱
+      const headerLine = lines[0];
+      const headers = headerLine.split(/\t|,/).map(h => h.trim());
+      
+      // 헤더 인덱스 찾기
+      const headerMap = {};
+      headers.forEach(function(h, i) {
+        if (h.includes('거래일시') || h.includes('일시')) headerMap.date = i;
+        if (h.includes('구분')) headerMap.type = i;
+        if (h.includes('거래금액') || h.includes('금액')) headerMap.amount = i;
+        if (h.includes('거래 후 잔액') || h.includes('잔액')) headerMap.balance = i;
+        if (h.includes('거래구분')) headerMap.transactionType = i;
+        if (h.includes('내용')) headerMap.content = i;
+        if (h.includes('메모')) headerMap.memo = i;
+      });
+
+      if (headerMap.content === undefined) {
+        alert('"내용" 컬럼을 찾을 수 없습니다. 헤더를 확인해주세요.');
+        return;
+      }
+
+      // 데이터 행 파싱
+      paymentDataList = [];
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(/\t|,/).map(function(v) { return v.trim(); });
+        if (values.length < headers.length) continue;
+
+        const content = values[headerMap.content] || '';
+        // 내용에서 이름과 전화번호 뒷자리 4개 추출
+        // 형식: "이름0000" 또는 "이름 0000" 등
+        const nameMatch = content.match(/^([가-힣a-zA-Z\s]+)(\d{4})?/);
+        let matchedName = '';
+        let matchedPhoneLast4 = '';
+        
+        if (nameMatch) {
+          matchedName = nameMatch[1].trim();
+          matchedPhoneLast4 = nameMatch[2] || '';
+        }
+
+        // 신청자 매칭
+        let matchedParticipant = null;
+        if (matchedName && matchedPhoneLast4) {
+          matchedParticipant = allParticipants.find(function(p) {
+            // 이름 매칭: 정확히 일치하거나, 한쪽이 다른 쪽을 포함하는 경우
+            // 단, 한글과 영문이 섞인 경우는 매칭하지 않음
+            const pName = p.user_name.trim();
+            const matchedNameTrimmed = matchedName.trim();
+            
+            // 정확히 일치
+            if (pName === matchedNameTrimmed) {
+              const phoneLast4 = p.phone.slice(-4);
+              return phoneLast4 === matchedPhoneLast4;
+            }
+            
+            // 한쪽이 다른 쪽을 포함하는 경우 (같은 문자 체계만)
+            const pNameHasHangul = /[가-힣]/.test(pName);
+            const matchedNameHasHangul = /[가-힣]/.test(matchedNameTrimmed);
+            const pNameHasEnglish = /[a-zA-Z]/.test(pName);
+            const matchedNameHasEnglish = /[a-zA-Z]/.test(matchedNameTrimmed);
+            
+            // 한글과 영문이 섞인 경우는 매칭하지 않음
+            if ((pNameHasHangul && matchedNameHasEnglish) || (pNameHasEnglish && matchedNameHasHangul)) {
+              return false;
+            }
+            
+            // 같은 문자 체계인 경우에만 포함 여부 확인
+            const nameMatch = pName.includes(matchedNameTrimmed) || matchedNameTrimmed.includes(pName);
+            if (nameMatch) {
+              const phoneLast4 = p.phone.slice(-4);
+              return phoneLast4 === matchedPhoneLast4;
+            }
+            
+            return false;
+          });
+        }
+
+        // 예상되는 신청자 찾기 (이름만으로 매칭, 전화번호 뒷자리는 무시)
+        let expectedParticipants = [];
+        if (matchedName) {
+          expectedParticipants = allParticipants.filter(function(p) {
+            const pName = p.user_name.trim();
+            const matchedNameTrimmed = matchedName.trim();
+            
+            // 정확히 일치하는 경우 (전화번호 뒷자리 무시)
+            if (pName === matchedNameTrimmed) {
+              return true;
+            }
+            
+            // 한쪽이 다른 쪽을 포함하는 경우 (같은 문자 체계만, 전화번호 뒷자리 무시)
+            const pNameHasHangul = /[가-힣]/.test(pName);
+            const matchedNameHasHangul = /[가-힣]/.test(matchedNameTrimmed);
+            const pNameHasEnglish = /[a-zA-Z]/.test(pName);
+            const matchedNameHasEnglish = /[a-zA-Z]/.test(matchedNameTrimmed);
+            
+            // 한글과 영문이 섞인 경우는 매칭하지 않음
+            if ((pNameHasHangul && matchedNameHasEnglish) || (pNameHasEnglish && matchedNameHasHangul)) {
+              return false;
+            }
+            
+            // 같은 문자 체계인 경우에만 포함 여부 확인 (전화번호 뒷자리 무시)
+            const nameMatch = pName.includes(matchedNameTrimmed) || matchedNameTrimmed.includes(pName);
+            if (nameMatch) {
+              return true;
+            }
+            
+            return false;
+          });
+        }
+
+        paymentDataList.push({
+          date: values[headerMap.date] || '',
+          type: values[headerMap.type] || '',
+          amount: values[headerMap.amount] || '',
+          balance: values[headerMap.balance] || '',
+          transactionType: values[headerMap.transactionType] || '',
+          content: content,
+          memo: values[headerMap.memo] || '',
+          matchedName: matchedName,
+          matchedPhoneLast4: matchedPhoneLast4,
+          matchedParticipant: matchedParticipant,
+          expectedParticipants: expectedParticipants,
+          approved: false
+        });
+      }
+
+      displayPaymentData();
+    }
+
+    function displayPaymentData() {
+      const container = document.getElementById('paymentResults');
+      const tbody = document.getElementById('paymentTableBody');
+      
+      if (!container || !tbody) return;
+
+      container.classList.remove('hidden');
+      tbody.innerHTML = '';
+
+      paymentDataList.forEach(function(item, index) {
+        const row = document.createElement('tr');
+        const hasMatch = item.matchedParticipant !== null;
+        const hasPhoneLast4 = item.matchedPhoneLast4 !== '';
+        const rowClass = hasMatch ? '' : 'bg-yellow-50';
+        
+        row.className = rowClass;
+        row.innerHTML = `
+          <td class="border border-gray-300 px-2 py-1">
+            <input type="text" class="w-full border-0 bg-transparent text-sm" value="${item.date || ''}" onchange="updatePaymentData(${index}, 'date', this.value)" />
+          </td>
+          <td class="border border-gray-300 px-2 py-1">
+            <input type="text" class="w-full border-0 bg-transparent text-sm" value="${item.type || ''}" onchange="updatePaymentData(${index}, 'type', this.value)" />
+          </td>
+          <td class="border border-gray-300 px-2 py-1">
+            <input type="text" class="w-full border-0 bg-transparent text-sm" value="${item.amount || ''}" onchange="updatePaymentData(${index}, 'amount', this.value)" />
+          </td>
+          <td class="border border-gray-300 px-2 py-1">
+            <input type="text" class="w-full border-0 bg-transparent text-sm" value="${item.balance || ''}" onchange="updatePaymentData(${index}, 'balance', this.value)" />
+          </td>
+          <td class="border border-gray-300 px-2 py-1">
+            <input type="text" class="w-full border-0 bg-transparent text-sm" value="${item.transactionType || ''}" onchange="updatePaymentData(${index}, 'transactionType', this.value)" />
+          </td>
+          <td class="border border-gray-300 px-2 py-1">
+            <input type="text" class="w-full border-0 bg-transparent text-sm" value="${item.content || ''}" onchange="updatePaymentData(${index}, 'content', this.value); reMatchPayment(${index})" />
+          </td>
+          <td class="border border-gray-300 px-2 py-1">
+            <input type="text" class="w-full border-0 bg-transparent text-sm" value="${item.memo || ''}" onchange="updatePaymentData(${index}, 'memo', this.value)" />
+          </td>
+          <td class="border border-gray-300 px-2 py-1">
+            ${hasMatch ? `
+              <div class="text-green-600 font-semibold text-sm">
+                ✓ ${item.matchedParticipant.user_name} (${formatPhone(item.matchedParticipant.phone)})
+              </div>
+            ` : hasPhoneLast4 ? `
+              <div class="text-red-600 text-sm">
+                ✗ 매칭되지 않음 (${item.matchedName}${item.matchedPhoneLast4})
+              </div>
+            ` : `
+              <div class="text-orange-600 text-sm">
+                ⚠ 전화번호 뒷자리 없음
+              </div>
+            `}
+          </td>
+          <td class="border border-gray-300 px-2 py-1">
+            ${item.approved ? '<span class="text-green-600 font-semibold text-sm">승인됨</span>' : '<span class="text-gray-500 text-sm">대기중</span>'}
+          </td>
+          <td class="border border-gray-300 px-2 py-1">
+            ${!item.approved ? `
+              <button onclick="approvePayment(${index})" class="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs">
+                승인
+              </button>
+            ` : `
+              <span class="text-green-600">✓</span>
+            `}
+            <button onclick="removePaymentRow(${index})" class="ml-1 px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs">
+              삭제
+            </button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function updatePaymentData(index, field, value) {
+      if (paymentDataList[index]) {
+        paymentDataList[index][field] = value;
+      }
+    }
+
+    function reMatchPayment(index) {
+      const item = paymentDataList[index];
+      if (!item) return;
+
+      const content = item.content || '';
+      const nameMatch = content.match(/^([가-힣a-zA-Z\s]+)(\d{4})?/);
+      let matchedName = '';
+      let matchedPhoneLast4 = '';
+      
+      if (nameMatch) {
+        matchedName = nameMatch[1].trim();
+        matchedPhoneLast4 = nameMatch[2] || '';
+      }
+
+      let matchedParticipant = null;
+      if (matchedName && matchedPhoneLast4) {
+        matchedParticipant = allParticipants.find(function(p) {
+          const nameMatch = p.user_name === matchedName || p.user_name.includes(matchedName) || matchedName.includes(p.user_name);
+          const phoneLast4 = p.phone.slice(-4);
+          return nameMatch && phoneLast4 === matchedPhoneLast4;
+        });
+      }
+
+      item.matchedName = matchedName;
+      item.matchedPhoneLast4 = matchedPhoneLast4;
+      item.matchedParticipant = matchedParticipant;
+      item.approved = false;
+
+      displayPaymentData();
+    }
+
+    function addPaymentRow() {
+      const tbody = document.getElementById('paymentTableBody');
+      if (!tbody) return;
+
+      const rowCount = tbody.querySelectorAll('tr').length;
+      const newRow = document.createElement('tr');
+      newRow.innerHTML = `
+        <td class="border border-gray-300 px-2 py-1 text-sm text-center text-gray-500">${rowCount + 1}</td>
+        <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
+        <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
+        <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
+        <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
+        <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
+        <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this); reMatchPaymentFromInput(this)" /></td>
+        <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
+        <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">-</td>
+        <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">-</td>
+        <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">-</td>
+        <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">대기중</td>
+        <td class="border border-gray-300 px-2 py-2">
+          <div class="flex gap-2">
+            <button onclick="approvePaymentFromTable(${rowCount})" style="background-color: #22c55e; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: bold; font-size: 0.875rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#16a34a'" onmouseout="this.style.backgroundColor='#22c55e'">승인</button>
+            <button onclick="removePaymentRowFromTable(this)" style="background-color: #ef4444; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: bold; font-size: 0.875rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#dc2626'" onmouseout="this.style.backgroundColor='#ef4444'">삭제</button>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(newRow);
+      
+      // paymentDataList에 빈 항목 추가
+      paymentDataList.push({
+        date: '',
+        type: '',
+        amount: '',
+        balance: '',
+        transactionType: '',
+        content: '',
+        memo: '',
+        matchedName: '',
+        matchedPhoneLast4: '',
+        matchedParticipant: null,
+        expectedParticipants: [],
+        approved: false
+      });
+      
+      // 새 행의 첫 번째 입력 필드에 포커스
+      const inputs = newRow.querySelectorAll('input');
+      if (inputs.length > 0) inputs[0].focus();
+      
+      // 연번 재정렬
+      updatePaymentRowNumbers();
+      // localStorage에 저장
+      savePaymentDataToStorage();
+    }
+
+    function updatePaymentRowNumbers() {
+      const tbody = document.getElementById('paymentTableBody');
+      if (!tbody) return;
+      
+      const rows = tbody.querySelectorAll('tr');
+      rows.forEach(function(row, index) {
+        const numberCell = row.cells[0];
+        if (numberCell) {
+          numberCell.textContent = index + 1;
+        }
+      });
+    }
+
+    function resetPaymentTable() {
+      if (!confirm('입금 내역을 모두 초기화하시겠습니까?\n\n모든 데이터가 삭제됩니다.')) {
+        return;
+      }
+
+      paymentDataList = [];
+      localStorage.removeItem('paymentDataList');
+      const tbody = document.getElementById('paymentTableBody');
+      if (tbody) {
+        tbody.innerHTML = `
+          <tr>
+            <td class="border border-gray-300 px-2 py-1 text-sm text-center text-gray-500">1</td>
+            <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
+            <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
+            <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
+            <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
+            <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
+            <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this); reMatchPaymentFromInput(this)" /></td>
+            <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
+            <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">-</td>
+            <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">-</td>
+            <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">대기중</td>
+            <td class="border border-gray-300 px-2 py-2">
+              <div class="flex gap-2">
+                <button onclick="approvePaymentFromTable(0)" style="background-color: #22c55e; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: bold; font-size: 0.875rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#16a34a'" onmouseout="this.style.backgroundColor='#22c55e'">승인</button>
+                <button onclick="removePaymentRowFromTable(this)" style="background-color: #ef4444; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: bold; font-size: 0.875rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#dc2626'" onmouseout="this.style.backgroundColor='#ef4444'">삭제</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }
+    }
+
+    function removePaymentRow(index) {
+      if (confirm('이 행을 삭제하시겠습니까?')) {
+        paymentDataList.splice(index, 1);
+        displayPaymentData();
+      }
+    }
+
+    async function approvePayment(index) {
+      const item = paymentDataList[index];
+      if (!item) return;
+
+      if (!item.matchedParticipant && item.matchedPhoneLast4) {
+        // 매칭되지 않은 경우 확인
+        if (!confirm('매칭된 신청자가 없습니다.\n내용: ' + item.content + '\n\n수동으로 승인하시겠습니까?')) {
+          return;
+        }
+      } else if (!item.matchedPhoneLast4) {
+        // 전화번호 뒷자리가 없는 경우 확인
+        if (!confirm('전화번호 뒷자리가 없습니다.\n내용: ' + item.content + '\n\n수동으로 승인하시겠습니까?')) {
+          return;
+        }
+      }
+
+      if (item.matchedParticipant) {
+        // 매칭된 참가자의 입금 상태 업데이트
+        try {
+          const response = await fetch('/api/admin/participants/' + item.matchedParticipant.id + '/payment', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ is_paid: 1 }),
+          });
+
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.error || '입금 확인 중 오류가 발생했습니다.');
+          }
+
+          item.approved = true;
+          displayPaymentData();
+          alert('입금이 확인되었습니다.');
+        } catch (err) {
+          console.error('Error approving payment:', err);
+          const errorMessage = err.message || '입금 확인 중 오류가 발생했습니다.';
+          alert(errorMessage);
+        }
+      } else {
+        // 매칭되지 않은 경우 수동 승인
+        item.approved = true;
+        displayPaymentData();
+        alert('수동으로 승인되었습니다. 참가자 관리에서 직접 확인해주세요.');
+      }
+    }
+
+    // 페이지 로드 시 그룹 표시 업데이트
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() {
+        updateGroupDisplay();
+      });
+    } else {
+      updateGroupDisplay();
+    }
+
+    // QR 체크인 관련 변수
+    let html5QrCode = null;
+    let recentCheckins = [];
+
+    // 체크인 통계 로드
+    async function loadCheckinStats() {
+      try {
+        const response = await fetch('/api/admin/checkin/stats');
+        const data = await response.json();
+        
+        if (data.success) {
+          document.getElementById('checkinTotal').textContent = data.stats.total;
+          document.getElementById('checkinCount').textContent = data.stats.checkedIn;
+          document.getElementById('checkinRemaining').textContent = data.stats.remaining;
+        }
+      } catch (err) {
+        console.error('Error loading check-in stats:', err);
+      }
+    }
+
+    // QR 스캐너 시작
+    async function startQRScanner() {
+      const qrReader = document.getElementById('qrReader');
+      const startBtn = document.getElementById('startScannerBtn');
+      const stopBtn = document.getElementById('stopScannerBtn');
+      const container = document.getElementById('qrScannerContainer');
+      
+      if (!qrReader || !container) {
+        alert('QR 스캐너 요소를 찾을 수 없습니다.');
+        return;
+      }
+
+      // html5-qrcode 라이브러리 확인
+      if (typeof Html5Qrcode === 'undefined') {
+        alert('QR 스캐너 라이브러리를 불러올 수 없습니다. 페이지를 새로고침해주세요.');
+        return;
+      }
+
+      try {
+        // 컨테이너 먼저 표시
+        container.classList.remove('hidden');
+        startBtn.classList.add('hidden');
+        stopBtn.classList.remove('hidden');
+        
+        // qrReader 내용 초기화
+        qrReader.innerHTML = '';
+        
+        // html5-qrcode 초기화
+        html5QrCode = new Html5Qrcode('qrReader');
+        
+        // 카메라 시작
+        await html5QrCode.start(
+          { facingMode: 'environment' }, // 후면 카메라 우선
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 250 }
+          },
+          (decodedText, decodedResult) => {
+            // QR 코드 스캔 성공
+            handleQRScan(decodedText);
+          },
+          (errorMessage) => {
+            // 스캔 중 오류 (무시)
+            // console.log('Scan error:', errorMessage);
+          }
+        );
+      } catch (err) {
+        console.error('Error starting QR scanner:', err);
+        // 에러 발생 시 UI 복원
+        container.classList.add('hidden');
+        startBtn.classList.remove('hidden');
+        stopBtn.classList.add('hidden');
+        
+        if (html5QrCode) {
+          try {
+            await html5QrCode.stop();
+            html5QrCode.clear();
+            html5QrCode = null;
+          } catch (e) {
+            // 무시
+          }
+        }
+        
+        let errorMsg = '카메라 접근 권한이 필요합니다.';
+        if (err.message && err.message.includes('Permission')) {
+          errorMsg = '카메라 접근 권한이 거부되었습니다. 브라우저 설정에서 카메라 권한을 허용해주세요.';
+        } else if (err.message && err.message.includes('NotFound')) {
+          errorMsg = '카메라를 찾을 수 없습니다. 카메라가 연결되어 있는지 확인해주세요.';
+        }
+        alert(errorMsg);
+      }
+    }
+
+    // QR 스캐너 중지
+    async function stopQRScanner() {
+      const container = document.getElementById('qrScannerContainer');
+      const startBtn = document.getElementById('startScannerBtn');
+      const stopBtn = document.getElementById('stopScannerBtn');
+      
+      if (html5QrCode) {
+        try {
+          await html5QrCode.stop();
+          html5QrCode.clear();
+          html5QrCode = null;
+        } catch (err) {
+          console.error('Error stopping QR scanner:', err);
+        }
+      }
+
+      if (container) {
+        container.classList.add('hidden');
+        // qrReader 내용 초기화
+        const qrReader = document.getElementById('qrReader');
+        if (qrReader) qrReader.innerHTML = '';
+      }
+      if (startBtn) startBtn.classList.remove('hidden');
+      if (stopBtn) stopBtn.classList.add('hidden');
+    }
+
+    // QR 코드 스캔 처리
+    async function handleQRScan(qrData) {
+      // 스캔 중지 (중복 스캔 방지)
+      await stopQRScanner();
+      
+      // 체크인 처리
+      await processCheckin(qrData);
+    }
+
+    // 수동 입력 처리
+    async function processManualCheckin() {
+      const input = document.getElementById('manualQRInput');
+      if (!input || !input.value.trim()) {
+        alert('QR 코드 데이터를 입력해주세요.');
+        return;
+      }
+
+      await processCheckin(input.value.trim());
+      input.value = '';
+    }
+
+    // 체크인 처리
+    async function processCheckin(qrData) {
+      const resultDiv = document.getElementById('checkinResult');
+      if (!resultDiv) return;
+
+      resultDiv.classList.remove('hidden');
+      resultDiv.innerHTML = '<p class="text-gray-600">처리 중...</p>';
+      resultDiv.className = 'mb-4 p-4 rounded-lg bg-gray-50';
+
+      // QR 데이터 검증
+      if (!qrData || !qrData.trim()) {
+        resultDiv.className = 'mb-4 p-4 rounded-lg bg-red-50 border border-red-200';
+        resultDiv.innerHTML = '<p class="font-semibold text-red-900">QR 코드 데이터가 없습니다.</p>';
+        return;
+      }
+
+      try {
+        // QR 데이터가 JSON 문자열인지 확인
+        let qrDataToSend = qrData;
+        try {
+          // 이미 JSON 문자열인지 확인
+          JSON.parse(qrData);
+          qrDataToSend = qrData;
+        } catch (e) {
+          // JSON이 아니면 그대로 전송 (서버에서 처리)
+          qrDataToSend = qrData;
+        }
+
+        console.log('Sending QR data:', qrDataToSend);
+
+        const response = await fetch('/api/admin/checkin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ qrData: qrDataToSend })
+        });
+
+        const data = await response.json();
+        
+        console.log('Check-in response:', data);
+
+        if (response.ok && data.success) {
+          // 성공
+          resultDiv.className = 'mb-4 p-4 rounded-lg bg-green-50 border border-green-200';
+          if (data.alreadyCheckedIn) {
+            resultDiv.innerHTML = `
+              <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+                <div>
+                  <p class="font-semibold text-green-900">${data.message}</p>
+                  <p class="text-sm text-green-700">${data.participant.user_name} (${data.participant.phone})</p>
+                </div>
+              </div>
+            `;
+          } else {
+            resultDiv.innerHTML = `
+              <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                <div>
+                  <p class="font-semibold text-green-900">${data.message}</p>
+                  <p class="text-sm text-green-700">${data.participant.user_name} (${data.participant.phone})</p>
+                </div>
+              </div>
+            `;
+          }
+
+          // 최근 체크인 목록에 추가
+          addToRecentCheckins(data.participant, data.alreadyCheckedIn);
+          
+          // 통계 업데이트
+          loadCheckinStats();
+
+          // 3초 후 메시지 자동 숨김
+          setTimeout(() => {
+            resultDiv.classList.add('hidden');
+          }, 3000);
+        } else {
+          // 실패
+          resultDiv.className = 'mb-4 p-4 rounded-lg bg-red-50 border border-red-200';
+          const errorMsg = data.error || '알 수 없는 오류가 발생했습니다.';
+          resultDiv.innerHTML = `
+            <div class="flex items-center gap-2">
+              <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+              </svg>
+              <div>
+                <p class="font-semibold text-red-900">${errorMsg}</p>
+                ${data.participant ? `<p class="text-sm text-red-700">${data.participant.user_name} (${data.participant.phone})</p>` : ''}
+                <p class="text-xs text-red-600 mt-1">QR 데이터: ${qrData.substring(0, 100)}...</p>
+              </div>
+            </div>
+          `;
+        }
+      } catch (err) {
+        console.error('Error processing check-in:', err);
+        resultDiv.className = 'mb-4 p-4 rounded-lg bg-red-50 border border-red-200';
+        resultDiv.innerHTML = `
+          <div>
+            <p class="font-semibold text-red-900">체크인 처리 중 오류가 발생했습니다.</p>
+            <p class="text-sm text-red-700 mt-1">${err.message || '알 수 없는 오류'}</p>
+            <p class="text-xs text-red-600 mt-1">QR 데이터: ${qrData.substring(0, 100)}...</p>
+          </div>
+        `;
+      }
+    }
+
+    // 최근 체크인 목록에 추가
+    function addToRecentCheckins(participant, alreadyCheckedIn) {
+      const recentDiv = document.getElementById('recentCheckins');
+      if (!recentDiv) return;
+
+      const checkinItem = {
+        participant: participant,
+        timestamp: new Date().toLocaleString('ko-KR'),
+        alreadyCheckedIn: alreadyCheckedIn
+      };
+
+      recentCheckins.unshift(checkinItem);
+      if (recentCheckins.length > 10) {
+        recentCheckins = recentCheckins.slice(0, 10);
+      }
+
+      // 목록 업데이트
+      if (recentCheckins.length === 0) {
+        recentDiv.innerHTML = '<p class="text-sm text-gray-500 text-center">체크인 내역이 없습니다.</p>';
+      } else {
+        recentDiv.innerHTML = recentCheckins.map(item => `
+          <div class="p-3 bg-white rounded-lg border border-gray-200 flex items-center justify-between">
+            <div>
+              <p class="font-semibold text-gray-900">${item.participant.user_name}</p>
+              <p class="text-sm text-gray-600">${item.participant.phone} • ${item.timestamp}</p>
+            </div>
+            ${item.alreadyCheckedIn ? 
+              '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded">중복</span>' : 
+              '<span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">완료</span>'
+            }
+          </div>
+        `).join('');
+      }
     }
   </script>
 </body>

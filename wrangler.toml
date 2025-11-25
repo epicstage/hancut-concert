@@ -6,5 +6,5 @@ pages_build_output_dir = "public"
 [[d1_databases]]
 binding = "DB"
 database_name = "hancut-concert-db"
-database_id = ""  # Cloudflare 대시보드에서 생성 후 ID 입력
+database_id = "e851631b-ae22-4c9c-b779-6421362c1a71"
 

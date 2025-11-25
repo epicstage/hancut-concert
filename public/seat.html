@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>좌석 확인 - 한동훈과 한 컷 토크콘서트</title>
+  <title>좌석 확인 - 한동훈 토크콘서트</title>
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
@@ -30,12 +30,13 @@
               <input
                 id="phone"
                 type="tel"
+                inputmode="numeric"
                 class="input-glass"
-                placeholder="010-1234-5678"
-                maxlength="13"
+                placeholder="01012345678"
+                maxlength="11"
                 required
               />
-              <p class="mt-2 text-sm text-gray-500">신청 시 입력한 전화번호를 입력하세요</p>
+              <p class="mt-2 text-sm text-gray-500">11자리 숫자를 입력하세요 (예: 01012345678)</p>
             </div>
 
             <div id="error" class="hidden p-4 bg-red-50 border border-red-200 rounded-lg text-red-700"></div>
@@ -65,27 +66,54 @@
   </div>
 
   <script>
-    const phoneInput = document.getElementById('phone');
-    const form = document.getElementById('seatForm');
-    const checkForm = document.getElementById('checkForm');
-    const seatResult = document.getElementById('seatResult');
-    const errorDiv = document.getElementById('error');
-    const submitBtn = document.getElementById('submitBtn');
+    document.addEventListener('DOMContentLoaded', function() {
+      const phoneInput = document.getElementById('phone');
+      const form = document.getElementById('seatForm');
+      const checkForm = document.getElementById('checkForm');
+      const seatResult = document.getElementById('seatResult');
+      const errorDiv = document.getElementById('error');
+      const submitBtn = document.getElementById('submitBtn');
 
-    phoneInput.addEventListener('input', (e) => {
-      const value = e.target.value.replace(/[^0-9]/g, '');
-      if (value.length <= 11) {
-        phoneInput.value = formatPhone(value);
+      if (!phoneInput || !form) {
+        console.error('Required elements not found');
+        return;
       }
-    });
 
-    function formatPhone(value) {
-      if (value.length <= 3) return value;
-      if (value.length <= 7) return `${value.slice(0, 3)}-${value.slice(3)}`;
-      return `${value.slice(0, 3)}-${value.slice(3, 7)}-${value.slice(7, 11)}`;
-    }
+      // 전화번호 숫자만 입력 (숫자가 아닌 키는 차단)
+      phoneInput.addEventListener('keydown', (e) => {
+        // 숫자(0-9), 백스페이스, Delete, Tab, Arrow keys, Home, End 키만 허용
+        const allowedKeys = [
+          'Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+          'Home', 'End'
+        ];
+        
+        if (allowedKeys.includes(e.key)) {
+          return; // 허용된 키는 통과
+        }
+        
+        // 숫자 키만 허용
+        if (!/^[0-9]$/.test(e.key)) {
+          e.preventDefault(); // 숫자가 아닌 키는 차단
+          return;
+        }
+        
+        // 11자리 제한
+        if (phoneInput.value.length >= 11 && !allowedKeys.includes(e.key)) {
+          e.preventDefault();
+        }
+      });
 
-    form.addEventListener('submit', async (e) => {
+      // 붙여넣기 시 숫자만 추출
+      phoneInput.addEventListener('input', (e) => {
+        const value = e.target.value.replace(/[^0-9]/g, '');
+        if (value.length <= 11) {
+          phoneInput.value = value;
+        } else {
+          phoneInput.value = value.slice(0, 11);
+        }
+      });
+
+      form.addEventListener('submit', async (e) => {
       e.preventDefault();
       errorDiv.classList.add('hidden');
       
@@ -108,26 +136,34 @@
         }
 
         document.getElementById('seatDisplay').textContent = data.seat;
-        checkForm.classList.add('hidden');
-        seatResult.classList.remove('hidden');
+        if (checkForm) checkForm.classList.add('hidden');
+        if (seatResult) seatResult.classList.remove('hidden');
       } catch (err) {
-        showError(err.message);
+        console.error('Fetch error:', err);
+        showError(err.message || '조회 중 오류가 발생했습니다. 다시 시도해주세요.');
       } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = '좌석 확인하기';
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = '좌석 확인하기';
+        }
+      }
+      });
+
+      window.resetForm = function() {
+        if (checkForm) checkForm.classList.remove('hidden');
+        if (seatResult) seatResult.classList.add('hidden');
+        if (phoneInput) phoneInput.value = '';
+      };
+
+      function showError(message) {
+        if (errorDiv) {
+          errorDiv.textContent = message;
+          errorDiv.classList.remove('hidden');
+        } else {
+          alert(message);
+        }
       }
     });
-
-    function resetForm() {
-      checkForm.classList.remove('hidden');
-      seatResult.classList.add('hidden');
-      phoneInput.value = '';
-    }
-
-    function showError(message) {
-      errorDiv.textContent = message;
-      errorDiv.classList.remove('hidden');
-    }
   </script>
 </body>
 </html>
