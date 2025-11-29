@@ -14,6 +14,11 @@ interface D1PreparedStatement {
 
 type Env = {
   DB: D1Database;
+  /**
+   * 관리자 비밀번호 (서버 사이드에서만 사용)
+   * - Cloudflare Pages 환경 변수로 설정 (Dashboard 또는 wrangler secret)
+   * - 클라이언트로 직접 노출되지 않도록 주의
+   */
   ADMIN_PASSWORD?: string;
 };
 
@@ -133,8 +138,61 @@ app.use('*', async (c, next) => {
   });
 });
 
+// 관리자 인증 유틸리티
+const ADMIN_TOKEN_HEADER = 'x-admin-token';
+
+async function requireAdmin(
+  c: any,
+  next: () => Promise<void>
+) {
+  const adminPassword = c.env.ADMIN_PASSWORD;
+  const token = c.req.header(ADMIN_TOKEN_HEADER);
+
+  if (!adminPassword) {
+    console.error('ADMIN_PASSWORD is not set in environment');
+    return c.json({ error: '관리자 비밀번호가 설정되지 않았습니다.' }, 500);
+  }
+
+  if (!token || token !== adminPassword) {
+    return c.json({ error: '관리자 권한이 필요합니다.' }, 401);
+  }
+
+  await next();
+}
+
 // API 라우트
 const api = new Hono<{ Bindings: Env }>();
+
+// 관리자 로그인
+api.post('/admin/login', async (c) => {
+  try {
+    const adminPassword = c.env.ADMIN_PASSWORD;
+
+    if (!adminPassword) {
+      console.error('ADMIN_PASSWORD is not set in environment');
+      return c.json({ error: '관리자 비밀번호가 설정되지 않았습니다.' }, 500);
+    }
+
+    const body = await c.req.json<{ password: string }>();
+
+    if (!body.password) {
+      return c.json({ error: '비밀번호를 입력해주세요.' }, 400);
+    }
+
+    if (body.password !== adminPassword) {
+      return c.json({ error: '비밀번호가 올바르지 않습니다.' }, 401);
+    }
+
+    // 간단한 토큰 방식: 서버 환경 변수와 동일한 값을 토큰으로 사용
+    // - 클라이언트 번들에는 포함되지 않고, 로그인 시점에만 네트워크로 전달됨
+    const token = adminPassword;
+
+    return c.json({ success: true, token });
+  } catch (error) {
+    console.error('Error in admin login:', error);
+    return c.json({ error: '로그인 중 오류가 발생했습니다.' }, 500);
+  }
+});
 
 // 참가자 신청
 api.post('/participants', async (c) => {
@@ -342,7 +400,7 @@ api.put('/participants/phone/:phone/guest2', async (c) => {
 });
 
 // 관리자: 모든 참가자 조회
-api.get('/admin/participants', async (c) => {
+api.get('/admin/participants', requireAdmin, async (c) => {
   try {
     const search = c.req.query('search');
 
@@ -368,7 +426,7 @@ api.get('/admin/participants', async (c) => {
 });
 
 // 관리자: 입금 상태 변경
-api.put('/admin/participants/:id/payment', async (c) => {
+api.put('/admin/participants/:id/payment', requireAdmin, async (c) => {
   try {
     const id = parseInt(c.req.param('id'));
     const body = await c.req.json<{ is_paid: boolean }>();
@@ -387,7 +445,7 @@ api.put('/admin/participants/:id/payment', async (c) => {
 });
 
 // 관리자: 좌석 배정 (그룹-열-좌석번호)
-api.put('/admin/participants/:id/seat', async (c) => {
+api.put('/admin/participants/:id/seat', requireAdmin, async (c) => {
   try {
     const id = parseInt(c.req.param('id'));
     const body = await c.req.json<{
@@ -452,7 +510,7 @@ api.put('/admin/participants/:id/seat', async (c) => {
 });
 
 // 관리자: 개별 참가자 좌석 초기화
-api.delete('/admin/participants/:id/seat', async (c) => {
+api.delete('/admin/participants/:id/seat', requireAdmin, async (c) => {
   try {
     const id = parseInt(c.req.param('id'));
 
@@ -470,7 +528,7 @@ api.delete('/admin/participants/:id/seat', async (c) => {
 });
 
 // 관리자: 랜덤 좌석 배정 (입금 완료된 참가자들)
-api.post('/admin/participants/random-seats', async (c) => {
+api.post('/admin/participants/random-seats', requireAdmin, async (c) => {
   try {
     const body = await c.req.json<{
       groups: string[];  // ['가', '나', ...]
@@ -559,7 +617,7 @@ api.post('/admin/participants/random-seats', async (c) => {
 });
 
 // 관리자: 연령대별 좌석 배정 (00년대생 → 90년대생 → 80년대생 순)
-api.post('/admin/participants/age-based-seats', async (c) => {
+api.post('/admin/participants/age-based-seats', requireAdmin, async (c) => {
   try {
     const body = await c.req.json<{
       groups: string[];
@@ -716,7 +774,7 @@ api.post('/admin/participants/reset-seats', async (c) => {
 });
 
 // 관리자: 참가자 삭제 (아무때나 삭제 가능)
-api.delete('/admin/participants/:id', async (c) => {
+api.delete('/admin/participants/:id', requireAdmin, async (c) => {
   try {
     const id = parseInt(c.req.param('id'));
 

@@ -25,6 +25,16 @@ export default function AdminPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [editingSeat, setEditingSeat] = useState<{ id: number; seat: string } | null>(null)
 
+  // 새로고침 후에도 관리자 권한 유지
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = window.localStorage.getItem('adminToken')
+      if (token) {
+        setIsAuthenticated(true)
+      }
+    }
+  }, [])
+
   useEffect(() => {
     if (isAuthenticated) {
       loadParticipants()
@@ -39,13 +49,20 @@ export default function AdminPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm])
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123'
-    if (password === adminPassword) {
+    if (!password) {
+      alert('비밀번호를 입력해주세요.')
+      return
+    }
+
+    try {
+      await api.adminLogin(password)
       setIsAuthenticated(true)
-    } else {
-      alert('비밀번호가 올바르지 않습니다.')
+      setPassword('')
+    } catch (err: any) {
+      const message = err?.message || '로그인 중 오류가 발생했습니다.'
+      alert(message)
     }
   }
 

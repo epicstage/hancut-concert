@@ -41,6 +41,25 @@ class ApiClient {
     }
   }
 
+  // 관리자 로그인
+  async adminLogin(password: string): Promise<string> {
+    const response = await this.request<{ token: string }>('/admin/login', {
+      method: 'POST',
+      body: JSON.stringify({ password }),
+    });
+
+    if (!response.success || !response.token) {
+      throw new Error(response.error || '로그인 중 오류가 발생했습니다.');
+    }
+
+    // 토큰은 클라이언트 로컬 스토리지에 저장
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('adminToken', response.token);
+    }
+
+    return response.token;
+  }
+
   // 참가자 신청
   async createParticipant(params: {
     user_name: string
@@ -103,7 +122,14 @@ class ApiClient {
       ? `/admin/participants?search=${encodeURIComponent(search)}`
       : '/admin/participants'
 
-    const response = await this.request(url)
+    const adminHeaders =
+      typeof window !== 'undefined'
+        ? { 'x-admin-token': window.localStorage.getItem('adminToken') || '' }
+        : {}
+
+    const response = await this.request(url, {
+      headers: adminHeaders,
+    })
 
     if (!response.success) {
       throw new Error(response.error || '조회 중 오류가 발생했습니다.')
@@ -117,9 +143,15 @@ class ApiClient {
     id: number,
     is_paid: boolean
   ): Promise<void> {
+    const adminHeaders =
+      typeof window !== 'undefined'
+        ? { 'x-admin-token': window.localStorage.getItem('adminToken') || '' }
+        : {}
+
     const response = await this.request(`/admin/participants/${id}/payment`, {
       method: 'PUT',
       body: JSON.stringify({ is_paid }),
+      headers: adminHeaders,
     })
 
     if (!response.success) {
@@ -135,6 +167,11 @@ class ApiClient {
     seat_number: string,
     is_guest?: boolean
   ): Promise<void> {
+    const adminHeaders =
+      typeof window !== 'undefined'
+        ? { 'x-admin-token': window.localStorage.getItem('adminToken') || '' }
+        : {}
+
     const response = await this.request(`/admin/participants/${id}/seat`, {
       method: 'PUT',
       body: JSON.stringify({
@@ -143,6 +180,7 @@ class ApiClient {
         seat_number,
         is_guest,
       }),
+      headers: adminHeaders,
     })
 
     if (!response.success) {
@@ -152,8 +190,14 @@ class ApiClient {
 
   // 관리자: 참가자 삭제
   async deleteParticipant(id: number): Promise<void> {
+    const adminHeaders =
+      typeof window !== 'undefined'
+        ? { 'x-admin-token': window.localStorage.getItem('adminToken') || '' }
+        : {}
+
     const response = await this.request(`/admin/participants/${id}`, {
       method: 'DELETE',
+      headers: adminHeaders,
     })
 
     if (!response.success) {
