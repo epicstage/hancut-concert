@@ -3,14 +3,15 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Trash2, Search } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
+import { api } from '@/lib/api'
 
 interface Participant {
   id: number
   user_name: string
   phone: string
-  is_paid: boolean
-  seat_no: string | null
+  is_paid: boolean | number
+  seat_no?: string | null
+  seat_full?: string | null
   created_at: string
 }
 
@@ -31,17 +32,12 @@ export default function AdminPage() {
   }, [isAuthenticated])
 
   useEffect(() => {
-    if (searchTerm) {
-      const filtered = participants.filter(
-        (p) =>
-          p.user_name.includes(searchTerm) ||
-          p.phone.includes(searchTerm.replace(/[^0-9]/g, ''))
-      )
-      setFilteredParticipants(filtered)
-    } else {
-      setFilteredParticipants(participants)
+    // 검색어가 변경되면 API로 다시 조회
+    if (isAuthenticated) {
+      loadParticipants()
     }
-  }, [searchTerm, participants])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm])
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
@@ -56,15 +52,20 @@ export default function AdminPage() {
   const loadParticipants = async () => {
     setIsLoading(true)
     try {
-      // 클라이언트에서는 직접 Supabase 호출 (RLS 정책에 따라)
-      const { data, error } = await supabase
-        .from('participants')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      setParticipants(data || [])
-      setFilteredParticipants(data || [])
+      const data = await api.getAllParticipants(searchTerm || undefined)
+      
+      // API 응답 형식에 맞게 변환
+      const formatted = data.map((p: any) => ({
+        id: p.id,
+        user_name: p.user_name,
+        phone: p.phone,
+        is_paid: p.is_paid === 1 || p.is_paid === true,
+        seat_no: p.seat_full || p.seat_no || null,
+        created_at: p.created_at,
+      }))
+      
+      setParticipants(formatted)
+      setFilteredParticipants(formatted)
     } catch (err) {
       console.error('Error loading participants:', err)
       alert('데이터를 불러오는 중 오류가 발생했습니다.')
@@ -75,12 +76,7 @@ export default function AdminPage() {
 
   const togglePayment = async (id: number, currentStatus: boolean) => {
     try {
-      const { error } = await supabase
-        .from('participants')
-        .update({ is_paid: !currentStatus })
-        .eq('id', id)
-
-      if (error) throw error
+      await api.updatePaymentStatus(id, !currentStatus)
       loadParticipants()
     } catch (err) {
       console.error('Error updating payment status:', err)
@@ -90,12 +86,15 @@ export default function AdminPage() {
 
   const updateSeat = async (id: number, seat: string) => {
     try {
-      const { error } = await supabase
-        .from('participants')
-        .update({ seat_no: seat || null })
-        .eq('id', id)
-
-      if (error) throw error
+      // 좌석 형식 파싱 (예: "가-2-5" 또는 "A-101")
+      if (seat && seat.includes('-')) {
+        const [group, row, number] = seat.split('-')
+        await api.updateSeat(id, group, row, number)
+      } else if (seat) {
+        // 간단한 형식인 경우 기본값 사용
+        await api.updateSeat(id, '가', '1', seat)
+      }
+      
       setEditingSeat(null)
       loadParticipants()
     } catch (err) {
@@ -108,12 +107,7 @@ export default function AdminPage() {
     if (!confirm('정말 삭제하시겠습니까?')) return
 
     try {
-      const { error } = await supabase
-        .from('participants')
-        .delete()
-        .eq('id', id)
-
-      if (error) throw error
+      await api.deleteParticipant(id)
       loadParticipants()
     } catch (err) {
       console.error('Error deleting participant:', err)

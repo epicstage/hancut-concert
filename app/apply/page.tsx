@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Check, ArrowLeft } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
+import { api } from '@/lib/api'
 
 export default function ApplyPage() {
   const router = useRouter()
@@ -47,33 +47,24 @@ export default function ApplyPage() {
     setIsSubmitting(true)
 
     try {
-      const { data, error: insertError } = await supabase
-        .from('participants')
-        .insert([
-          {
-            user_name: name.trim(),
-            phone: phone,
-          }
-        ])
-        .select()
-        .single()
-
-      if (insertError) {
-        if (insertError.code === '23505') {
-          setError('이미 신청된 전화번호입니다.')
-        } else {
-          setError('신청 중 오류가 발생했습니다. 다시 시도해주세요.')
-        }
-        setIsSubmitting(false)
-        return
-      }
+      await api.createParticipant({
+        user_name: name.trim(),
+        phone: phone,
+        ticket_count: 1,
+      })
 
       setShowSuccess(true)
       setTimeout(() => {
         router.push('/check')
       }, 2000)
-    } catch (err) {
-      setError('신청 중 오류가 발생했습니다. 다시 시도해주세요.')
+    } catch (err: any) {
+      const errorMessage = err?.message || '신청 중 오류가 발생했습니다. 다시 시도해주세요.'
+      
+      if (errorMessage.includes('이미 신청') || errorMessage.includes('UNIQUE')) {
+        setError('이미 신청된 전화번호입니다.')
+      } else {
+        setError(errorMessage)
+      }
       setIsSubmitting(false)
     }
   }

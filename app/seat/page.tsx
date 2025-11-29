@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
+import { api } from '@/lib/api'
 
 export default function SeatPage() {
   const [phone, setPhone] = useState('')
@@ -36,42 +36,15 @@ export default function SeatPage() {
       return
     }
 
-    // 행사 당일 체크
-    const eventDate = new Date('2025-12-14')
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    eventDate.setHours(0, 0, 0, 0)
-
-    if (today < eventDate) {
-      setError('행사 당일 오픈됩니다.')
-      return
-    }
-
     setIsLoading(true)
 
     try {
-      const { data, error: fetchError } = await supabase
-        .from('participants')
-        .select('seat_no')
-        .eq('phone', phone)
-        .single()
-
-      if (fetchError || !data) {
-        setError('신청 내역을 찾을 수 없습니다.')
-        setIsLoading(false)
-        return
-      }
-
-      if (!data.seat_no) {
-        setError('아직 좌석이 배정되지 않았습니다.')
-        setIsLoading(false)
-        return
-      }
-
-      setSeatNo(data.seat_no)
+      const seatData = await api.getSeatByPhone(phone)
+      
+      setSeatNo(seatData.seat_full || seatData.seat_group + '-' + seatData.seat_row + '-' + seatData.seat_number)
       setIsLoading(false)
-    } catch (err) {
-      setError('조회 중 오류가 발생했습니다.')
+    } catch (err: any) {
+      setError(err?.message || '조회 중 오류가 발생했습니다.')
       setIsLoading(false)
     }
   }

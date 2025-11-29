@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Edit2, CheckCircle } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
+import { api } from '@/lib/api'
 
 interface Participant {
   id: number
@@ -51,23 +51,21 @@ export default function CheckPage() {
     setIsLoading(true)
 
     try {
-      const { data, error: fetchError } = await supabase
-        .from('participants')
-        .select('*')
-        .eq('phone', phone)
-        .single()
-
-      if (fetchError || !data) {
-        setError('신청 내역을 찾을 수 없습니다.')
-        setIsLoading(false)
-        return
-      }
-
-      setParticipant(data)
+      const data = await api.getParticipantByPhone(phone)
+      
+      // API 응답 형식에 맞게 변환
+      setParticipant({
+        id: data.id,
+        user_name: data.user_name,
+        phone: data.phone,
+        is_paid: data.is_paid === 1 || data.is_paid === true,
+        seat_no: data.seat_full || data.seat_no || null,
+        created_at: data.created_at,
+      })
       setEditName(data.user_name)
       setIsLoading(false)
-    } catch (err) {
-      setError('조회 중 오류가 발생했습니다.')
+    } catch (err: any) {
+      setError(err?.message || '신청 내역을 찾을 수 없습니다.')
       setIsLoading(false)
     }
   }
@@ -76,20 +74,13 @@ export default function CheckPage() {
     if (!participant || !editName.trim()) return
 
     try {
-      const { error: updateError } = await supabase
-        .from('participants')
-        .update({ user_name: editName.trim() })
-        .eq('id', participant.id)
-
-      if (updateError) {
-        setError('이름 수정 중 오류가 발생했습니다.')
-        return
-      }
-
+      await api.updateParticipantName(participant.id, editName.trim())
+      
       setParticipant({ ...participant, user_name: editName.trim() })
       setIsEditing(false)
-    } catch (err) {
-      setError('이름 수정 중 오류가 발생했습니다.')
+      setError('')
+    } catch (err: any) {
+      setError(err?.message || '이름 수정 중 오류가 발생했습니다.')
     }
   }
 
