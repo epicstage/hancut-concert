@@ -8,3 +8,12 @@ binding = "DB"
 database_name = "hancut-concert-db"
 database_id = "e851631b-ae22-4c9c-b779-6421362c1a71"
 
+# KV 네임스페이스 (캐싱용)
+[[kv_namespaces]]
+binding = "CACHE"
+id = "b748c217b9db413a9ed110471431ad45"
+
+# Rate Limiting 설정 (Cloudflare 내장)
+# 실제 Rate Limiting은 Cloudflare Dashboard에서 설정하거나
+# 코드에서 KV를 사용하여 구현
+

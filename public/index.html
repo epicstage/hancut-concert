@@ -3,172 +3,424 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="한동훈 토크콘서트 - 2025년 12월 21일 고양 킨텍스" />
+  <meta name="theme-color" content="#dc2626" />
   <title>한동훈 토크콘서트</title>
   <link rel="stylesheet" href="/styles.css" />
+  <!-- Open Graph -->
+  <meta property="og:title" content="한동훈 토크콘서트" />
+  <meta property="og:description" content="2025년 12월 21일 고양 킨텍스에서 열리는 한동훈 토크콘서트에 참가하세요." />
+  <meta property="og:type" content="website" />
 </head>
 <body>
-  <div class="min-h-screen bg-gradient-to-br from-red-50 via-white to-sky-50">
+  <div class="min-h-screen main-content">
+    <!-- 오프라인 배너 -->
+    <div id="offlineBanner" class="offline-banner hidden">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 010 12.728M15.536 8.464a5 5 0 010 7.072M12 12v.01" />
+      </svg>
+      <span>오프라인 상태입니다. 인터넷 연결을 확인해주세요.</span>
+    </div>
+
     <!-- 헤더 -->
-    <header class="glass-header sticky top-0 z-50">
+    <header class="glass-header">
       <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-lg font-bold text-gray-900">한동훈 토크콘서트</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <!-- 다크모드 토글 버튼 (추후 활성화) -->
+          <!--
+          <button class="btn-icon" id="themeToggle" aria-label="테마 변경">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+          </button>
+          -->
+        </div>
       </div>
     </header>
 
     <!-- 메인 콘텐츠 -->
-    <main class="max-w-4xl mx-auto px-4 py-12">
-      <!-- 메인 카드 -->
-      <div class="glass-card mb-8 animate-float">
-        <h2 class="text-4xl font-bold text-gray-900 mb-8">
+    <main class="max-w-4xl mx-auto px-4 py-8">
+      <!-- 히어로 카드 -->
+      <div class="glass-card mb-6">
+        <!-- 이벤트 배지 -->
+        <div class="flex items-center gap-2 mb-4">
+          <span id="statusBadge" class="badge badge-red">
+            <span class="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span>
+            <span>신청 접수 중</span>
+          </span>
+        </div>
+
+        <h1 class="text-3xl font-bold text-gray-900 mb-6">
           한동훈 토크콘서트
-        </h2>
-        
-        <div class="space-y-3 text-gray-700">
-          <div class="flex items-center gap-3">
-            <span class="text-gray-500">일시</span>
-            <span>2025년 12월 21일 (일)</span>
+        </h1>
+
+        <!-- 이벤트 정보 그리드 -->
+        <div class="grid grid-cols-1 gap-3 mb-6">
+          <div class="flex items-center gap-3 p-3 bg-white/50 rounded-xl">
+            <div class="w-9 h-9 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+              <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500">일시</p>
+              <p class="font-semibold text-gray-900 text-sm">2025년 12월 21일 (일)</p>
+            </div>
           </div>
-          
-          <div class="flex items-center gap-3">
-            <span class="text-gray-500">장소</span>
-            <span>고양 킨텍스 제 1전시장 3층 그랜드볼룸</span>
-          </div>
-          
-          <div class="flex items-center gap-3">
-            <span class="text-gray-500">상태</span>
-            <span class="text-red-600 font-semibold">참가 신청 접수 중</span>
+
+          <div class="flex items-center gap-3 p-3 bg-white/50 rounded-xl">
+            <div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+              <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500">장소</p>
+              <p class="font-semibold text-gray-900 text-sm">고양 킨텍스 제1전시장 3층 그랜드볼룸</p>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- 신청 및 주의사항 -->
-      <div class="glass-card mb-8">
-        <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-          <span class="text-red-600">*</span>
-          <span>신청 및 주의사항</span>
-        </h3>
-        
-        <div class="space-y-6 text-gray-700">
-          <!-- 예매 안내 박스 -->
-          <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
-            <p class="font-semibold text-gray-900 mb-3">📌 예매 안내</p>
-            <ul class="space-y-2 text-gray-700">
-              <li class="flex items-start gap-2">
-                <span class="text-blue-600 mt-1">•</span>
-                <span>최대 <span class="font-semibold text-red-600">1인 2매</span>까지 예매가능합니다.</span>
-              </li>
-              <li class="flex items-start gap-2">
-                <span class="text-blue-600 mt-1">•</span>
-                <span>번호 당 1개의 입장 QR코드만 발급되오니 <span class="font-semibold text-red-600">2매 예매시 각각의 개인정보</span>가 필요합니다.</span>
-              </li>
-            </ul>
-          </div>
-
-          <!-- 정보 입력 주의사항 박스 -->
-          <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-lg">
-            <p class="font-semibold text-gray-900 mb-3">⚠️ 정보 입력 주의사항</p>
-            <ul class="space-y-2 text-gray-700">
-              <li class="flex items-start gap-2">
-                <span class="text-yellow-600 mt-1">•</span>
-                <span>이름 등 개인정보를 꼼꼼히 확인하여 <span class="font-semibold text-red-600">정확히 기재</span>바랍니다.</span>
-              </li>
-              <li class="flex items-start gap-2">
-                <span class="text-yellow-600 mt-1">•</span>
-                <span>좌석은 <span class="font-semibold text-red-600">입금순으로 배정</span>됩니다. (부정확 할 경우 예매가 안 될 수 있습니다.)</span>
-              </li>
-            </ul>
-          </div>
-
-          <!-- 입금 안내 박스 -->
-          <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg">
-            <p class="font-semibold text-gray-900 mb-3">💰 입금 안내</p>
-            <ul class="space-y-2 text-gray-700">
-              <li class="flex items-start gap-2">
-                <span class="text-green-600 mt-1">•</span>
-                <span><span class="font-semibold text-red-600">입금기한내에 신청자와 동일한 이름으로 입금</span>하셔야 예약이 확정됩니다.</span>
-              </li>
-              <li class="flex items-start gap-2">
-                <span class="text-green-600 mt-1">•</span>
-                <span>신청인+전화번호 뒤 네 자리 숫자를 적어주십시오.</span>
-              </li>
-              <li class="ml-6 mt-1">
-                <span class="bg-white px-3 py-1 rounded border border-gray-300 font-mono text-sm text-gray-800">예) 홍길동 3747</span>
-              </li>
-            </ul>
-          </div>
-
-          <!-- 문의 안내 -->
-          <div class="bg-gray-50 border-l-4 border-gray-400 p-4 rounded-r-lg">
-            <p class="font-semibold text-gray-900 mb-2">📞 문의사항</p>
-            <p class="text-gray-700">문의사항은 하단 문의하기 버튼을 이용하여 주십시오.</p>
-          </div>
-
-          <!-- 입금 계좌 안내 박스 -->
-          <div class="bg-red-50 border-2 border-red-300 p-5 rounded-lg">
-            <p class="font-bold text-lg text-gray-900 mb-4">🏦 입금계좌안내</p>
-            <div class="bg-white p-4 rounded border border-red-200">
-              <p class="text-lg font-semibold text-gray-900 mb-2">카카오뱅크 <span class="text-red-600">3333-3548-32957</span></p>
-              <p class="text-gray-700">예금주) 샘커뮤니케이션즈</p>
+        <!-- 카운트다운 타이머 -->
+        <div id="countdownSection" class="p-4 bg-gradient-to-r from-red-50 to-sky-50 rounded-xl">
+          <p class="text-sm text-gray-600 mb-3 text-center">행사까지 남은 시간</p>
+          <div class="grid grid-cols-4 gap-2 text-center">
+            <div class="bg-white/80 rounded-lg p-3">
+              <p id="countDays" class="text-2xl font-bold text-red-600">--</p>
+              <p class="text-xs text-gray-500">일</p>
+            </div>
+            <div class="bg-white/80 rounded-lg p-3">
+              <p id="countHours" class="text-2xl font-bold text-red-600">--</p>
+              <p class="text-xs text-gray-500">시간</p>
+            </div>
+            <div class="bg-white/80 rounded-lg p-3">
+              <p id="countMinutes" class="text-2xl font-bold text-red-600">--</p>
+              <p class="text-xs text-gray-500">분</p>
+            </div>
+            <div class="bg-white/80 rounded-lg p-3">
+              <p id="countSeconds" class="text-2xl font-bold text-red-600">--</p>
+              <p class="text-xs text-gray-500">초</p>
             </div>
           </div>
         </div>
       </div>
 
+      <!-- 신청 안내 아코디언 -->
+      <div class="glass-card mb-6">
+        <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>신청 안내</span>
+        </h2>
+
+        <!-- 예매 안내 -->
+        <details class="group mb-3" open>
+          <summary class="flex items-center justify-between p-3 bg-blue-50 rounded-xl cursor-pointer hover:bg-blue-100 transition-colors">
+            <div class="flex items-center gap-2">
+              <span class="text-base">📌</span>
+              <span class="font-semibold text-gray-900 text-sm">예매 안내</span>
+            </div>
+            <svg class="w-5 h-5 text-gray-500 transform group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </summary>
+          <div class="p-4 pt-3 space-y-2 text-gray-700">
+            <p class="flex items-start gap-2">
+              <span class="text-blue-600 mt-0.5">•</span>
+              <span>최대 <strong class="text-red-600">1인 2매</strong>까지 예매 가능합니다.</span>
+            </p>
+            <p class="flex items-start gap-2">
+              <span class="text-blue-600 mt-0.5">•</span>
+              <span>번호 당 1개의 입장 QR코드만 발급되오니 <strong class="text-red-600">2매 예매시 각각의 개인정보</strong>가 필요합니다.</span>
+            </p>
+          </div>
+        </details>
+
+        <!-- 정보 입력 주의사항 -->
+        <details class="group mb-3">
+          <summary class="flex items-center justify-between p-3 bg-yellow-50 rounded-xl cursor-pointer hover:bg-yellow-100 transition-colors">
+            <div class="flex items-center gap-2">
+              <span class="text-base">⚠️</span>
+              <span class="font-semibold text-gray-900 text-sm">정보 입력 주의사항</span>
+            </div>
+            <svg class="w-5 h-5 text-gray-500 transform group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </summary>
+          <div class="p-4 pt-3 space-y-2 text-gray-700">
+            <p class="flex items-start gap-2">
+              <span class="text-yellow-600 mt-0.5">•</span>
+              <span>이름 등 개인정보를 꼼꼼히 확인하여 <strong class="text-red-600">정확히 기재</strong>바랍니다.</span>
+            </p>
+            <p class="flex items-start gap-2">
+              <span class="text-yellow-600 mt-0.5">•</span>
+              <span>좌석은 <strong class="text-red-600">입금순으로 배정</strong>됩니다. (부정확할 경우 예매가 안 될 수 있습니다.)</span>
+            </p>
+          </div>
+        </details>
+
+        <!-- 입금 안내 -->
+        <details class="group mb-3">
+          <summary class="flex items-center justify-between p-3 bg-green-50 rounded-xl cursor-pointer hover:bg-green-100 transition-colors">
+            <div class="flex items-center gap-2">
+              <span class="text-base">💰</span>
+              <span class="font-semibold text-gray-900 text-sm">입금 안내</span>
+            </div>
+            <svg class="w-5 h-5 text-gray-500 transform group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </summary>
+          <div class="p-4 pt-3 space-y-2 text-gray-700">
+            <p class="flex items-start gap-2">
+              <span class="text-green-600 mt-0.5">•</span>
+              <span><strong class="text-red-600">입금기한 내에 신청자와 동일한 이름으로 입금</strong>하셔야 예약이 확정됩니다.</span>
+            </p>
+            <p class="flex items-start gap-2">
+              <span class="text-green-600 mt-0.5">•</span>
+              <span>신청인 + 전화번호 뒤 네 자리 숫자를 적어주십시오.</span>
+            </p>
+            <p class="ml-6">
+              <code class="bg-white px-3 py-1 rounded border border-gray-300 text-sm">예) 홍길동 3747</code>
+            </p>
+          </div>
+        </details>
+
+        <!-- 문의 안내 -->
+        <details class="group">
+          <summary class="flex items-center justify-between p-3 bg-gray-100 rounded-xl cursor-pointer hover:bg-gray-200 transition-colors">
+            <div class="flex items-center gap-2">
+              <span class="text-base">📞</span>
+              <span class="font-semibold text-gray-900 text-sm">문의사항</span>
+            </div>
+            <svg class="w-5 h-5 text-gray-500 transform group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </summary>
+          <div class="p-4 pt-3 text-gray-700">
+            <p>문의사항은 하단 <strong>문의하기</strong> 버튼을 이용하여 주십시오.</p>
+          </div>
+        </details>
+      </div>
+
+      <!-- 입금 계좌 안내 (강조) -->
+      <div class="glass-card mb-6 border-2 border-red-200" style="background: linear-gradient(135deg, rgba(254, 242, 242, 0.9), rgba(255, 255, 255, 0.9));">
+        <div class="flex items-center gap-2 mb-3">
+          <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
+            <span class="text-sm">🏦</span>
+          </div>
+          <h3 class="text-base font-bold text-gray-900">입금 계좌 안내</h3>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-red-100">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <p class="text-sm text-gray-500 mb-1">카카오뱅크</p>
+              <p id="accountNumber" class="text-xl font-bold text-red-600">3333-3548-32957</p>
+            </div>
+            <button onclick="copyAccount()" class="btn-icon bg-red-50 hover:bg-red-100 text-red-600" aria-label="계좌번호 복사">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+            </button>
+          </div>
+          <p class="text-sm text-gray-600 mt-2">예금주: <strong>샘커뮤니케이션즈</strong></p>
+        </div>
+
+        <p class="text-xs text-gray-500 mt-3 text-center">참가비: 1인 30,000원</p>
+      </div>
+
       <!-- 액션 버튼들 -->
-      <div class="space-y-4">
+      <div class="space-y-3">
         <div id="applyButtonSection">
           <a href="/apply.html" class="block">
             <button class="btn-primary-glass w-full">
-              참가 신청하기
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              <span>참가 신청하기</span>
             </button>
           </a>
         </div>
-        
-        <div id="applyClosedMessage" class="hidden glass-card p-6 text-center">
-          <h3 class="text-xl font-bold text-gray-900 mb-3">1차 모집이 완료되었습니다</h3>
-          <p class="text-gray-700">2차 모집시 SNS를 통해 안내드리겠습니다</p>
+
+        <div id="applyClosedMessage" class="hidden">
+          <div class="alert alert-warning">
+            <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <div class="alert-content">
+              <p class="alert-title">1차 모집이 완료되었습니다</p>
+              <p class="alert-message">2차 모집시 SNS를 통해 안내드리겠습니다.</p>
+            </div>
+          </div>
         </div>
-        
+
         <a href="/check.html" class="block">
           <button class="btn-secondary-glass w-full">
-            신청내역 확인
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            </svg>
+            <span>신청내역 확인</span>
           </button>
         </a>
-        
+
         <a href="/inquiry.html" class="block">
           <button class="btn-secondary-glass w-full">
-            문의하기
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4l-4 4z" />
+            </svg>
+            <span>문의하기</span>
           </button>
         </a>
       </div>
     </main>
 
-    <script>
-      document.addEventListener('DOMContentLoaded', async function() {
-        try {
-          const response = await fetch('/api/participants/count');
-          const data = await response.json();
-          
-          if (data.success && data.count >= 1500) {
-            // 1500명 이상이면 참가신청 버튼 숨기고 안내 메시지 표시
-            const applyButtonSection = document.getElementById('applyButtonSection');
-            const applyClosedMessage = document.getElementById('applyClosedMessage');
-            
-            if (applyButtonSection) applyButtonSection.classList.add('hidden');
-            if (applyClosedMessage) applyClosedMessage.classList.remove('hidden');
-          }
-        } catch (err) {
-          console.error('Error checking participant count:', err);
-        }
-      });
-    </script>
-
-    <!-- 푸터 (나중에 배포사/운영사 정보 추가 예정) -->
-    <footer class="mt-16 py-8 border-t border-white/20">
-      <div class="max-w-4xl mx-auto px-4 text-center text-sm text-gray-600">
-        <!-- 배포사/운영사 정보는 추후 추가 예정 -->
+    <!-- 푸터 -->
+    <footer class="mt-12 py-8 border-t border-gray-200">
+      <div class="max-w-4xl mx-auto px-4 text-center text-sm text-gray-500">
+        <p>© 2025 샘커뮤니케이션즈. All rights reserved.</p>
       </div>
     </footer>
+
+    <!-- 토스트 컨테이너 -->
+    <div id="toastContainer" class="toast-container"></div>
   </div>
+
+  <!-- 바텀 네비게이션 (모바일) -->
+  <nav class="bottom-nav">
+    <a href="/" class="bottom-nav-item active" aria-label="홈">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+      </svg>
+      <span>홈</span>
+    </a>
+    <a href="/apply.html" class="bottom-nav-item" aria-label="신청">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+      </svg>
+      <span>신청</span>
+    </a>
+    <a href="/check.html" class="bottom-nav-item" aria-label="확인">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+      </svg>
+      <span>확인</span>
+    </a>
+    <a href="/inquiry.html" class="bottom-nav-item" aria-label="문의">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4l-4 4z" />
+      </svg>
+      <span>문의</span>
+    </a>
+  </nav>
+
+  <script>
+    // 이벤트 날짜 (2025년 12월 21일)
+    const eventDate = new Date('2025-12-21T00:00:00+09:00');
+
+    // 카운트다운 업데이트
+    function updateCountdown() {
+      const now = new Date();
+      const diff = eventDate - now;
+
+      if (diff <= 0) {
+        document.getElementById('countdownSection').innerHTML = `
+          <div class="text-center p-4">
+            <p class="text-xl font-bold text-red-600">행사 당일입니다!</p>
+          </div>
+        `;
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      document.getElementById('countDays').textContent = days;
+      document.getElementById('countHours').textContent = hours.toString().padStart(2, '0');
+      document.getElementById('countMinutes').textContent = minutes.toString().padStart(2, '0');
+      document.getElementById('countSeconds').textContent = seconds.toString().padStart(2, '0');
+    }
+
+    // 계좌번호 복사
+    function copyAccount() {
+      const accountNumber = '3333354832957';
+      navigator.clipboard.writeText(accountNumber).then(() => {
+        showToast('계좌번호가 복사되었습니다', 'success');
+      }).catch(() => {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = accountNumber;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showToast('계좌번호가 복사되었습니다', 'success');
+      });
+    }
+
+    // 토스트 알림 표시
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+
+      const iconColors = {
+        success: 'text-green-600',
+        error: 'text-red-600',
+        warning: 'text-yellow-600',
+        info: 'text-blue-600'
+      };
+
+      const icons = {
+        success: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />',
+        error: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />',
+        warning: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />',
+        info: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />'
+      };
+
+      toast.innerHTML = `
+        <svg class="w-5 h-5 ${iconColors[type]}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          ${icons[type]}
+        </svg>
+        <span>${message}</span>
+      `;
+
+      container.appendChild(toast);
+
+      // 3초 후 제거
+      setTimeout(() => {
+        toast.style.animation = 'fadeOut 0.3s ease forwards';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // 오프라인 감지
+    function updateOnlineStatus() {
+      const banner = document.getElementById('offlineBanner');
+      if (navigator.onLine) {
+        banner.classList.add('hidden');
+      } else {
+        banner.classList.remove('hidden');
+      }
+    }
+
+    // 초기화
+    document.addEventListener('DOMContentLoaded', function() {
+      // 카운트다운 시작
+      updateCountdown();
+      setInterval(updateCountdown, 1000);
+
+      // 오프라인 상태 감지
+      window.addEventListener('online', updateOnlineStatus);
+      window.addEventListener('offline', updateOnlineStatus);
+      updateOnlineStatus();
+    });
+  </script>
 </body>
 </html>
-

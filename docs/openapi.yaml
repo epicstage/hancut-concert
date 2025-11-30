@@ -1,0 +1,846 @@
+openapi: 3.0.3
+info:
+  title: 한동훈과 한 컷 토크콘서트 API
+  description: |
+    2025년 12월 14일 킨텍스에서 개최되는 토크콘서트 참가자 신청 및 관리 시스템 API
+
+    ## 인증
+    관리자 API(`/api/admin/*`)는 JWT 토큰 인증이 필요합니다.
+    - 로그인 후 발급받은 토큰을 `x-admin-token` 헤더에 포함
+    - 토큰 유효 시간: 2시간
+
+    ## 에러 응답
+    모든 에러 응답은 다음 형식을 따릅니다:
+    ```json
+    {
+      "success": false,
+      "error": "에러 메시지",
+      "code": "ERROR_CODE"
+    }
+    ```
+  version: 1.0.0
+  contact:
+    name: API Support
+
+servers:
+  - url: https://hancut-concert.pages.dev
+    description: Production
+  - url: http://localhost:8788
+    description: Local Development
+
+tags:
+  - name: Auth
+    description: 인증 관련 API
+  - name: Participants
+    description: 참가자 신청 (공개)
+  - name: Admin - Participants
+    description: 참가자 관리 (관리자)
+  - name: Seats
+    description: 좌석 확인
+  - name: Inquiries
+    description: 문의 관련 API
+  - name: Check-in
+    description: QR 체크인 (관리자)
+
+paths:
+  /api/admin/login:
+    post:
+      tags:
+        - Auth
+      summary: 관리자 로그인
+      description: 비밀번호로 로그인하여 JWT 토큰을 발급받습니다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - password
+              properties:
+                password:
+                  type: string
+                  description: 관리자 비밀번호
+            example:
+              password: "admin123"
+      responses:
+        '200':
+          description: 로그인 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  token:
+                    type: string
+                    description: JWT 토큰
+                  expiresIn:
+                    type: string
+                    example: "2h"
+        '400':
+          description: 비밀번호 누락
+        '401':
+          description: 비밀번호 불일치
+
+  /api/participants:
+    post:
+      tags:
+        - Participants
+      summary: 참가자 신청
+      description: 새로운 참가자를 등록합니다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateParticipantRequest'
+            example:
+              user_name: "홍길동"
+              phone: "01012345678"
+              ssn_first: "990115"
+              ticket_count: 1
+      responses:
+        '200':
+          description: 신청 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  id:
+                    type: integer
+                    description: 생성된 참가자 ID
+                  message:
+                    type: string
+                  ticket_count:
+                    type: integer
+        '400':
+          description: 유효성 검사 실패 또는 중복 전화번호
+
+  /api/participants/count:
+    get:
+      tags:
+        - Participants
+      summary: 참가자 수 조회
+      description: 전체 참가자 수를 조회합니다.
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  count:
+                    type: integer
+                    example: 150
+
+  /api/participants/phone/{phone}:
+    get:
+      tags:
+        - Participants
+      summary: 참가자 조회 (전화번호)
+      description: 전화번호로 참가자 정보를 조회합니다.
+      parameters:
+        - name: phone
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^\d{11}$'
+          example: "01012345678"
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  participant:
+                    $ref: '#/components/schemas/Participant'
+        '404':
+          description: 참가자를 찾을 수 없음
+
+  /api/participants/{id}/name:
+    put:
+      tags:
+        - Participants
+      summary: 참가자 이름 수정
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_name
+              properties:
+                user_name:
+                  type: string
+      responses:
+        '200':
+          description: 수정 성공
+        '400':
+          description: 유효성 검사 실패
+
+  /api/participants/phone/{phone}/guest2:
+    put:
+      tags:
+        - Participants
+      summary: 2번째 참가자 정보 등록
+      description: 2인 신청 시 동반자 정보를 등록합니다.
+      parameters:
+        - name: phone
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - guest2_name
+                - guest2_phone
+                - guest2_ssn_first
+              properties:
+                guest2_name:
+                  type: string
+                guest2_phone:
+                  type: string
+                  pattern: '^\d{11}$'
+                guest2_ssn_first:
+                  type: string
+                  pattern: '^\d{6}$'
+      responses:
+        '200':
+          description: 등록 성공
+        '400':
+          description: 유효성 검사 실패 또는 전화번호 중복
+
+  /api/admin/participants:
+    get:
+      tags:
+        - Admin - Participants
+      summary: 전체 참가자 조회
+      security:
+        - AdminToken: []
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: 이름 또는 전화번호 검색
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  participants:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Participant'
+        '401':
+          description: 인증 실패
+
+  /api/admin/participants/{id}/payment:
+    put:
+      tags:
+        - Admin - Participants
+      summary: 입금 상태 변경
+      security:
+        - AdminToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - is_paid
+              properties:
+                is_paid:
+                  type: boolean
+      responses:
+        '200':
+          description: 변경 성공
+        '401':
+          description: 인증 실패
+
+  /api/admin/participants/{id}/seat:
+    put:
+      tags:
+        - Admin - Participants
+      summary: 개별 좌석 배정
+      security:
+        - AdminToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                seat_group:
+                  type: string
+                  enum: ['가', '나', '다', '라', '마', '바', '사', '아', '자', '차', '카', '타', '파', '하']
+                seat_row:
+                  type: string
+                seat_number:
+                  type: string
+                is_guest:
+                  type: boolean
+                  description: 2번째 참가자 좌석 여부
+      responses:
+        '200':
+          description: 배정 성공
+        '400':
+          description: 유효하지 않은 좌석 정보
+        '401':
+          description: 인증 실패
+
+    delete:
+      tags:
+        - Admin - Participants
+      summary: 개별 좌석 초기화
+      security:
+        - AdminToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 초기화 성공
+        '401':
+          description: 인증 실패
+
+  /api/admin/participants/random-seats:
+    post:
+      tags:
+        - Admin - Participants
+      summary: 랜덤 좌석 배정
+      description: 입금 완료된 참가자들에게 랜덤으로 좌석을 배정합니다.
+      security:
+        - AdminToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SeatAssignmentRequest'
+      responses:
+        '200':
+          description: 배정 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  assigned_count:
+                    type: integer
+        '400':
+          description: 좌석 부족 또는 대상자 없음
+        '401':
+          description: 인증 실패
+
+  /api/admin/participants/age-based-seats:
+    post:
+      tags:
+        - Admin - Participants
+      summary: 연령대별 좌석 배정
+      description: |
+        주민번호 앞자리 기반으로 연령대별 좌석을 배정합니다.
+        우선순위: 00년대생 → 90년대생 → 80년대생
+      security:
+        - AdminToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SeatAssignmentRequest'
+      responses:
+        '200':
+          description: 배정 성공
+        '400':
+          description: 좌석 부족 또는 대상자 없음
+        '401':
+          description: 인증 실패
+
+  /api/admin/participants/reset-seats:
+    post:
+      tags:
+        - Admin - Participants
+      summary: 전체 좌석 초기화
+      description: 모든 참가자의 좌석 배정을 초기화합니다.
+      security:
+        - AdminToken: []
+      responses:
+        '200':
+          description: 초기화 성공
+        '401':
+          description: 인증 실패
+
+  /api/admin/participants/{id}:
+    delete:
+      tags:
+        - Admin - Participants
+      summary: 참가자 삭제
+      security:
+        - AdminToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 삭제 성공
+        '404':
+          description: 참가자를 찾을 수 없음
+        '401':
+          description: 인증 실패
+
+  /api/seat/{phone}:
+    get:
+      tags:
+        - Seats
+      summary: 좌석 확인
+      description: |
+        행사 당일(2025-12-14) 이후에만 좌석을 확인할 수 있습니다.
+      parameters:
+        - name: phone
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  seat_full:
+                    type: string
+                    example: "가-2-15"
+                  seat_group:
+                    type: string
+                  seat_row:
+                    type: string
+                  seat_number:
+                    type: string
+        '403':
+          description: 행사 당일 이전
+        '404':
+          description: 참가자 또는 좌석을 찾을 수 없음
+
+  /api/inquiries:
+    post:
+      tags:
+        - Inquiries
+      summary: 문의 생성
+      description: 참가자만 문의를 생성할 수 있습니다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - phone
+                - content
+              properties:
+                phone:
+                  type: string
+                  pattern: '^\d{11}$'
+                content:
+                  type: string
+      responses:
+        '200':
+          description: 문의 접수 성공
+        '400':
+          description: 유효성 검사 실패 또는 비참가자
+
+  /api/inquiries/phone/{phone}:
+    get:
+      tags:
+        - Inquiries
+      summary: 내 문의 내역 조회
+      parameters:
+        - name: phone
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  inquiries:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Inquiry'
+
+  /api/admin/inquiries:
+    get:
+      tags:
+        - Inquiries
+      summary: 전체 문의 조회
+      security:
+        - AdminToken: []
+      responses:
+        '200':
+          description: 조회 성공
+        '401':
+          description: 인증 실패
+
+  /api/admin/inquiries/{id}/answer:
+    put:
+      tags:
+        - Inquiries
+      summary: 문의 답변 등록
+      security:
+        - AdminToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - answer
+              properties:
+                answer:
+                  type: string
+      responses:
+        '200':
+          description: 답변 등록 성공
+        '400':
+          description: 답변 내용 누락
+        '401':
+          description: 인증 실패
+
+  /api/admin/inquiries/{id}:
+    delete:
+      tags:
+        - Inquiries
+      summary: 문의 삭제
+      security:
+        - AdminToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 삭제 성공
+        '401':
+          description: 인증 실패
+
+  /api/admin/checkin:
+    post:
+      tags:
+        - Check-in
+      summary: QR 체크인
+      description: QR 코드 스캔으로 참가자 입장을 확인합니다.
+      security:
+        - AdminToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - qrData
+              properties:
+                qrData:
+                  type: string
+                  description: 'JSON 형식: {"id": 참가자ID}'
+            example:
+              qrData: '{"id": 1}'
+      responses:
+        '200':
+          description: 체크인 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  participant:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      user_name:
+                        type: string
+                      phone:
+                        type: string
+                      is_checked_in:
+                        type: boolean
+                      checked_in_at:
+                        type: string
+                  alreadyCheckedIn:
+                    type: boolean
+                    description: 이미 체크인된 경우 true
+        '400':
+          description: 잘못된 QR 데이터 또는 미입금 참가자
+        '404':
+          description: 참가자를 찾을 수 없음
+        '401':
+          description: 인증 실패
+
+  /api/admin/checkin/stats:
+    get:
+      tags:
+        - Check-in
+      summary: 체크인 통계 조회
+      security:
+        - AdminToken: []
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  stats:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                        description: 입금 완료 참가자 수
+                      checkedIn:
+                        type: integer
+                        description: 체크인 완료 수
+                      remaining:
+                        type: integer
+                        description: 미입장 수
+        '401':
+          description: 인증 실패
+
+components:
+  securitySchemes:
+    AdminToken:
+      type: apiKey
+      in: header
+      name: x-admin-token
+      description: JWT 토큰 (로그인 후 발급)
+
+  schemas:
+    CreateParticipantRequest:
+      type: object
+      required:
+        - user_name
+        - phone
+      properties:
+        user_name:
+          type: string
+          description: 참가자 이름
+          minLength: 1
+        phone:
+          type: string
+          pattern: '^\d{11}$'
+          description: 전화번호 (11자리 숫자)
+        ssn_first:
+          type: string
+          pattern: '^\d{6}$'
+          description: 주민번호 앞자리 (YYMMDD)
+        ticket_count:
+          type: integer
+          enum: [1, 2]
+          default: 1
+          description: 티켓 수 (1 또는 2)
+
+    Participant:
+      type: object
+      properties:
+        id:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        user_name:
+          type: string
+        phone:
+          type: string
+        is_paid:
+          type: integer
+          enum: [0, 1]
+        ssn_first:
+          type: string
+          nullable: true
+        ticket_count:
+          type: integer
+        guest2_name:
+          type: string
+          nullable: true
+        guest2_phone:
+          type: string
+          nullable: true
+        guest2_ssn_first:
+          type: string
+          nullable: true
+        is_guest2_completed:
+          type: integer
+          enum: [0, 1]
+        seat_group:
+          type: string
+          nullable: true
+        seat_row:
+          type: string
+          nullable: true
+        seat_number:
+          type: string
+          nullable: true
+        seat_full:
+          type: string
+          nullable: true
+          description: 전체 좌석 번호 (예: 가-2-15)
+        seat_group_2:
+          type: string
+          nullable: true
+        seat_row_2:
+          type: string
+          nullable: true
+        seat_number_2:
+          type: string
+          nullable: true
+        seat_full_2:
+          type: string
+          nullable: true
+        is_checked_in:
+          type: integer
+          enum: [0, 1]
+
+    Inquiry:
+      type: object
+      properties:
+        id:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        user_name:
+          type: string
+        phone:
+          type: string
+        content:
+          type: string
+        answer:
+          type: string
+          nullable: true
+        answered_at:
+          type: string
+          format: date-time
+          nullable: true
+        is_answered:
+          type: integer
+          enum: [0, 1]
+
+    SeatAssignmentRequest:
+      type: object
+      required:
+        - groups
+        - rowsPerGroup
+        - seatsPerRow
+      properties:
+        groups:
+          type: array
+          items:
+            type: string
+          example: ['가', '나', '다', '라', '마', '바', '사', '아', '자', '차', '카', '타', '파', '하']
+        rowsPerGroup:
+          type: integer
+          description: 그룹당 열 수
+          example: 10
+        seatsPerRow:
+          type: integer
+          description: 열당 좌석 수
+          example: 20
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+        code:
+          type: string
+          enum:
+            - VALIDATION_ERROR
+            - NOT_FOUND
+            - UNAUTHORIZED
+            - FORBIDDEN
+            - CONFLICT
+            - INTERNAL_ERROR

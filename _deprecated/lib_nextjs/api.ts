@@ -43,7 +43,7 @@ class ApiClient {
 
   // 관리자 로그인
   async adminLogin(password: string): Promise<string> {
-    const response = await this.request<{ token: string }>('/admin/login', {
+    const response = await this.request<{ token: string; expiresIn: string }>('/admin/login', {
       method: 'POST',
       body: JSON.stringify({ password }),
     });
@@ -52,12 +52,38 @@ class ApiClient {
       throw new Error(response.error || '로그인 중 오류가 발생했습니다.');
     }
 
-    // 토큰은 클라이언트 로컬 스토리지에 저장
+    // JWT 토큰과 만료 시간을 로컬 스토리지에 저장
     if (typeof window !== 'undefined') {
       window.localStorage.setItem('adminToken', response.token);
+      // 토큰 저장 시간 기록 (만료 체크용)
+      window.localStorage.setItem('adminTokenIssuedAt', Date.now().toString());
     }
 
     return response.token;
+  }
+
+  // 토큰 유효성 확인 (클라이언트 측 사전 체크)
+  isTokenValid(): boolean {
+    if (typeof window === 'undefined') return false;
+
+    const token = window.localStorage.getItem('adminToken');
+    const issuedAt = window.localStorage.getItem('adminTokenIssuedAt');
+
+    if (!token || !issuedAt) return false;
+
+    // 2시간(7200000ms) 이내인지 확인
+    const elapsed = Date.now() - parseInt(issuedAt);
+    const twoHoursMs = 2 * 60 * 60 * 1000;
+
+    return elapsed < twoHoursMs;
+  }
+
+  // 로그아웃
+  logout(): void {
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem('adminToken');
+      window.localStorage.removeItem('adminTokenIssuedAt');
+    }
   }
 
   // 참가자 신청

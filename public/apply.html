@@ -3,351 +3,727 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="한동훈 토크콘서트 참가 신청" />
+  <meta name="theme-color" content="#dc2626" />
   <title>참가 신청 - 한동훈 토크콘서트</title>
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-  <div class="min-h-screen bg-gradient-to-br from-red-50 via-white to-sky-50">
+  <div class="min-h-screen main-content">
+    <!-- 헤더 -->
     <header class="glass-header">
-      <div class="max-w-4xl mx-auto px-4 py-4">
+      <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
         <a href="/" class="inline-flex items-center gap-2 text-gray-700 hover:text-gray-900" style="text-decoration: none;">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
           </svg>
           <span>돌아가기</span>
         </a>
+        <span class="text-sm text-gray-500">참가 신청</span>
       </div>
     </header>
 
     <main class="max-w-2xl mx-auto px-4 py-8">
-      <div id="applyFormSection" class="glass-card">
-        <h2 class="text-2xl font-bold text-gray-900 mb-6">참가 신청</h2>
+      <!-- 신청 폼 섹션 -->
+      <div id="applyFormSection">
+        <!-- 스텝 진행 표시 -->
+        <div class="step-progress mb-8">
+          <div class="step-item active" id="step1Indicator">
+            <div class="step-circle">1</div>
+            <span class="step-label">인원 선택</span>
+          </div>
+          <div class="step-line" id="line1"></div>
+          <div class="step-item" id="step2Indicator">
+            <div class="step-circle">2</div>
+            <span class="step-label">정보 입력</span>
+          </div>
+          <div class="step-line" id="line2"></div>
+          <div class="step-item" id="step3Indicator">
+            <div class="step-circle">3</div>
+            <span class="step-label">확인</span>
+          </div>
+        </div>
 
-        <form id="applyForm" class="space-y-6">
-          <div>
-            <label class="block text-lg font-medium text-gray-700 mb-3">신청 인원</label>
-            <div class="flex gap-4">
-              <label class="flex items-center gap-2 cursor-pointer flex-1">
-                <input
-                  type="radio"
-                  name="ticketCount"
-                  value="1"
-                  id="ticketCount1"
-                  class="w-5 h-5 text-red-600"
-                  checked
-                />
-                <span class="text-gray-700">1인 신청 (₩30,000)</span>
+        <form id="applyForm">
+          <!-- Step 1: 인원 선택 -->
+          <div id="step1" class="glass-card">
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">신청 인원 선택</h2>
+            <p class="text-gray-500 mb-6">참가할 인원 수를 선택해주세요.</p>
+
+            <div class="space-y-4 mb-8">
+              <label class="ticket-option selected" id="ticket1Option">
+                <input type="radio" name="ticketCount" value="1" checked class="hidden" />
+                <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mr-4 flex-shrink-0">
+                  <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <p class="font-semibold text-gray-900">1인 신청</p>
+                  <p class="text-sm text-gray-500">본인만 참가합니다</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-xl font-bold text-red-600">₩30,000</p>
+                </div>
               </label>
-              <label class="flex items-center gap-2 cursor-pointer flex-1">
-                <input
-                  type="radio"
-                  name="ticketCount"
-                  value="2"
-                  id="ticketCount2"
-                  class="w-5 h-5 text-red-600"
-                />
-                <span class="text-gray-700">2인 신청 (₩60,000)</span>
+
+              <label class="ticket-option" id="ticket2Option">
+                <input type="radio" name="ticketCount" value="2" class="hidden" />
+                <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mr-4 flex-shrink-0">
+                  <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <p class="font-semibold text-gray-900">2인 신청</p>
+                  <p class="text-sm text-gray-500">동반 1인과 함께 참가합니다</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-xl font-bold text-red-600">₩60,000</p>
+                </div>
               </label>
             </div>
-            <p class="mt-2 text-sm text-gray-500">2인 신청 시 신청 완료 후 2번째 참가자 정보를 입력하실 수 있습니다.</p>
+
+            <div class="alert alert-info mb-6">
+              <svg class="alert-icon flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div class="alert-content">
+                <p class="alert-message">2인 신청 시 신청 완료 후 동반자 정보를 입력해야 합니다. 각각 개별 QR코드가 발급됩니다.</p>
+              </div>
+            </div>
+
+            <button type="button" onclick="goToStep(2)" class="btn-primary-glass w-full">
+              <span>다음 단계로</span>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
           </div>
 
-          <div>
-            <label for="name" class="block text-lg font-medium text-gray-700 mb-2">이름</label>
-            <input
-              id="name"
-              type="text"
-              inputmode="text"
-              class="input-glass"
-              placeholder="이름을 입력하세요"
-              required
-            />
+          <!-- Step 2: 정보 입력 -->
+          <div id="step2" class="glass-card hidden">
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">참가자 정보 입력</h2>
+            <p class="text-gray-500 mb-6">정확한 정보를 입력해주세요. 좌석 배정에 사용됩니다.</p>
+
+            <div class="space-y-6">
+              <!-- 이름 -->
+              <div>
+                <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+                  <span class="text-red-500">*</span> 이름
+                </label>
+                <div class="input-group">
+                  <input
+                    id="name"
+                    type="text"
+                    inputmode="text"
+                    autocomplete="name"
+                    class="input-glass"
+                    placeholder="홍길동"
+                    required
+                  />
+                  <div class="input-icon-right hidden" id="nameValidIcon">
+                    <span class="validation-icon valid">✓</span>
+                  </div>
+                </div>
+                <p id="nameError" class="input-error-message hidden">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <span></span>
+                </p>
+              </div>
+
+              <!-- 전화번호 -->
+              <div>
+                <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">
+                  <span class="text-red-500">*</span> 전화번호
+                </label>
+                <div class="input-group">
+                  <input
+                    id="phone"
+                    type="tel"
+                    inputmode="numeric"
+                    autocomplete="tel"
+                    class="input-glass"
+                    placeholder="01012345678"
+                    maxlength="11"
+                    required
+                  />
+                  <div class="input-icon-right hidden" id="phoneValidIcon">
+                    <span class="validation-icon valid">✓</span>
+                  </div>
+                </div>
+                <p class="input-hint">하이픈(-) 없이 11자리 숫자만 입력</p>
+                <p id="phoneError" class="input-error-message hidden">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <span></span>
+                </p>
+              </div>
+
+              <!-- 주민번호 앞자리 -->
+              <div>
+                <label for="ssnFirst" class="block text-sm font-medium text-gray-700 mb-2">
+                  <span class="text-red-500">*</span> 주민번호 앞자리
+                </label>
+                <div class="input-group">
+                  <input
+                    id="ssnFirst"
+                    type="tel"
+                    inputmode="numeric"
+                    class="input-glass"
+                    placeholder="620126"
+                    maxlength="6"
+                    required
+                  />
+                  <div class="input-icon-right hidden" id="ssnValidIcon">
+                    <span class="validation-icon valid">✓</span>
+                  </div>
+                </div>
+                <p class="input-hint">생년월일 6자리 (YYMMDD)</p>
+                <p id="ssnError" class="input-error-message hidden">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <span></span>
+                </p>
+              </div>
+            </div>
+
+            <div class="flex gap-3 mt-8">
+              <button type="button" onclick="goToStep(1)" class="btn-secondary-glass flex-1">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                <span>이전</span>
+              </button>
+              <button type="button" onclick="goToStep(3)" class="btn-primary-glass flex-1" id="toStep3Btn">
+                <span>다음</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
           </div>
 
-          <div>
-            <label for="phone" class="block text-lg font-medium text-gray-700 mb-2">전화번호</label>
-            <input
-              id="phone"
-              type="tel"
-              inputmode="numeric"
-              class="input-glass"
-              placeholder="01012345678"
-              maxlength="11"
-              required
-            />
-            <p class="mt-2 text-sm text-gray-500">11자리 숫자를 입력하세요 (예: 01012345678)</p>
-          </div>
+          <!-- Step 3: 확인 및 동의 -->
+          <div id="step3" class="glass-card hidden">
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">신청 내용 확인</h2>
+            <p class="text-gray-500 mb-6">입력하신 정보를 확인해주세요.</p>
 
-          <div>
-            <label for="ssnFirst" class="block text-lg font-medium text-gray-700 mb-2">주민번호 앞자리</label>
-            <input
-              id="ssnFirst"
-              type="tel"
-              inputmode="numeric"
-              class="input-glass"
-              placeholder="620126"
-              maxlength="6"
-              required
-            />
-            <p class="mt-2 text-sm text-gray-500">6자리 숫자를 입력하세요 (예: 620126)</p>
-          </div>
+            <!-- 요약 정보 -->
+            <div class="bg-gray-50 rounded-xl p-5 mb-6">
+              <h3 class="font-semibold text-gray-900 mb-4">신청 정보</h3>
+              <div class="space-y-3">
+                <div class="flex justify-between">
+                  <span class="text-gray-500">신청 유형</span>
+                  <span id="summaryType" class="font-medium text-gray-900">1인 신청</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-500">이름</span>
+                  <span id="summaryName" class="font-medium text-gray-900">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-500">전화번호</span>
+                  <span id="summaryPhone" class="font-medium text-gray-900">-</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-500">생년월일</span>
+                  <span id="summarySsn" class="font-medium text-gray-900">-</span>
+                </div>
+                <div class="border-t border-gray-200 pt-3 mt-3">
+                  <div class="flex justify-between">
+                    <span class="font-semibold text-gray-900">결제 금액</span>
+                    <span id="summaryPrice" class="text-xl font-bold text-red-600">₩30,000</span>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-          <div class="p-4 bg-sky-50/80 backdrop-blur-sm rounded-xl border border-sky-200/50">
-            <label class="flex items-start gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                id="privacyAgree"
-                class="mt-1 w-5 h-5 text-red-600 rounded focus:ring-red-500"
-                required
-              />
-              <span class="text-sm text-gray-700">
-                <span class="font-semibold text-red-600">[필수]</span> 개인정보 수집 및 활용에 동의합니다.
-                <br>
-                <span class="text-xs text-gray-500 mt-1 block">
-                  신청을 위해 이름, 전화번호, 주민번호 앞자리를 수집하며, 행사 안내 및 좌석 배정 목적으로만 사용됩니다.
+            <!-- 개인정보 동의 -->
+            <div class="p-4 bg-sky-50 rounded-xl border border-sky-200 mb-6">
+              <label class="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  id="privacyAgree"
+                  class="mt-1 w-5 h-5 text-red-600 rounded focus:ring-red-500"
+                  required
+                />
+                <span class="text-sm text-gray-700">
+                  <span class="font-semibold text-red-600">[필수]</span> 개인정보 수집 및 활용에 동의합니다.
+                  <button type="button" onclick="showPrivacyModal()" class="text-blue-600 underline ml-1">내용 보기</button>
                 </span>
-              </span>
-            </label>
+              </label>
+            </div>
+
+            <!-- 에러 메시지 -->
+            <div id="submitError" class="alert alert-error hidden mb-6">
+              <svg class="alert-icon flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <div class="alert-content">
+                <p class="alert-title">신청 오류</p>
+                <p class="alert-message" id="submitErrorMessage">오류가 발생했습니다.</p>
+              </div>
+            </div>
+
+            <div class="flex gap-3">
+              <button type="button" onclick="goToStep(2)" class="btn-secondary-glass flex-1">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                <span>이전</span>
+              </button>
+              <button type="submit" class="btn-primary-glass flex-1" id="submitBtn">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <span>신청 완료</span>
+              </button>
+            </div>
           </div>
-
-          <div id="error" class="hidden p-4 bg-red-50 border border-red-200 rounded-lg text-red-700"></div>
-
-          <button type="submit" class="btn-primary-glass w-full" id="submitBtn">
-            신청하기
-          </button>
         </form>
       </div>
 
-      <div id="applyClosedSection" class="hidden glass-card mb-8 text-center">
-        <h2 class="text-3xl font-bold text-gray-900 mb-6">1차 모집이 완료되었습니다</h2>
-        <p class="text-lg text-gray-700 mb-6">2차 모집시 SNS를 통해 안내드리겠습니다</p>
-        <a href="/" class="btn-secondary-glass inline-block">
-          메인으로 돌아가기
+      <!-- 신청 마감 안내 -->
+      <div id="applyClosedSection" class="hidden glass-card text-center">
+        <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">1차 모집이 완료되었습니다</h2>
+        <p class="text-gray-600 mb-8">2차 모집시 SNS를 통해 안내드리겠습니다.</p>
+        <a href="/" class="btn-secondary-glass inline-flex">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+          <span>메인으로 돌아가기</span>
         </a>
       </div>
     </main>
 
-    <!-- 푸터 (나중에 배포사/운영사 정보 추가 예정) -->
-    <footer class="mt-16 py-8 border-t border-white/20">
-      <div class="max-w-4xl mx-auto px-4 text-center text-sm text-gray-600">
-        <!-- 배포사/운영사 정보는 추후 추가 예정 -->
+    <!-- 푸터 -->
+    <footer class="mt-12 py-8 border-t border-gray-200">
+      <div class="max-w-4xl mx-auto px-4 text-center text-sm text-gray-500">
+        <p>© 2025 샘커뮤니케이션즈. All rights reserved.</p>
       </div>
     </footer>
 
     <!-- 성공 모달 -->
-    <div id="successModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div class="glass-card max-w-md w-full mx-4 text-center">
-        <div class="mb-6 flex justify-center">
-          <div class="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center" style="animation: bounce 1s infinite;">
-            <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
+    <div id="successModal" class="modal-backdrop hidden">
+      <div class="modal-content text-center p-8">
+        <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <svg class="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+          </svg>
         </div>
         <h2 class="text-2xl font-bold text-gray-900 mb-4">신청이 완료되었습니다!</h2>
-        <p class="text-lg text-gray-700 mb-6">신청내역 확인 페이지로 이동합니다...</p>
+        <p id="successMessage" class="text-gray-600 mb-6">신청내역 확인 페이지로 이동합니다...</p>
+        <div class="flex justify-center">
+          <div class="animate-spin w-6 h-6 border-2 border-red-600 border-t-transparent rounded-full"></div>
+        </div>
       </div>
     </div>
 
-    <script>
-      document.addEventListener('DOMContentLoaded', async function() {
-        // 참가자 수 확인
-        try {
-          const response = await fetch('/api/participants/count');
-          const data = await response.json();
-          
-          if (data.success && data.count >= 1500) {
-            // 1500명 이상이면 신청 폼 숨기고 안내 메시지 표시
-            const applyFormSection = document.getElementById('applyFormSection');
-            const applyClosedSection = document.getElementById('applyClosedSection');
-            
-            if (applyFormSection) applyFormSection.classList.add('hidden');
-            if (applyClosedSection) applyClosedSection.classList.remove('hidden');
-            return; // 폼 로직 실행하지 않음
-          }
-        } catch (err) {
-          console.error('Error checking participant count:', err);
-        }
+    <!-- 개인정보 처리방침 모달 -->
+    <div id="privacyModal" class="modal-backdrop hidden">
+      <div class="modal-content max-w-lg">
+        <div class="modal-header">
+          <h3 class="text-lg font-bold">개인정보 수집 및 활용 동의</h3>
+          <button type="button" onclick="closePrivacyModal()" class="btn-icon">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body text-sm text-gray-700 space-y-4">
+          <div>
+            <h4 class="font-semibold mb-2">1. 수집하는 개인정보 항목</h4>
+            <p>이름, 전화번호, 주민번호 앞자리(생년월일)</p>
+          </div>
+          <div>
+            <h4 class="font-semibold mb-2">2. 개인정보의 수집 및 이용 목적</h4>
+            <p>행사 참가 신청 접수, 참가자 확인 및 좌석 배정, 행사 안내 문자 발송</p>
+          </div>
+          <div>
+            <h4 class="font-semibold mb-2">3. 개인정보의 보유 및 이용 기간</h4>
+            <p>행사 종료 후 30일 이내 파기</p>
+          </div>
+          <div>
+            <h4 class="font-semibold mb-2">4. 동의 거부권 및 거부 시 불이익</h4>
+            <p>개인정보 수집에 동의하지 않을 권리가 있으며, 동의하지 않을 경우 행사 참가 신청이 제한됩니다.</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" onclick="closePrivacyModal()" class="btn-primary-glass">
+            확인
+          </button>
+        </div>
+      </div>
+    </div>
 
-        // 기존 폼 로직
-        const phoneInput = document.getElementById('phone');
-        const nameInput = document.getElementById('name');
-        const ssnFirstInput = document.getElementById('ssnFirst');
-        const form = document.getElementById('applyForm');
-        const errorDiv = document.getElementById('error');
-        const submitBtn = document.getElementById('submitBtn');
-        const successModal = document.getElementById('successModal');
-
-        if (!phoneInput || !nameInput || !ssnFirstInput || !form) {
-          console.error('Required elements not found');
-          return;
-        }
-
-        // 전화번호 숫자만 입력 (숫자가 아닌 키는 차단)
-        phoneInput.addEventListener('keydown', (e) => {
-          // 숫자(0-9), 백스페이스, Delete, Tab, Arrow keys, Home, End 키만 허용
-          const allowedKeys = [
-            'Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
-            'Home', 'End'
-          ];
-          
-          if (allowedKeys.includes(e.key)) {
-            return; // 허용된 키는 통과
-          }
-          
-          // 숫자 키만 허용
-          if (!/^[0-9]$/.test(e.key)) {
-            e.preventDefault(); // 숫자가 아닌 키는 차단
-            return;
-          }
-          
-          // 11자리 제한
-          if (phoneInput.value.length >= 11 && !allowedKeys.includes(e.key)) {
-            e.preventDefault();
-          }
-        });
-
-        // 붙여넣기 시 숫자만 추출
-        phoneInput.addEventListener('input', (e) => {
-          const value = e.target.value.replace(/[^0-9]/g, '');
-          if (value.length <= 11) {
-            phoneInput.value = value;
-          } else {
-            phoneInput.value = value.slice(0, 11);
-          }
-        });
-
-        // 주민번호 앞자리 숫자만 입력 (숫자가 아닌 키는 차단)
-        ssnFirstInput.addEventListener('keydown', (e) => {
-          const allowedKeys = [
-            'Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
-            'Home', 'End'
-          ];
-          
-          if (allowedKeys.includes(e.key)) {
-            return;
-          }
-          
-          if (!/^[0-9]$/.test(e.key)) {
-            e.preventDefault();
-            return;
-          }
-          
-          if (ssnFirstInput.value.length >= 6 && !allowedKeys.includes(e.key)) {
-            e.preventDefault();
-          }
-        });
-
-        // 주민번호 앞자리 붙여넣기 시 숫자만 추출
-        ssnFirstInput.addEventListener('input', (e) => {
-          const value = e.target.value.replace(/[^0-9]/g, '');
-          if (value.length <= 6) {
-            ssnFirstInput.value = value;
-          } else {
-            ssnFirstInput.value = value.slice(0, 6);
-          }
-        });
-
-        form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        errorDiv.classList.add('hidden');
-        
-        const name = nameInput.value.trim();
-        const phone = phoneInput.value.replace(/[^0-9]/g, '');
-        const ssnFirst = ssnFirstInput.value.replace(/[^0-9]/g, '');
-        const ticketCount = parseInt(document.querySelector('input[name="ticketCount"]:checked')?.value || '1');
-
-        if (!name) {
-          showError('이름을 입력해주세요.');
-          return;
-        }
-
-        if (phone.length !== 11) {
-          showError('전화번호를 정확히 입력해주세요. (11자리)');
-          return;
-        }
-
-        if (ssnFirst.length !== 6) {
-          showError('주민번호 앞자리를 정확히 입력해주세요. (6자리)');
-          return;
-        }
-
-        // 주민번호 앞자리 유효성 검사 (yymmdd 형식)
-        const yy = parseInt(ssnFirst.substring(0, 2));
-        const mm = parseInt(ssnFirst.substring(2, 4));
-        const dd = parseInt(ssnFirst.substring(4, 6));
-        
-        // 월 검증 (01-12)
-        if (mm < 1 || mm > 12) {
-          showError('주민번호 앞자리의 월(3-4번째 자리)이 올바르지 않습니다. (01-12)');
-          return;
-        }
-        
-        // 일 검증 (월에 따른 유효한 일자 범위)
-        const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-        const maxDay = daysInMonth[mm - 1];
-        
-        if (dd < 1 || dd > maxDay) {
-          showError(`주민번호 앞자리의 일(5-6번째 자리)이 올바르지 않습니다. (${mm}월은 01-${String(maxDay).padStart(2, '0')}일까지 가능)`);
-          return;
-        }
-
-        const privacyAgree = document.getElementById('privacyAgree').checked;
-        if (!privacyAgree) {
-          showError('개인정보 활용동의는 필수입니다.');
-          return;
-        }
-
-        submitBtn.disabled = true;
-        submitBtn.textContent = '신청 중...';
-
-        try {
-          const response = await fetch('/api/participants', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              user_name: name, 
-              phone, 
-              ssn_first: ssnFirst,
-              ticket_count: ticketCount
-            }),
-          });
-
-          const data = await response.json();
-
-          if (!response.ok) {
-            throw new Error(data.error || '신청 중 오류가 발생했습니다.');
-          }
-
-          // 성공 메시지 업데이트
-          const successMessage = document.querySelector('#successModal p');
-          if (successMessage && ticketCount === 2) {
-            successMessage.textContent = '신청이 완료되었습니다. 신청내역 확인 페이지에서 2번째 참가자 정보를 입력해주세요.';
-          }
-
-          successModal.classList.remove('hidden');
-          setTimeout(() => {
-            window.location.href = '/check.html';
-          }, ticketCount === 2 ? 3000 : 2000);
-        } catch (err) {
-          console.error('Submit error:', err);
-          showError(err.message || '신청 중 오류가 발생했습니다. 다시 시도해주세요.');
-          submitBtn.disabled = false;
-          submitBtn.textContent = '신청하기';
-        }
-        });
-
-        function showError(message) {
-          if (errorDiv) {
-            errorDiv.textContent = message;
-            errorDiv.classList.remove('hidden');
-          } else {
-            alert(message);
-          }
-        }
-      });
-    </script>
+    <!-- 토스트 컨테이너 -->
+    <div id="toastContainer" class="toast-container"></div>
   </div>
+
+  <!-- 바텀 네비게이션 (모바일) -->
+  <nav class="bottom-nav">
+    <a href="/" class="bottom-nav-item" aria-label="홈">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+      </svg>
+      <span>홈</span>
+    </a>
+    <a href="/apply.html" class="bottom-nav-item active" aria-label="신청">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+      </svg>
+      <span>신청</span>
+    </a>
+    <a href="/check.html" class="bottom-nav-item" aria-label="확인">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+      </svg>
+      <span>확인</span>
+    </a>
+    <a href="/inquiry.html" class="bottom-nav-item" aria-label="문의">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4l-4 4z" />
+      </svg>
+      <span>문의</span>
+    </a>
+  </nav>
+
+  <script>
+    // 현재 스텝
+    let currentStep = 1;
+    const maxParticipants = 1500;
+
+    // DOM 요소
+    const nameInput = document.getElementById('name');
+    const phoneInput = document.getElementById('phone');
+    const ssnFirstInput = document.getElementById('ssnFirst');
+    const form = document.getElementById('applyForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const successModal = document.getElementById('successModal');
+
+    // 초기화
+    document.addEventListener('DOMContentLoaded', async function() {
+      // 참가자 수 확인
+      try {
+        const response = await fetch('/api/participants/count');
+        const data = await response.json();
+
+        if (data.success && data.count >= maxParticipants) {
+          document.getElementById('applyFormSection').classList.add('hidden');
+          document.getElementById('applyClosedSection').classList.remove('hidden');
+          return;
+        }
+      } catch (err) {
+        console.error('Error checking participant count:', err);
+      }
+
+      // 티켓 선택 이벤트
+      document.querySelectorAll('input[name="ticketCount"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+          document.querySelectorAll('.ticket-option').forEach(opt => opt.classList.remove('selected'));
+          this.closest('.ticket-option').classList.add('selected');
+        });
+      });
+
+      // 티켓 옵션 클릭 이벤트
+      document.querySelectorAll('.ticket-option').forEach(option => {
+        option.addEventListener('click', function() {
+          const radio = this.querySelector('input[type="radio"]');
+          radio.checked = true;
+          radio.dispatchEvent(new Event('change'));
+        });
+      });
+
+      // 입력 필드 검증 이벤트
+      setupValidation();
+
+      // 폼 제출 이벤트
+      form.addEventListener('submit', handleSubmit);
+    });
+
+    // 스텝 이동
+    function goToStep(step) {
+      // 스텝 2로 갈 때 검증 필요 없음
+      // 스텝 3으로 갈 때 스텝 2 검증
+      if (step === 3 && !validateStep2()) {
+        return;
+      }
+
+      // 스텝 3으로 갈 때 요약 정보 업데이트
+      if (step === 3) {
+        updateSummary();
+      }
+
+      // 스텝 표시/숨기기
+      for (let i = 1; i <= 3; i++) {
+        const stepEl = document.getElementById(`step${i}`);
+        const indicatorEl = document.getElementById(`step${i}Indicator`);
+
+        if (i === step) {
+          stepEl.classList.remove('hidden');
+          indicatorEl.classList.add('active');
+        } else {
+          stepEl.classList.add('hidden');
+          indicatorEl.classList.remove('active');
+        }
+
+        // 완료된 스텝 표시
+        if (i < step) {
+          indicatorEl.classList.add('completed');
+          indicatorEl.querySelector('.step-circle').innerHTML = '✓';
+        } else {
+          indicatorEl.classList.remove('completed');
+          indicatorEl.querySelector('.step-circle').innerHTML = i;
+        }
+      }
+
+      // 라인 완료 표시
+      const line1 = document.getElementById('line1');
+      const line2 = document.getElementById('line2');
+      line1.classList.toggle('completed', step > 1);
+      line2.classList.toggle('completed', step > 2);
+
+      currentStep = step;
+
+      // 스크롤 최상단
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 입력 검증 설정
+    function setupValidation() {
+      // 숫자 입력 제한 함수
+      function setupNumericInput(input, maxLength) {
+        input.addEventListener('keydown', (e) => {
+          const allowedKeys = ['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'Home', 'End'];
+          if (allowedKeys.includes(e.key)) return;
+          if (!/^[0-9]$/.test(e.key)) {
+            e.preventDefault();
+            return;
+          }
+          if (input.value.length >= maxLength) {
+            e.preventDefault();
+          }
+        });
+
+        input.addEventListener('input', (e) => {
+          const value = e.target.value.replace(/[^0-9]/g, '');
+          input.value = value.slice(0, maxLength);
+          validateField(input);
+        });
+      }
+
+      setupNumericInput(phoneInput, 11);
+      setupNumericInput(ssnFirstInput, 6);
+
+      // 이름 입력 검증
+      nameInput.addEventListener('input', () => validateField(nameInput));
+      nameInput.addEventListener('blur', () => validateField(nameInput));
+      phoneInput.addEventListener('blur', () => validateField(phoneInput));
+      ssnFirstInput.addEventListener('blur', () => validateField(ssnFirstInput));
+    }
+
+    // 필드 검증
+    function validateField(input) {
+      const id = input.id;
+      const value = input.value.trim();
+      let isValid = false;
+      let errorMessage = '';
+
+      switch (id) {
+        case 'name':
+          isValid = value.length >= 2;
+          errorMessage = '이름을 2자 이상 입력해주세요.';
+          break;
+        case 'phone':
+          isValid = /^01[0-9]{9}$/.test(value);
+          errorMessage = '올바른 전화번호 형식이 아닙니다. (01012345678)';
+          break;
+        case 'ssnFirst':
+          if (value.length === 6) {
+            const mm = parseInt(value.substring(2, 4));
+            const dd = parseInt(value.substring(4, 6));
+            const daysInMonth = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+            isValid = mm >= 1 && mm <= 12 && dd >= 1 && dd <= daysInMonth[mm - 1];
+            errorMessage = '올바른 생년월일 형식이 아닙니다.';
+          }
+          break;
+      }
+
+      // UI 업데이트
+      const validIcon = document.getElementById(`${id}ValidIcon`);
+      const errorEl = document.getElementById(`${id}Error`);
+
+      if (isValid) {
+        input.classList.remove('input-error');
+        input.classList.add('input-valid');
+        if (validIcon) validIcon.classList.remove('hidden');
+        if (errorEl) errorEl.classList.add('hidden');
+      } else if (value.length > 0) {
+        input.classList.remove('input-valid');
+        input.classList.add('input-error');
+        if (validIcon) validIcon.classList.add('hidden');
+        if (errorEl) {
+          errorEl.querySelector('span').textContent = errorMessage;
+          errorEl.classList.remove('hidden');
+        }
+      } else {
+        input.classList.remove('input-valid', 'input-error');
+        if (validIcon) validIcon.classList.add('hidden');
+        if (errorEl) errorEl.classList.add('hidden');
+      }
+
+      return isValid;
+    }
+
+    // 스텝 2 검증
+    function validateStep2() {
+      const nameValid = validateField(nameInput);
+      const phoneValid = validateField(phoneInput);
+      const ssnValid = validateField(ssnFirstInput);
+
+      if (!nameValid || !phoneValid || !ssnValid) {
+        showToast('모든 필드를 올바르게 입력해주세요.', 'error');
+        return false;
+      }
+      return true;
+    }
+
+    // 요약 정보 업데이트
+    function updateSummary() {
+      const ticketCount = document.querySelector('input[name="ticketCount"]:checked').value;
+      const name = nameInput.value.trim();
+      const phone = phoneInput.value;
+      const ssn = ssnFirstInput.value;
+
+      document.getElementById('summaryType').textContent = ticketCount === '1' ? '1인 신청' : '2인 신청';
+      document.getElementById('summaryName').textContent = name;
+      document.getElementById('summaryPhone').textContent = phone.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+      document.getElementById('summarySsn').textContent = ssn.replace(/(\d{2})(\d{2})(\d{2})/, '$1년 $2월 $3일');
+      document.getElementById('summaryPrice').textContent = ticketCount === '1' ? '₩30,000' : '₩60,000';
+    }
+
+    // 폼 제출
+    async function handleSubmit(e) {
+      e.preventDefault();
+
+      const privacyAgree = document.getElementById('privacyAgree').checked;
+      if (!privacyAgree) {
+        showToast('개인정보 수집 및 활용에 동의해주세요.', 'error');
+        return;
+      }
+
+      const submitErrorEl = document.getElementById('submitError');
+      submitErrorEl.classList.add('hidden');
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `
+        <div class="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></div>
+        <span>신청 중...</span>
+      `;
+
+      try {
+        const ticketCount = parseInt(document.querySelector('input[name="ticketCount"]:checked').value);
+        const response = await fetch('/api/participants', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_name: nameInput.value.trim(),
+            phone: phoneInput.value,
+            ssn_first: ssnFirstInput.value,
+            ticket_count: ticketCount
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || '신청 중 오류가 발생했습니다.');
+        }
+
+        // 성공
+        if (ticketCount === 2) {
+          document.getElementById('successMessage').textContent =
+            '신청이 완료되었습니다. 신청내역 확인 페이지에서 동반자 정보를 입력해주세요.';
+        }
+
+        successModal.classList.remove('hidden');
+
+        setTimeout(() => {
+          window.location.href = '/check.html';
+        }, ticketCount === 2 ? 3000 : 2000);
+
+      } catch (err) {
+        console.error('Submit error:', err);
+        document.getElementById('submitErrorMessage').textContent = err.message;
+        submitErrorEl.classList.remove('hidden');
+
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+          <span>신청 완료</span>
+        `;
+      }
+    }
+
+    // 개인정보 모달
+    function showPrivacyModal() {
+      document.getElementById('privacyModal').classList.remove('hidden');
+    }
+
+    function closePrivacyModal() {
+      document.getElementById('privacyModal').classList.add('hidden');
+    }
+
+    // 토스트 알림
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+
+      const iconColors = {
+        success: 'text-green-600',
+        error: 'text-red-600',
+        warning: 'text-yellow-600',
+        info: 'text-blue-600'
+      };
+
+      const icons = {
+        success: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />',
+        error: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />',
+        warning: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />',
+        info: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />'
+      };
+
+      toast.innerHTML = `
+        <svg class="w-5 h-5 ${iconColors[type]}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          ${icons[type]}
+        </svg>
+        <span>${message}</span>
+      `;
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.animation = 'fadeOut 0.3s ease forwards';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // 모달 외부 클릭 시 닫기
+    document.getElementById('privacyModal').addEventListener('click', function(e) {
+      if (e.target === this) closePrivacyModal();
+    });
+  </script>
 </body>
 </html>
-

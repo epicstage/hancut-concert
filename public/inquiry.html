@@ -5,325 +5,919 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>문의하기 - 한동훈 토크콘서트</title>
   <link rel="stylesheet" href="/styles.css" />
+  <style>
+    /* 문의 페이지 전용 스타일 */
+    .step-indicator {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .step-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--color-border);
+      transition: all 0.3s ease;
+    }
+
+    .step-dot.active {
+      background: var(--color-primary);
+      transform: scale(1.2);
+    }
+
+    .step-dot.completed {
+      background: var(--color-success);
+    }
+
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .category-card {
+      padding: 1rem;
+      border: 2px solid var(--color-border);
+      border-radius: 12px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+
+    .category-card:hover {
+      border-color: var(--color-primary);
+      background: rgba(220, 38, 38, 0.05);
+    }
+
+    .category-card.selected {
+      border-color: var(--color-primary);
+      background: rgba(220, 38, 38, 0.1);
+    }
+
+    .category-card .icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .category-card .label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--color-text);
+    }
+
+    .char-counter {
+      text-align: right;
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+      margin-top: 0.25rem;
+    }
+
+    .char-counter.warning {
+      color: #f59e0b;
+    }
+
+    .char-counter.danger {
+      color: var(--color-error);
+    }
+
+    .inquiry-card {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 1rem;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--color-border);
+    }
+
+    .inquiry-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      background: rgba(0, 0, 0, 0.02);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .inquiry-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.375rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .inquiry-status.waiting {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .inquiry-status.answered {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .inquiry-card-body {
+      padding: 1rem;
+    }
+
+    .inquiry-category {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      background: rgba(220, 38, 38, 0.1);
+      color: var(--color-primary);
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    .inquiry-content {
+      color: var(--color-text);
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .answer-section {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #f0fdf4;
+      border-radius: 12px;
+      border-left: 4px solid var(--color-success);
+    }
+
+    .answer-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--color-success);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+    }
+
+    .faq-section {
+      margin-bottom: 2rem;
+    }
+
+    .faq-item {
+      background: white;
+      border-radius: 12px;
+      margin-bottom: 0.5rem;
+      overflow: hidden;
+      border: 1px solid var(--color-border);
+    }
+
+    .faq-question {
+      width: 100%;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9375rem;
+      font-weight: 500;
+      color: var(--color-text);
+      text-align: left;
+    }
+
+    .faq-question:hover {
+      background: rgba(0, 0, 0, 0.02);
+    }
+
+    .faq-chevron {
+      width: 20px;
+      height: 20px;
+      transition: transform 0.2s ease;
+      color: var(--color-text-muted);
+    }
+
+    .faq-item.open .faq-chevron {
+      transform: rotate(180deg);
+    }
+
+    .faq-answer {
+      display: none;
+      padding: 0 1rem 1rem;
+      color: var(--color-text-muted);
+      font-size: 0.875rem;
+      line-height: 1.6;
+    }
+
+    .faq-item.open .faq-answer {
+      display: block;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(0, 0, 0, 0.9);
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      font-size: 0.875rem;
+      z-index: 1000;
+      opacity: 0;
+      transition: all 0.3s ease;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .user-info-banner {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      background: rgba(220, 38, 38, 0.1);
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      background: var(--color-primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+    }
+
+    .user-info-text {
+      flex: 1;
+    }
+
+    .user-name {
+      font-weight: 600;
+      color: var(--color-text);
+    }
+
+    .user-phone {
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--color-border);
+      padding: 0.75rem;
+      padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+      z-index: 40;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .bottom-nav a,
+    .bottom-nav button {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+      text-decoration: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      min-height: var(--touch-target-min);
+    }
+
+    .bottom-nav a:hover,
+    .bottom-nav button:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    .bottom-nav a.active {
+      color: var(--color-primary);
+    }
+
+    .bottom-nav svg {
+      width: 24px;
+      height: 24px;
+      margin-bottom: 0.25rem;
+    }
+
+    @media (min-width: 768px) {
+      .bottom-nav {
+        display: none;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="min-h-screen bg-gradient-to-br from-red-50 via-white to-sky-50">
+  <div class="min-h-screen bg-gradient-to-br from-red-50 via-white to-sky-50" style="padding-bottom: 80px;">
     <!-- 헤더 -->
     <header class="glass-header sticky top-0 z-50">
       <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-        <a href="/" class="text-xl font-bold text-gray-900">← 돌아가기</a>
+        <a href="/" class="flex items-center gap-2 text-gray-900 hover:text-gray-600 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+          <span class="font-medium">돌아가기</span>
+        </a>
+        <h1 class="text-lg font-bold">문의하기</h1>
+        <div class="w-20"></div>
       </div>
     </header>
 
     <!-- 메인 콘텐츠 -->
-    <main class="max-w-4xl mx-auto px-4 py-12">
-      <!-- 1단계: 전화번호 입력 (신청자 확인) -->
-      <div id="step1" class="glass-card mb-8">
-        <h2 class="text-3xl font-bold text-gray-900 mb-8">문의하기</h2>
-        
-        <form id="loginForm" class="space-y-6">
-          <div>
-            <label for="phone" class="block text-lg font-medium text-gray-700 mb-2">전화번호</label>
-            <input
-              id="phone"
-              type="tel"
-              inputmode="numeric"
-              class="input-glass"
-              placeholder="01012345678"
-              maxlength="11"
-              required
-            />
-            <p class="mt-2 text-sm text-gray-500">신청 시 사용한 전화번호를 입력해주세요 (11자리 숫자)</p>
-          </div>
-
-          <div id="error" class="hidden p-4 bg-red-50 border border-red-200 rounded-lg text-red-700"></div>
-
-          <button type="submit" class="btn-primary-glass w-full" id="submitBtn">
-            다음
-          </button>
-        </form>
+    <main class="max-w-2xl mx-auto px-4 py-8">
+      <!-- 스텝 인디케이터 -->
+      <div class="step-indicator">
+        <div class="step-dot active" id="stepDot1"></div>
+        <div class="step-dot" id="stepDot2"></div>
       </div>
 
-      <!-- 2단계: 문의내용 입력 및 문의 내역 확인 -->
-      <div id="step2" class="hidden">
-        <div class="glass-card mb-8">
-          <h2 class="text-3xl font-bold text-gray-900 mb-8">문의하기</h2>
-          
-          <form id="inquiryForm" class="space-y-6">
+      <!-- 1단계: 전화번호 입력 -->
+      <div id="step1">
+        <div class="glass-card mb-6">
+          <div class="text-center mb-6">
+            <div class="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+              <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">본인 확인</h2>
+            <p class="text-gray-600">신청 시 사용한 전화번호를 입력해주세요</p>
+          </div>
+
+          <form id="loginForm" class="space-y-6">
             <div>
-              <label for="content" class="block text-lg font-medium text-gray-700 mb-2">문의내용</label>
+              <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">전화번호</label>
+              <div class="relative">
+                <input
+                  id="phone"
+                  type="tel"
+                  inputmode="numeric"
+                  class="input-glass pl-12"
+                  placeholder="01012345678"
+                  maxlength="11"
+                  required
+                  aria-describedby="phoneHelp"
+                />
+                <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                </svg>
+              </div>
+              <p id="phoneHelp" class="mt-2 text-sm text-gray-500">하이픈(-) 없이 숫자만 입력해주세요</p>
+            </div>
+
+            <div id="error" class="hidden p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm"></div>
+
+            <button type="submit" class="btn-primary-glass w-full" id="submitBtn">
+              다음으로
+            </button>
+          </form>
+        </div>
+
+        <!-- FAQ 섹션 -->
+        <div class="faq-section">
+          <h3 class="text-lg font-bold text-gray-900 mb-4">자주 묻는 질문</h3>
+
+          <div class="faq-item">
+            <button class="faq-question" onclick="toggleFaq(this)">
+              <span>입금 확인은 얼마나 걸리나요?</span>
+              <svg class="faq-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <div class="faq-answer">
+              입금 확인은 보통 영업일 기준 1-2일 내에 처리됩니다. 입금자명이 신청자명과 다를 경우 처리가 지연될 수 있으니, 입금 시 신청자명으로 입금해주세요.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question" onclick="toggleFaq(this)">
+              <span>신청 취소는 어떻게 하나요?</span>
+              <svg class="faq-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <div class="faq-answer">
+              신청 취소는 문의하기를 통해 요청해주세요. 입금 전 취소는 바로 처리되며, 입금 후 취소는 환불 절차를 거쳐 처리됩니다.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question" onclick="toggleFaq(this)">
+              <span>동반인 변경이 가능한가요?</span>
+              <svg class="faq-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <div class="faq-answer">
+              네, 행사 전까지 동반인 정보 변경이 가능합니다. 문의하기에서 변경 요청을 해주시면 처리해드립니다.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question" onclick="toggleFaq(this)">
+              <span>현장에서 본인 확인은 어떻게 하나요?</span>
+              <svg class="faq-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <div class="faq-answer">
+              현장에서는 신분증과 신청 확인 화면(또는 QR코드)을 제시해주시면 됩니다. 본인 확인 후 입장이 가능합니다.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2단계: 문의내용 입력 및 내역 확인 -->
+      <div id="step2" class="hidden">
+        <!-- 사용자 정보 배너 -->
+        <div class="user-info-banner">
+          <div class="user-avatar" id="userAvatar">홍</div>
+          <div class="user-info-text">
+            <div class="user-name" id="userName">홍길동</div>
+            <div class="user-phone" id="userPhone">010-1234-5678</div>
+          </div>
+          <button onclick="goToStep1()" class="text-sm text-red-600 hover:underline">변경</button>
+        </div>
+
+        <!-- 문의 작성 카드 -->
+        <div class="glass-card mb-6">
+          <h2 class="text-xl font-bold text-gray-900 mb-4">새 문의 작성</h2>
+
+          <form id="inquiryForm" class="space-y-4">
+            <!-- 카테고리 선택 -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">문의 유형</label>
+              <div class="category-grid">
+                <div class="category-card" data-category="입금/결제" onclick="selectCategory(this)">
+                  <div class="icon">💳</div>
+                  <div class="label">입금/결제</div>
+                </div>
+                <div class="category-card" data-category="취소/환불" onclick="selectCategory(this)">
+                  <div class="icon">↩️</div>
+                  <div class="label">취소/환불</div>
+                </div>
+                <div class="category-card" data-category="정보변경" onclick="selectCategory(this)">
+                  <div class="icon">✏️</div>
+                  <div class="label">정보 변경</div>
+                </div>
+                <div class="category-card" data-category="기타문의" onclick="selectCategory(this)">
+                  <div class="icon">💬</div>
+                  <div class="label">기타 문의</div>
+                </div>
+              </div>
+              <input type="hidden" id="category" value="" />
+            </div>
+
+            <!-- 문의 내용 -->
+            <div>
+              <label for="content" class="block text-sm font-medium text-gray-700 mb-2">문의 내용</label>
               <textarea
                 id="content"
                 class="input-glass"
-                rows="6"
-                placeholder="문의하실 내용을 입력해주세요"
+                rows="5"
+                placeholder="문의하실 내용을 자세히 입력해주세요"
+                maxlength="1000"
                 required
+                oninput="updateCharCount()"
               ></textarea>
+              <div class="char-counter" id="charCounter">0 / 1,000</div>
             </div>
 
-            <div id="error2" class="hidden p-4 bg-red-50 border border-red-200 rounded-lg text-red-700"></div>
+            <div id="error2" class="hidden p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm"></div>
 
             <button type="submit" class="btn-primary-glass w-full" id="submitBtn2">
-              문의하기
+              문의 접수하기
             </button>
           </form>
         </div>
 
         <!-- 문의 내역 -->
-        <div class="glass-card mb-8">
-          <h3 class="text-xl font-bold text-gray-900 mb-6">문의 내역</h3>
-          <div id="inquiryHistory" class="space-y-4">
+        <div class="glass-card">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-bold text-gray-900">내 문의 내역</h3>
+            <button onclick="loadInquiryHistory(currentPhone)" class="text-sm text-red-600 hover:underline flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              새로고침
+            </button>
+          </div>
+          <div id="inquiryHistory">
             <div class="text-center py-8 text-gray-500">로딩 중...</div>
           </div>
         </div>
       </div>
     </main>
 
-    <!-- 푸터 -->
-    <footer class="mt-16 py-8 border-t border-white/20">
-      <div class="max-w-4xl mx-auto px-4 text-center text-sm text-gray-600">
-        <!-- 배포사/운영사 정보는 추후 추가 예정 -->
-      </div>
-    </footer>
+    <!-- 하단 네비게이션 (모바일) -->
+    <nav class="bottom-nav">
+      <a href="/">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
+        <span>홈</span>
+      </a>
+      <a href="/apply.html">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        </svg>
+        <span>신청하기</span>
+      </a>
+      <a href="/check.html">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span>확인하기</span>
+      </a>
+      <a href="/inquiry.html" class="active">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
+        <span>문의하기</span>
+      </a>
+    </nav>
+
+    <!-- 토스트 알림 -->
+    <div id="toast" class="toast"></div>
 
     <!-- 성공 모달 -->
-    <div id="successModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div class="glass-card max-w-md w-full mx-4 text-center">
+    <div id="successModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div class="glass-card max-w-sm w-full text-center" style="animation: modalIn 0.3s ease-out;">
         <div class="mb-6 flex justify-center">
-          <div class="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center" style="animation: bounce 1s infinite;">
+          <div class="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center">
             <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
             </svg>
           </div>
         </div>
-        <h2 class="text-2xl font-bold text-gray-900 mb-4">문의가 접수되었습니다!</h2>
-        <p class="text-lg text-gray-700 mb-6">빠른 시일 내에 답변드리겠습니다.</p>
-        <button onclick="location.reload()" class="btn-primary-glass w-full">
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">문의 접수 완료!</h2>
+        <p class="text-gray-600 mb-6">빠른 시일 내에 답변드리겠습니다.</p>
+        <button onclick="closeSuccessModal()" class="btn-primary-glass w-full">
           확인
         </button>
       </div>
     </div>
+  </div>
 
-    <script>
-      let currentName = '';
-      let currentPhone = '';
+  <script>
+    let currentName = '';
+    let currentPhone = '';
+    let selectedCategory = '';
 
-      document.addEventListener('DOMContentLoaded', function() {
-        const phoneInput = document.getElementById('phone');
-        const loginForm = document.getElementById('loginForm');
-        const inquiryForm = document.getElementById('inquiryForm');
-        const errorDiv = document.getElementById('error');
-        const errorDiv2 = document.getElementById('error2');
-        const submitBtn = document.getElementById('submitBtn');
-        const submitBtn2 = document.getElementById('submitBtn2');
-        const successModal = document.getElementById('successModal');
-        const step1 = document.getElementById('step1');
-        const step2 = document.getElementById('step2');
+    document.addEventListener('DOMContentLoaded', function() {
+      const phoneInput = document.getElementById('phone');
+      const loginForm = document.getElementById('loginForm');
+      const inquiryForm = document.getElementById('inquiryForm');
+      const errorDiv = document.getElementById('error');
+      const errorDiv2 = document.getElementById('error2');
+      const submitBtn = document.getElementById('submitBtn');
+      const submitBtn2 = document.getElementById('submitBtn2');
 
-        if (!phoneInput || !loginForm) {
-          console.error('Required elements not found');
+      if (!phoneInput || !loginForm) {
+        console.error('Required elements not found');
+        return;
+      }
+
+      // 전화번호 숫자만 입력
+      phoneInput.addEventListener('keydown', (e) => {
+        const allowedKeys = [
+          'Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+          'Home', 'End'
+        ];
+
+        if (allowedKeys.includes(e.key)) return;
+
+        if (!/^[0-9]$/.test(e.key)) {
+          e.preventDefault();
           return;
         }
 
-        // 전화번호 숫자만 입력
-        phoneInput.addEventListener('keydown', (e) => {
-          const allowedKeys = [
-            'Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
-            'Home', 'End'
-          ];
-          
-          if (allowedKeys.includes(e.key)) {
-            return;
-          }
-          
-          if (!/^[0-9]$/.test(e.key)) {
-            e.preventDefault();
-            return;
-          }
-          
-          if (phoneInput.value.length >= 11 && !allowedKeys.includes(e.key)) {
-            e.preventDefault();
-          }
-        });
-
-        phoneInput.addEventListener('input', (e) => {
-          const value = e.target.value.replace(/[^0-9]/g, '');
-          if (value.length <= 11) {
-            phoneInput.value = value;
-          } else {
-            phoneInput.value = value.slice(0, 11);
-          }
-        });
-
-        // 1단계: 전화번호 입력 후 신청자 확인 및 다음 단계로
-        loginForm.addEventListener('submit', async (e) => {
+        if (phoneInput.value.length >= 11 && !allowedKeys.includes(e.key)) {
           e.preventDefault();
-          errorDiv.classList.add('hidden');
-          
-          const phone = phoneInput.value.replace(/[^0-9]/g, '');
+        }
+      });
 
-          if (phone.length !== 11) {
-            showError('전화번호를 정확히 입력해주세요. (11자리)', errorDiv);
-            return;
-          }
+      phoneInput.addEventListener('input', (e) => {
+        const value = e.target.value.replace(/[^0-9]/g, '');
+        phoneInput.value = value.slice(0, 11);
+      });
 
-          submitBtn.disabled = true;
-          submitBtn.textContent = '확인 중...';
+      // 1단계: 전화번호 확인
+      loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorDiv.classList.add('hidden');
 
-          try {
-            // 전화번호로 신청자 확인
-            const response = await fetch(`/api/participants/phone/${phone}`);
-            const data = await response.json();
+        const phone = phoneInput.value.replace(/[^0-9]/g, '');
 
-            if (!response.ok || !data.success) {
-              throw new Error('신청 내역을 찾을 수 없습니다. 신청 시 사용한 전화번호를 확인해주세요.');
-            }
-
-            // 신청자 정보 저장
-            currentName = data.participant.user_name;
-            currentPhone = phone;
-
-            // 2단계로 이동
-            step1.classList.add('hidden');
-            step2.classList.remove('hidden');
-            
-            // 문의 내역 로드
-            loadInquiryHistory(phone);
-          } catch (err) {
-            console.error('Participant check error:', err);
-            showError(err.message || '신청 내역을 찾을 수 없습니다. 신청 시 사용한 전화번호를 확인해주세요.', errorDiv);
-            submitBtn.disabled = false;
-            submitBtn.textContent = '다음';
-          }
-        });
-
-        // 2단계: 문의내용 제출
-        if (inquiryForm) {
-          inquiryForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            errorDiv2.classList.add('hidden');
-            
-            const content = document.getElementById('content').value.trim();
-
-            if (!content) {
-              showError('문의내용을 입력해주세요.', errorDiv2);
-              return;
-            }
-
-            submitBtn2.disabled = true;
-            submitBtn2.textContent = '문의 접수 중...';
-
-            try {
-              const response = await fetch('/api/inquiries', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone: currentPhone, content }),
-              });
-
-              const data = await response.json();
-
-              if (!response.ok) {
-                throw new Error(data.error || '문의 접수 중 오류가 발생했습니다.');
-              }
-
-              successModal.classList.remove('hidden');
-              // 문의 내역 새로고침
-              loadInquiryHistory(currentPhone);
-              // 문의내용 초기화
-              document.getElementById('content').value = '';
-            } catch (err) {
-              console.error('Submit error:', err);
-              showError(err.message || '문의 접수 중 오류가 발생했습니다. 다시 시도해주세요.', errorDiv2);
-              submitBtn2.disabled = false;
-              submitBtn2.textContent = '문의하기';
-            }
-          });
+        if (phone.length !== 11) {
+          showError('전화번호를 정확히 입력해주세요. (11자리)', errorDiv);
+          return;
         }
 
-        async function loadInquiryHistory(phone) {
-          const historyDiv = document.getElementById('inquiryHistory');
-          if (!historyDiv) return;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="inline-block animate-spin mr-2">↻</span> 확인 중...';
 
-          historyDiv.innerHTML = '<div class="text-center py-8 text-gray-500">로딩 중...</div>';
+        try {
+          const response = await fetch(`/api/participants/phone/${phone}`);
+          const data = await response.json();
+
+          if (!response.ok || !data.success) {
+            throw new Error('신청 내역을 찾을 수 없습니다.');
+          }
+
+          currentName = data.participant.user_name;
+          currentPhone = phone;
+
+          // 사용자 정보 표시
+          document.getElementById('userAvatar').textContent = currentName.charAt(0);
+          document.getElementById('userName').textContent = currentName;
+          document.getElementById('userPhone').textContent = formatPhone(phone);
+
+          goToStep2();
+          loadInquiryHistory(phone);
+        } catch (err) {
+          console.error('Participant check error:', err);
+          showError(err.message || '신청 내역을 찾을 수 없습니다.', errorDiv);
+          submitBtn.disabled = false;
+          submitBtn.textContent = '다음으로';
+        }
+      });
+
+      // 2단계: 문의내용 제출
+      if (inquiryForm) {
+        inquiryForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          errorDiv2.classList.add('hidden');
+
+          const content = document.getElementById('content').value.trim();
+          const category = document.getElementById('category').value;
+
+          if (!category) {
+            showError('문의 유형을 선택해주세요.', errorDiv2);
+            return;
+          }
+
+          if (!content) {
+            showError('문의내용을 입력해주세요.', errorDiv2);
+            return;
+          }
+
+          if (content.length < 10) {
+            showError('문의내용을 10자 이상 입력해주세요.', errorDiv2);
+            return;
+          }
+
+          submitBtn2.disabled = true;
+          submitBtn2.innerHTML = '<span class="inline-block animate-spin mr-2">↻</span> 접수 중...';
 
           try {
-            const response = await fetch(`/api/inquiries/phone/${phone}`);
+            const response = await fetch('/api/inquiries', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                phone: currentPhone,
+                content: `[${category}] ${content}`
+              }),
+            });
+
             const data = await response.json();
 
             if (!response.ok) {
-              throw new Error(data.error || '문의 내역을 불러오는 중 오류가 발생했습니다.');
+              throw new Error(data.error || '문의 접수 중 오류가 발생했습니다.');
             }
 
-            const inquiries = data.inquiries || [];
+            document.getElementById('successModal').classList.remove('hidden');
+            loadInquiryHistory(currentPhone);
 
-            if (inquiries.length === 0) {
-              historyDiv.innerHTML = '<div class="text-center py-8 text-gray-500">문의 내역이 없습니다.</div>';
-              return;
-            }
+            // 폼 초기화
+            document.getElementById('content').value = '';
+            document.getElementById('category').value = '';
+            selectedCategory = '';
+            document.querySelectorAll('.category-card').forEach(c => c.classList.remove('selected'));
+            updateCharCount();
+          } catch (err) {
+            console.error('Submit error:', err);
+            showError(err.message || '문의 접수 중 오류가 발생했습니다.', errorDiv2);
+          } finally {
+            submitBtn2.disabled = false;
+            submitBtn2.textContent = '문의 접수하기';
+          }
+        });
+      }
+    });
 
-            historyDiv.innerHTML = inquiries.map(inq => `
-              <div class="p-4 border border-gray-200 rounded-lg ${inq.is_answered ? 'bg-green-50/50' : 'bg-white'}">
-                <div class="flex justify-between items-start mb-3">
-                  <div>
-                    <span class="text-sm text-gray-500">${formatDateTime(inq.created_at)}</span>
-                    ${inq.is_answered ? '<span class="badge-green text-xs ml-2">답변 완료</span>' : '<span class="badge-red text-xs ml-2">답변 대기</span>'}
-                  </div>
-                </div>
-                
-                <div class="mb-3">
-                  <p class="text-sm font-medium text-gray-700 mb-1">문의내용</p>
-                  <p class="text-gray-900 whitespace-pre-wrap">${inq.content}</p>
-                </div>
+    function goToStep1() {
+      document.getElementById('step1').classList.remove('hidden');
+      document.getElementById('step2').classList.add('hidden');
+      document.getElementById('stepDot1').classList.add('active');
+      document.getElementById('stepDot1').classList.remove('completed');
+      document.getElementById('stepDot2').classList.remove('active');
+    }
+
+    function goToStep2() {
+      document.getElementById('step1').classList.add('hidden');
+      document.getElementById('step2').classList.remove('hidden');
+      document.getElementById('stepDot1').classList.remove('active');
+      document.getElementById('stepDot1').classList.add('completed');
+      document.getElementById('stepDot2').classList.add('active');
+    }
+
+    function selectCategory(element) {
+      document.querySelectorAll('.category-card').forEach(c => c.classList.remove('selected'));
+      element.classList.add('selected');
+      selectedCategory = element.dataset.category;
+      document.getElementById('category').value = selectedCategory;
+    }
+
+    function updateCharCount() {
+      const content = document.getElementById('content');
+      const counter = document.getElementById('charCounter');
+      const length = content.value.length;
+
+      counter.textContent = `${length.toLocaleString()} / 1,000`;
+      counter.classList.remove('warning', 'danger');
+
+      if (length > 900) {
+        counter.classList.add('danger');
+      } else if (length > 700) {
+        counter.classList.add('warning');
+      }
+    }
+
+    function formatPhone(phone) {
+      if (phone.length === 11) {
+        return `${phone.slice(0, 3)}-${phone.slice(3, 7)}-${phone.slice(7)}`;
+      }
+      return phone;
+    }
+
+    async function loadInquiryHistory(phone) {
+      const historyDiv = document.getElementById('inquiryHistory');
+      if (!historyDiv) return;
+
+      historyDiv.innerHTML = `
+        <div class="text-center py-8">
+          <div class="inline-block animate-spin text-2xl mb-2">↻</div>
+          <p class="text-gray-500">문의 내역을 불러오는 중...</p>
+        </div>
+      `;
+
+      try {
+        const response = await fetch(`/api/inquiries/phone/${phone}`);
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || '문의 내역을 불러오는 중 오류가 발생했습니다.');
+        }
+
+        const inquiries = data.inquiries || [];
+
+        if (inquiries.length === 0) {
+          historyDiv.innerHTML = `
+            <div class="text-center py-12">
+              <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+              <p class="text-gray-500">아직 문의 내역이 없습니다.</p>
+              <p class="text-sm text-gray-400 mt-1">위에서 새 문의를 작성해보세요!</p>
+            </div>
+          `;
+          return;
+        }
+
+        historyDiv.innerHTML = inquiries.map(inq => {
+          // 카테고리 추출
+          let category = '기타문의';
+          let content = inq.content;
+          const categoryMatch = inq.content.match(/^\[([^\]]+)\]\s*/);
+          if (categoryMatch) {
+            category = categoryMatch[1];
+            content = inq.content.replace(categoryMatch[0], '');
+          }
+
+          return `
+            <div class="inquiry-card">
+              <div class="inquiry-card-header">
+                <span class="text-sm text-gray-500">${formatDateTime(inq.created_at)}</span>
+                ${inq.is_answered
+                  ? '<span class="inquiry-status answered"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> 답변 완료</span>'
+                  : '<span class="inquiry-status waiting"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg> 답변 대기</span>'
+                }
+              </div>
+              <div class="inquiry-card-body">
+                <span class="inquiry-category">${category}</span>
+                <p class="inquiry-content">${escapeHtml(content)}</p>
 
                 ${inq.is_answered ? `
-                  <div class="pt-3 border-t border-gray-200">
-                    <p class="text-sm font-medium text-gray-700 mb-1">답변</p>
-                    <p class="text-gray-900 whitespace-pre-wrap">${inq.answer}</p>
-                    <p class="text-xs text-gray-400 mt-2">답변일시: ${formatDateTime(inq.answered_at)}</p>
+                  <div class="answer-section">
+                    <div class="answer-label">
+                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd"/>
+                      </svg>
+                      답변
+                    </div>
+                    <p class="inquiry-content text-sm">${escapeHtml(inq.answer)}</p>
+                    <p class="text-xs text-gray-400 mt-2">${formatDateTime(inq.answered_at)}</p>
                   </div>
                 ` : ''}
               </div>
-            `).join('');
-          } catch (err) {
-            console.error('Load history error:', err);
-            historyDiv.innerHTML = '<div class="text-center py-8 text-red-500">문의 내역을 불러오는 중 오류가 발생했습니다.</div>';
-          }
-        }
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error('Load history error:', err);
+        historyDiv.innerHTML = `
+          <div class="text-center py-8 text-red-500">
+            <svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p>문의 내역을 불러오는 중 오류가 발생했습니다.</p>
+            <button onclick="loadInquiryHistory(currentPhone)" class="mt-2 text-sm underline">다시 시도</button>
+          </div>
+        `;
+      }
+    }
 
-        function formatDateTime(dateTimeStr) {
-          if (!dateTimeStr) return '-';
-          try {
-            // YYYY-MM-DD HH:mm:ss 형식을 파싱
-            const dateStr = dateTimeStr.replace(' ', 'T');
-            const date = new Date(dateStr);
-            // 한국 시간대로 표시
-            return date.toLocaleString('ko-KR', {
-              year: 'numeric',
-              month: '2-digit',
-              day: '2-digit',
-              hour: '2-digit',
-              minute: '2-digit',
-              second: '2-digit',
-              hour12: false,
-              timeZone: 'Asia/Seoul'
-            });
-          } catch (e) {
-            return dateTimeStr;
-          }
-        }
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
 
-        function showError(message, errorElement) {
-          if (errorElement) {
-            errorElement.textContent = message;
-            errorElement.classList.remove('hidden');
-          } else {
-            alert(message);
-          }
-        }
+    function formatDateTime(dateTimeStr) {
+      if (!dateTimeStr) return '-';
+      try {
+        const dateStr = dateTimeStr.replace(' ', 'T');
+        const date = new Date(dateStr);
+        return date.toLocaleString('ko-KR', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+          timeZone: 'Asia/Seoul'
+        });
+      } catch (e) {
+        return dateTimeStr;
+      }
+    }
+
+    function showError(message, errorElement) {
+      if (errorElement) {
+        errorElement.textContent = message;
+        errorElement.classList.remove('hidden');
+        errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        showToast(message);
+      }
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function closeSuccessModal() {
+      document.getElementById('successModal').classList.add('hidden');
+    }
+
+    function toggleFaq(button) {
+      const faqItem = button.closest('.faq-item');
+      const isOpen = faqItem.classList.contains('open');
+
+      // 다른 FAQ 닫기
+      document.querySelectorAll('.faq-item').forEach(item => {
+        item.classList.remove('open');
       });
-    </script>
-  </div>
+
+      // 현재 FAQ 토글
+      if (!isOpen) {
+        faqItem.classList.add('open');
+      }
+    }
+  </script>
 </body>
 </html>
-
-

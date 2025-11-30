@@ -6,14 +6,19 @@
   "scripts": {
     "dev": "wrangler pages dev public",
     "deploy": "wrangler pages deploy public --project-name hancut-concert",
-    "deploy:prod": "wrangler pages deploy public --project-name hancut-concert --branch main"
+    "deploy:prod": "wrangler pages deploy public --project-name hancut-concert --branch main",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "hono": "^4.0.0"
+    "hono": "^4.0.0",
+    "jose": "^5.2.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241106.0",
     "typescript": "^5.3.3",
+    "vitest": "^1.0.0",
     "wrangler": "^3.0.0"
   }
 }
