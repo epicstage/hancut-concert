@@ -22,7 +22,7 @@ app.use('*', corsMiddleware);
 const api = new Hono<{ Bindings: Env }>();
 
 // 인증
-api.route('/admin', authRouter);
+api.route('/auth', authRouter);
 
 // 참가자 (공개)
 api.route('/participants', participantsRouter);
