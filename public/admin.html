@@ -452,6 +452,7 @@
   <script>
     let participants = [];
     let isAuthenticated = false;
+    let adminToken = null; // JWT 토큰 저장
     let currentSort = { column: null, direction: 'asc' };
     let filteredParticipants = [];
     let participantsCache = null;
@@ -460,6 +461,19 @@
     let savePaymentDataTimeout = null; // localStorage 저장 debounce용
     let searchDebounceTimeout = null; // 검색 debounce용
     const SEARCH_DEBOUNCE_MS = 300; // 검색 debounce 시간 (300ms)
+
+    // 인증된 API 호출을 위한 헬퍼 함수
+    function authFetch(url, options = {}) {
+      if (!adminToken) {
+        return Promise.reject(new Error('인증 토큰이 없습니다. 다시 로그인해주세요.'));
+      }
+      const headers = {
+        'Content-Type': 'application/json',
+        'x-admin-token': adminToken,
+        ...(options.headers || {})
+      };
+      return fetch(url, { ...options, headers });
+    }
 
     // Debounce 유틸리티 함수
     function debounce(func, wait) {
@@ -485,9 +499,11 @@
     }
 
     // 로그인 처리 함수
-    function performLogin() {
+    async function performLogin() {
       console.log('performLogin called');
-      
+
+      const loginBtn = document.getElementById('loginBtn');
+
       try {
         const passwordInput = document.getElementById('password');
         if (!passwordInput) {
@@ -495,49 +511,67 @@
           console.error('Password input element not found');
           return false;
         }
-        
+
         const password = passwordInput.value.trim();
-        console.log('Login attempt, password:', password);
-        console.log('Expected: admin123');
-        console.log('Match:', password === 'admin123');
-        
-        // 비밀번호 검증
-        if (password === 'admin123') {
-          console.log('Password correct');
-          isAuthenticated = true;
-          
-          const loginScreen = document.getElementById('loginScreen');
-          const adminScreen = document.getElementById('adminScreen');
-          
-          if (!loginScreen) {
-            console.error('Login screen element not found');
-            alert('로그인 화면 요소를 찾을 수 없습니다.');
-            return false;
-          }
-          
-          if (!adminScreen) {
-            console.error('Admin screen element not found');
-            alert('관리자 화면 요소를 찾을 수 없습니다.');
-            return false;
-          }
-          
-          console.log('Hiding login, showing admin');
-          loginScreen.classList.add('hidden');
-          adminScreen.classList.remove('hidden');
-          console.log('Loading participants');
-          loadParticipants();
-          return true;
-        } else {
-          console.log('Password incorrect');
-          alert('비밀번호가 올바르지 않습니다.');
-          passwordInput.value = '';
+
+        if (!password) {
+          alert('비밀번호를 입력해주세요.');
           passwordInput.focus();
           return false;
         }
+
+        // 로그인 버튼 비활성화
+        if (loginBtn) {
+          loginBtn.disabled = true;
+          loginBtn.textContent = '로그인 중...';
+        }
+
+        // 서버 API로 로그인
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || '로그인에 실패했습니다.');
+        }
+
+        if (data.success && data.token) {
+          console.log('Login successful, token received');
+          adminToken = data.token;
+          isAuthenticated = true;
+
+          // 토큰을 sessionStorage에 저장 (페이지 새로고침 시에도 유지)
+          sessionStorage.setItem('adminToken', adminToken);
+
+          const loginScreen = document.getElementById('loginScreen');
+          const adminScreen = document.getElementById('adminScreen');
+
+          if (loginScreen) loginScreen.classList.add('hidden');
+          if (adminScreen) adminScreen.classList.remove('hidden');
+
+          loadParticipants();
+          return true;
+        } else {
+          throw new Error('토큰을 받지 못했습니다.');
+        }
       } catch (error) {
         console.error('Login error:', error);
-        alert('로그인 중 오류가 발생했습니다: ' + error.message);
+        alert(error.message || '로그인 중 오류가 발생했습니다.');
+        const passwordInput = document.getElementById('password');
+        if (passwordInput) {
+          passwordInput.value = '';
+          passwordInput.focus();
+        }
         return false;
+      } finally {
+        if (loginBtn) {
+          loginBtn.disabled = false;
+          loginBtn.textContent = '로그인';
+        }
       }
     }
 
@@ -549,29 +583,46 @@
       const searchInput = document.getElementById('searchInput');
 
       console.log('Initializing admin page...');
-      console.log('loginScreen:', loginScreen);
-      console.log('adminScreen:', adminScreen);
-      console.log('loginForm:', loginForm);
+
+      // sessionStorage에서 토큰 복원 시도
+      const savedToken = sessionStorage.getItem('adminToken');
+      if (savedToken) {
+        adminToken = savedToken;
+        isAuthenticated = true;
+        console.log('Restored token from sessionStorage');
+
+        // 토큰이 유효한지 확인 (API 호출)
+        authFetch('/api/admin/participants')
+          .then(response => {
+            if (response.ok) {
+              // 토큰 유효 - 관리자 화면 표시
+              if (loginScreen) loginScreen.classList.add('hidden');
+              if (adminScreen) adminScreen.classList.remove('hidden');
+              loadParticipants();
+            } else {
+              // 토큰 만료 - 로그인 화면 표시
+              sessionStorage.removeItem('adminToken');
+              adminToken = null;
+              isAuthenticated = false;
+            }
+          })
+          .catch(() => {
+            // 에러 - 로그인 화면 유지
+            sessionStorage.removeItem('adminToken');
+            adminToken = null;
+            isAuthenticated = false;
+          });
+      }
 
       if (!loginForm) {
         console.error('Login form not found');
-        alert('로그인 폼을 찾을 수 없습니다. 페이지를 새로고침해주세요.');
         return;
-      }
-
-      if (!loginScreen) {
-        console.error('Login screen not found');
-      }
-
-      if (!adminScreen) {
-        console.error('Admin screen not found');
       }
 
       // 폼 제출 이벤트 리스너
       loginForm.addEventListener('submit', function(e) {
         e.preventDefault();
         e.stopPropagation();
-        console.log('Form submit event triggered');
         performLogin();
         return false;
       });
@@ -581,13 +632,10 @@
       if (loginBtn) {
         loginBtn.addEventListener('click', function(e) {
           e.preventDefault();
-          console.log('Login button clicked');
           performLogin();
           return false;
         });
       }
-
-      console.log('Login form event listener attached');
 
       if (searchInput) {
         // Debounce 적용된 검색 (300ms)
@@ -620,16 +668,26 @@
 
       const loading = document.getElementById('loading');
       if (loading) loading.classList.remove('hidden');
-      
+
       try {
-        const response = await fetch('/api/admin/participants');
-        
+        const response = await authFetch('/api/admin/participants');
+
         if (!response.ok) {
+          if (response.status === 401) {
+            // 인증 만료 - 다시 로그인 필요
+            alert('세션이 만료되었습니다. 다시 로그인해주세요.');
+            sessionStorage.removeItem('adminToken');
+            adminToken = null;
+            isAuthenticated = false;
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('adminScreen').classList.add('hidden');
+            return;
+          }
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const data = await response.json();
-        
+
         if (data.success) {
           participants = data.participants || [];
           filteredParticipants = participants;
@@ -1187,7 +1245,7 @@
       }
 
       try {
-        const response = await fetch('/api/admin/participants/reset-seats', {
+        const response = await authFetch('/api/admin/participants/reset-seats', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
         });
@@ -1310,7 +1368,7 @@
       if (loading) loading.classList.remove('hidden');
       
       try {
-        const response = await fetch('/api/admin/inquiries');
+        const response = await authFetch('/api/admin/inquiries');
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -1521,7 +1579,7 @@
         if (!Array.isArray(savedData) || savedData.length === 0) return false;
 
         // 참가자 목록 로드 (매칭을 위해 필요)
-        fetch('/api/admin/participants')
+        authFetch('/api/admin/participants')
           .then(function(response) { return response.json(); })
           .then(function(data) {
             if (data.success) {
@@ -1674,7 +1732,7 @@
       // 참가자 목록이 없으면 먼저 로드
       if (allParticipants.length === 0) {
         try {
-          const response = await fetch('/api/admin/participants');
+          const response = await authFetch('/api/admin/participants');
           const data = await response.json();
           if (data.success) {
             allParticipants = data.participants || [];
@@ -1848,7 +1906,7 @@
 
       // 참가자 목록 로드
       try {
-        const response = await fetch('/api/admin/participants');
+        const response = await authFetch('/api/admin/participants');
         const data = await response.json();
         if (data.success) {
           allParticipants = data.participants || [];
@@ -2092,7 +2150,7 @@
       // 참가자 목록 로드 (없으면)
       if (allParticipants.length === 0) {
         try {
-          const response = await fetch('/api/admin/participants');
+          const response = await authFetch('/api/admin/participants');
           const data = await response.json();
           if (data.success) {
             allParticipants = data.participants || [];
@@ -2371,7 +2429,7 @@
 
       // 입금 확인 처리
       try {
-        const response = await fetch('/api/admin/participants/' + selectedParticipant.id + '/payment', {
+        const response = await authFetch('/api/admin/participants/' + selectedParticipant.id + '/payment', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ is_paid: 1 }),
@@ -2417,7 +2475,7 @@
 
       if (item.matchedParticipant) {
         try {
-          const response = await fetch('/api/admin/participants/' + item.matchedParticipant.id + '/payment', {
+          const response = await authFetch('/api/admin/participants/' + item.matchedParticipant.id + '/payment', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ is_paid: 1 }),
@@ -2546,7 +2604,7 @@
 
       // 참가자 목록 로드
       try {
-        const response = await fetch('/api/admin/participants');
+        const response = await authFetch('/api/admin/participants');
         const data = await response.json();
         if (data.success) {
           allParticipants = data.participants || [];
@@ -2928,7 +2986,7 @@
       if (item.matchedParticipant) {
         // 매칭된 참가자의 입금 상태 업데이트
         try {
-          const response = await fetch('/api/admin/participants/' + item.matchedParticipant.id + '/payment', {
+          const response = await authFetch('/api/admin/participants/' + item.matchedParticipant.id + '/payment', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ is_paid: 1 }),
@@ -2971,7 +3029,7 @@
     // 체크인 통계 로드
     async function loadCheckinStats() {
       try {
-        const response = await fetch('/api/admin/checkin/stats');
+        const response = await authFetch('/api/admin/checkin/stats');
         const data = await response.json();
         
         if (data.success) {
@@ -3134,7 +3192,7 @@
 
         console.log('Sending QR data:', qrDataToSend);
 
-        const response = await fetch('/api/admin/checkin', {
+        const response = await authFetch('/api/admin/checkin', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ qrData: qrDataToSend })
