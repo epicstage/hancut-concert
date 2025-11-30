@@ -6,7 +6,7 @@
   <meta name="description" content="한동훈 토크콘서트 - 2025년 12월 21일 고양 킨텍스" />
   <meta name="theme-color" content="#dc2626" />
   <title>한동훈 토크콘서트</title>
-  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/styles.css?v=2" />
   <!-- Open Graph -->
   <meta property="og:title" content="한동훈 토크콘서트" />
   <meta property="og:description" content="2025년 12월 21일 고양 킨텍스에서 열리는 한동훈 토크콘서트에 참가하세요." />
@@ -222,8 +222,14 @@
               <p class="text-sm text-gray-500 mb-1">카카오뱅크</p>
               <p id="accountNumber" class="text-xl font-bold text-red-600">3333-3548-32957</p>
             </div>
-            <button onclick="copyAccount()" class="btn-icon bg-red-50 hover:bg-red-100 text-red-600" aria-label="계좌번호 복사">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button 
+              onclick="copyAccount()" 
+              class="btn-icon bg-red-50 hover:bg-red-100 text-red-600" 
+              aria-label="계좌번호 복사"
+              tabindex="0"
+              onkeydown="if(event.key==='Enter'||event.key===' ') { event.preventDefault(); copyAccount(); }"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
               </svg>
             </button>

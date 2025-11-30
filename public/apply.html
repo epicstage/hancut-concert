@@ -6,7 +6,7 @@
   <meta name="description" content="한동훈 토크콘서트 참가 신청" />
   <meta name="theme-color" content="#dc2626" />
   <title>참가 신청 - 한동훈 토크콘서트</title>
-  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/styles.css?v=2" />
 </head>
 <body>
   <div class="min-h-screen main-content">
@@ -173,6 +173,7 @@
                     id="ssnFirst"
                     type="tel"
                     inputmode="numeric"
+                    autocomplete="bday"
                     class="input-glass"
                     placeholder="620126"
                     maxlength="6"
@@ -333,8 +334,15 @@
       <div class="modal-content max-w-lg">
         <div class="modal-header">
           <h3 class="text-lg font-bold">개인정보 수집 및 활용 동의</h3>
-          <button type="button" onclick="closePrivacyModal()" class="btn-icon">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <button 
+            type="button" 
+            onclick="closePrivacyModal()" 
+            class="btn-icon"
+            aria-label="모달 닫기"
+            tabindex="0"
+            onkeydown="if(event.key==='Enter'||event.key===' ') { event.preventDefault(); closePrivacyModal(); }"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -632,6 +640,11 @@
 
       try {
         const ticketCount = parseInt(document.querySelector('input[name="ticketCount"]:checked').value);
+        
+        // 타임아웃 설정 (30초)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
+        
         const response = await fetch('/api/participants', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -641,7 +654,10 @@
             ssn_first: ssnFirstInput.value,
             ticket_count: ticketCount
           }),
+          signal: controller.signal
         });
+
+        clearTimeout(timeoutId);
 
         const data = await response.json();
 
@@ -663,8 +679,19 @@
 
       } catch (err) {
         console.error('Submit error:', err);
-        document.getElementById('submitErrorMessage').textContent = err.message;
+        
+        let errorMessage = '신청 중 오류가 발생했습니다.';
+        if (err.name === 'AbortError') {
+          errorMessage = '요청 시간이 초과되었습니다. 네트워크 연결을 확인하고 다시 시도해주세요.';
+        } else if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+          errorMessage = '네트워크 연결을 확인하고 다시 시도해주세요.';
+        } else if (err.message) {
+          errorMessage = err.message;
+        }
+        
+        document.getElementById('submitErrorMessage').textContent = errorMessage;
         submitErrorEl.classList.remove('hidden');
+        showToast(errorMessage, 'error');
 
         submitBtn.disabled = false;
         submitBtn.innerHTML = `

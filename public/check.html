@@ -6,7 +6,7 @@
   <meta name="description" content="한동훈 토크콘서트 신청내역 확인" />
   <meta name="theme-color" content="#dc2626" />
   <title>신청내역 확인 - 한동훈 토크콘서트</title>
-  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/styles.css?v=2" />
 </head>
 <body>
   <div class="min-h-screen main-content">
@@ -93,8 +93,13 @@
             <div class="space-y-1 mb-4">
               <div class="flex items-center justify-between">
                 <span id="userName" class="text-xl font-bold text-gray-900"></span>
-                <button id="editBtn" class="btn-icon text-gray-400 hover:text-gray-600">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button 
+                  id="editBtn" 
+                  class="btn-icon text-gray-400 hover:text-gray-600"
+                  aria-label="이름 수정"
+                  tabindex="0"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                 </button>
@@ -240,6 +245,7 @@
                 id="guest2SsnFirst"
                 type="tel"
                 inputmode="numeric"
+                autocomplete="bday"
                 class="input-glass"
                 placeholder="620126"
                 maxlength="6"
@@ -416,7 +422,16 @@
       `;
 
       try {
-        const response = await fetch(`/api/participants/phone/${phone}`);
+        // 타임아웃 설정 (30초)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
+        
+        const response = await fetch(`/api/participants/phone/${phone}`, {
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
         const data = await response.json();
 
         if (!response.ok) {
@@ -427,7 +442,18 @@
         displayResult(data.participant);
       } catch (err) {
         console.error('Fetch error:', err);
-        showError(err.message || '조회 중 오류가 발생했습니다.');
+        
+        let errorMessage = '조회 중 오류가 발생했습니다.';
+        if (err.name === 'AbortError') {
+          errorMessage = '요청 시간이 초과되었습니다. 네트워크 연결을 확인하고 다시 시도해주세요.';
+        } else if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+          errorMessage = '네트워크 연결을 확인하고 다시 시도해주세요.';
+        } else if (err.message) {
+          errorMessage = err.message;
+        }
+        
+        showError(errorMessage);
+        showToast(errorMessage, 'error');
       } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = `

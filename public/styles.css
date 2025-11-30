@@ -131,6 +131,73 @@ body {
   border: 0;
 }
 
+/* Details/Summary 스타일 - 브라우저 기본 스타일 완전 제거 */
+details {
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+details summary {
+  display: block !important;
+  list-style: none !important;
+  list-style-type: none !important;
+  cursor: pointer;
+  user-select: none;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+/* 모든 브라우저의 기본 마커 제거 */
+details summary::-webkit-details-marker {
+  display: none !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+details summary::marker {
+  display: none !important;
+  content: '' !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+details summary::before {
+  display: none !important;
+  content: '' !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+details[open] summary {
+  margin-bottom: 0;
+}
+
+/* Summary 내부 요소는 클릭 가능하도록 */
+details summary * {
+  pointer-events: auto;
+}
+
+details summary svg {
+  pointer-events: auto;
+}
+
 /* =============================================
    글래스모피즘 컴포넌트
 ============================================= */
@@ -143,6 +210,15 @@ body {
   box-shadow: 0 8px 32px 0 var(--glass-shadow);
   border: 1px solid var(--glass-border);
   transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 글래스모피즘 배경 내 텍스트 가독성 향상 */
+.glass-card p,
+.glass-card span:not(.badge span),
+.glass-card label {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .glass-card:hover {
@@ -244,11 +320,17 @@ body {
   justify-content: center;
   transition: all var(--transition-fast);
   color: var(--text-muted);
+  outline: none;
 }
 
 .btn-icon:hover {
   background: rgba(0, 0, 0, 0.05);
   color: var(--text-primary);
+}
+
+.btn-icon:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 /* =============================================
@@ -345,12 +427,13 @@ body {
 /* 입력 힌트/에러 메시지 */
 .input-hint {
   font-size: 0.875rem;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   margin-top: var(--spacing-sm);
 }
 
 .input-error-message {
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
   color: var(--color-error);
   margin-top: var(--spacing-sm);
   display: flex;
@@ -564,9 +647,9 @@ body {
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: 0.5rem 0.75rem;
   border-radius: var(--radius-full);
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   backdrop-filter: blur(5px);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -962,6 +1045,7 @@ body {
 .data-table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 800px;
 }
 
 .data-table th,
@@ -981,6 +1065,17 @@ body {
 
 .data-table tr:hover {
   background: rgba(0, 0, 0, 0.02);
+}
+
+@media (max-width: 768px) {
+  .data-table {
+    font-size: 0.875rem;
+  }
+  
+  .data-table th,
+  .data-table td {
+    padding: 0.5rem;
+  }
 }
 
 .sortable {
