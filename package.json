@@ -5,8 +5,8 @@
   "private": true,
   "scripts": {
     "dev": "wrangler pages dev public",
-    "deploy": "wrangler pages deploy public --project-name hancut-concert",
-    "deploy:prod": "wrangler pages deploy public --project-name hancut-concert --branch main",
+    "deploy": "wrangler pages deploy public --project-name hancut-concert2",
+    "deploy:prod": "wrangler pages deploy public --project-name hancut-concert2 --branch main",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"

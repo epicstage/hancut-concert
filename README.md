@@ -68,13 +68,13 @@
 배포가 완료되면 다음 링크로 접속할 수 있습니다:
 
 ### 참가자용 링크
-- **메인 페이지**: `https://hancut-concert.pages.dev`
-- **신청 페이지**: `https://hancut-concert.pages.dev/apply.html`
-- **신청내역 확인**: `https://hancut-concert.pages.dev/check.html`
-- **좌석 확인**: `https://hancut-concert.pages.dev/seat.html`
+- **메인 페이지**: `https://hancut-concert2.pages.dev`
+- **신청 페이지**: `https://hancut-concert2.pages.dev/apply.html`
+- **신청내역 확인**: `https://hancut-concert2.pages.dev/check.html`
+- **좌석 확인**: `https://hancut-concert2.pages.dev/seat.html`
 
 ### 관리자 링크
-- **관리자 페이지**: `https://hancut-concert.pages.dev/admin.html`
+- **관리자 페이지**: `https://hancut-concert2.pages.dev/admin.html`
 - 기본 비밀번호: `admin123` (환경 변수에서 변경 가능)
 
 > **참고**: 실제 배포 후 생성되는 링크는 Cloudflare Pages 대시보드에서 확인할 수 있습니다.
