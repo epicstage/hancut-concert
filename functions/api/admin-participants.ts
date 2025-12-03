@@ -53,7 +53,8 @@ adminParticipantsRouter.get('/', async (c) => {
       countQuery += whereClause;
     }
 
-    query += ` ORDER BY ${sortColumn} ${order} LIMIT ? OFFSET ?`;
+    // LIMIT과 OFFSET을 쿼리에 직접 삽입 (바인딩 문제 회피)
+    query += ` ORDER BY ${sortColumn} ${order} LIMIT ${limit} OFFSET ${offset}`;
 
     // 전체 개수 조회
     const totalResult = await c.env.DB.prepare(countQuery)
@@ -64,7 +65,7 @@ adminParticipantsRouter.get('/', async (c) => {
 
     // 참가자 목록 조회
     const result = await c.env.DB.prepare(query)
-      .bind(...params, limit, offset)
+      .bind(...params) // limit, offset 제거
       .all<Participant>();
 
     return c.json({
@@ -81,7 +82,10 @@ adminParticipantsRouter.get('/', async (c) => {
     });
   } catch (error) {
     console.error('Error fetching participants:', error);
-    return c.json({ error: '조회 중 오류가 발생했습니다.' }, 500);
+    return c.json({
+      error: '조회 중 오류가 발생했습니다.',
+      details: error instanceof Error ? error.message : String(error)
+    }, 500);
   }
 });
 
