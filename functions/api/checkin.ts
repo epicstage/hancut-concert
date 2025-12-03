@@ -286,21 +286,38 @@ checkinRouter.post('/lists/:listId/checkin', async (c) => {
     }
 
     // 참가자 확인
-    const participant = await c.env.DB.prepare(`
+    const participant = await getCached<{
+      id: number;
+      user_name: string;
+      phone: string;
+      is_paid: number;
+      seat_group: string | null;
+      seat_row: string | null;
+      seat_number: string | null;
+      seat_full: string | null;
+    } | null>(
+      c.env.CACHE,
+      `checkin:participant:${participantId}`,
+      async () => {
+        return c.env.DB.prepare(`
       SELECT id, user_name, phone, is_paid, seat_group, seat_row, seat_number, seat_full
-      FROM participants WHERE id = ?
+      FROM participants
+      WHERE id = ? AND deleted_at IS NULL
     `)
-      .bind(participantId)
-      .first<{
-        id: number;
-        user_name: string;
-        phone: string;
-        is_paid: number;
-        seat_group: string | null;
-        seat_row: string | null;
-        seat_number: string | null;
-        seat_full: string | null;
-      }>();
+          .bind(participantId)
+          .first<{
+            id: number;
+            user_name: string;
+            phone: string;
+            is_paid: number;
+            seat_group: string | null;
+            seat_row: string | null;
+            seat_number: string | null;
+            seat_full: string | null;
+          }>();
+      },
+      CacheTTL.PARTICIPANT // Assuming CacheTTL.PARTICIPANT is defined
+    );
 
     if (!participant) {
       return errorResponse(c, 404, '참가자를 찾을 수 없습니다.', ErrorCode.NOT_FOUND);
@@ -435,7 +452,7 @@ checkinRouter.post('/', async (c) => {
 
     // 참가자 확인
     const participant = await c.env.DB.prepare(
-      'SELECT id, user_name, phone, is_paid, is_checked_in, seat_full FROM participants WHERE id = ?'
+      'SELECT id, user_name, phone, is_paid, is_checked_in, seat_full FROM participants WHERE id = ? AND deleted_at IS NULL'
     )
       .bind(participantData.id)
       .first<{

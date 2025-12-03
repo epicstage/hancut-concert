@@ -68,7 +68,7 @@ participantsRouter.post('/', async (c) => {
 participantsRouter.get('/count', async (c) => {
   try {
     const result = await c.env.DB.prepare(
-      'SELECT COUNT(*) as count FROM participants'
+      'SELECT COUNT(*) as count FROM participants WHERE deleted_at IS NULL'
     ).first<{ count: number }>();
 
     return c.json({
@@ -87,7 +87,7 @@ participantsRouter.get('/phone/:phone', async (c) => {
     const phone = c.req.param('phone');
 
     const participant = await c.env.DB.prepare(
-      'SELECT * FROM participants WHERE phone = ?'
+      'SELECT * FROM participants WHERE phone = ? AND deleted_at IS NULL'
     )
       .bind(phone)
       .first<Participant>();
@@ -140,6 +140,11 @@ participantsRouter.put('/phone/:phone/guest2', async (c) => {
       return c.json({ error: '2번째 참가자의 이름, 전화번호, 생년월일은 모두 필수입니다.' }, 400);
     }
 
+    // 본인 전화번호와 동일한지 체크
+    if (phone === body.guest2_phone) {
+      return c.json({ error: '본인과 동반자의 전화번호가 같을 수 없습니다.' }, 400);
+    }
+
     // 전화번호 검증
     const phoneValidation = validatePhone(body.guest2_phone);
     if (!phoneValidation.valid) {
@@ -152,19 +157,23 @@ participantsRouter.put('/phone/:phone/guest2', async (c) => {
       return c.json({ error: `2번째 참가자 ${ssnValidation.error}` }, 400);
     }
 
-    // guest2_phone 중복 체크
+    // guest2_phone 중복 체크 강화 (모든 전화번호 필드 확인)
     const existingPhone = await c.env.DB.prepare(
-      'SELECT id FROM participants WHERE phone = ? OR guest2_phone = ?'
+      'SELECT id, user_name, phone, guest2_phone FROM participants WHERE (phone = ? OR guest2_phone = ?) AND deleted_at IS NULL'
     )
       .bind(body.guest2_phone, body.guest2_phone)
-      .first<{ id: number }>();
+      .first<{ id: number; user_name: string; phone: string; guest2_phone: string | null }>();
 
     if (existingPhone) {
-      return c.json({ error: '이미 사용 중인 전화번호입니다.' }, 400);
+      const isMainPhone = existingPhone.phone === body.guest2_phone;
+      const conflictType = isMainPhone ? '주 신청자' : '동반자';
+      return c.json({
+        error: `이미 다른 신청의 ${conflictType} 전화번호로 사용 중입니다. (신청자: ${existingPhone.user_name})`
+      }, 400);
     }
 
     await c.env.DB.prepare(
-      'UPDATE participants SET guest2_name = ?, guest2_phone = ?, guest2_ssn_first = ?, is_guest2_completed = 1 WHERE phone = ?'
+      'UPDATE participants SET guest2_name = ?, guest2_phone = ?, guest2_ssn_first = ?, is_guest2_completed = 1 WHERE phone = ? AND deleted_at IS NULL'
     )
       .bind(
         body.guest2_name.trim(),

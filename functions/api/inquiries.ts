@@ -49,7 +49,7 @@ inquiriesRouter.post('/', async (c) => {
 
     // 신청자 확인
     const participant = await c.env.DB.prepare(
-      'SELECT user_name FROM participants WHERE phone = ? OR guest2_phone = ? LIMIT 1'
+      'SELECT user_name FROM participants WHERE (phone = ? OR guest2_phone = ?) AND deleted_at IS NULL LIMIT 1'
     )
       .bind(body.phone, body.phone)
       .first<{ user_name: string }>();
@@ -77,16 +77,27 @@ inquiriesRouter.post('/', async (c) => {
 
 // ===== 관리자 라우트 =====
 
-// 관리자: 문의 목록 조회
+// 관리자: 문의 목록 조회 (필터 지원)
 inquiriesRouter.get('/', requireAdmin, async (c) => {
   try {
-    const inquiries = await c.env.DB.prepare(
-      'SELECT * FROM inquiries ORDER BY created_at DESC'
-    ).all<Inquiry>();
+    const filter = c.req.query('filter'); // 'unanswered', 'answered', 또는 undefined (전체)
+
+    let query = 'SELECT * FROM inquiries';
+
+    if (filter === 'unanswered') {
+      query += ' WHERE is_answered = 0';
+    } else if (filter === 'answered') {
+      query += ' WHERE is_answered = 1';
+    }
+
+    query += ' ORDER BY created_at DESC';
+
+    const inquiries = await c.env.DB.prepare(query).all<Inquiry>();
 
     return c.json({
       success: true,
       inquiries: inquiries.results || [],
+      filter: filter || 'all'
     });
   } catch (error) {
     console.error('Error fetching inquiries:', error);
