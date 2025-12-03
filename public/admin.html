@@ -794,11 +794,12 @@
           updateSortIcons();
         } else {
           console.error('API error:', data.error);
-          showError('참가자 목록을 불러오는 중 오류가 발생했습니다: ' + (data.error || '알 수 없는 오류'));
+          const errorMsg = data.details ? `${data.error} (${data.details})` : (data.error || '알 수 없는 오류');
+          showError('참가자 목록을 불러오는 중 오류가 발생했습니다: ' + errorMsg);
         }
       } catch (err) {
         console.error('Error loading participants:', err);
-        showError('참가자 목록을 불러오는 중 오류가 발생했습니다.\n네트워크 연결을 확인해주세요.');
+        showError('참가자 목록을 불러오는 중 오류가 발생했습니다.\n' + err.message);
       } finally {
         if (loading) loading.classList.add('hidden');
       }
@@ -851,12 +852,6 @@
       prevBtn.disabled = !pagination.hasPrev;
       prevBtn.onclick = () => loadParticipants(pagination.page - 1);
       container.appendChild(prevBtn);
-
-      // 페이지 정보
-      const info = document.createElement('span');
-      info.className = 'text-sm text-gray-600';
-      info.innerText = `${pagination.page} / ${pagination.totalPages} 페이지 (총 ${pagination.total}명)`;
-      container.appendChild(info);
 
       // 다음 버튼
       const nextBtn = document.createElement('button');
