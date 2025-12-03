@@ -7,6 +7,8 @@
   <title>관리자 페이지 - 한동훈 토크콘서트</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- SheetJS for Excel Export -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -245,6 +247,14 @@
                 </svg>
                 <span class="hidden md:inline">새로고침</span>
               </button>
+              <button onclick="downloadExcel()" class="btn-primary-glass px-6 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                엑셀 다운로드
+              </button>
             </div>
           </div>
 
@@ -256,48 +266,48 @@
                   <th class="text-center" style="width: 60px;">
                     연번
                   </th>
-                  <th class="sortable" data-sort="user_name" onclick="sortTable('user_name')">
+                  <th class="sortable cursor-pointer hover:bg-gray-100" onclick="sortParticipants('user_name')">
                     이름
-                    <span class="sort-icon" id="sort-icon-user_name"></span>
+                    <span class="sort-icon ml-1" id="sort-icon-user_name"></span>
                   </th>
                   <th>
                     대리신청
                   </th>
-                  <th class="sortable" data-sort="phone" onclick="sortTable('phone')">
+                  <th class="sortable cursor-pointer hover:bg-gray-100" onclick="sortParticipants('phone')">
                     전화번호
-                    <span class="sort-icon" id="sort-icon-phone"></span>
+                    <span class="sort-icon ml-1" id="sort-icon-phone"></span>
                   </th>
-                  <th class="sortable" data-sort="ssn_first" onclick="sortTable('ssn_first')">
+                  <th class="sortable cursor-pointer hover:bg-gray-100" onclick="sortParticipants('ssn_first')">
                     주민번호 앞자리
-                    <span class="sort-icon" id="sort-icon-ssn_first"></span>
+                    <span class="sort-icon ml-1" id="sort-icon-ssn_first"></span>
                   </th>
-                  <th class="sortable" data-sort="is_paid" onclick="sortTable('is_paid')">
+                  <th class="sortable cursor-pointer hover:bg-gray-100" onclick="sortParticipants('is_paid')">
                     입금 상태
-                    <span class="sort-icon" id="sort-icon-is_paid"></span>
+                    <span class="sort-icon ml-1" id="sort-icon-is_paid"></span>
                   </th>
-                  <th class="sortable" data-sort="is_checked_in" onclick="sortTable('is_checked_in')">
+                  <th class="sortable cursor-pointer hover:bg-gray-100" onclick="sortParticipants('is_checked_in')">
                     입장 확인
-                    <span class="sort-icon" id="sort-icon-is_checked_in"></span>
+                    <span class="sort-icon ml-1" id="sort-icon-is_checked_in"></span>
                   </th>
-                  <th class="sortable" data-sort="seat_group" onclick="sortTable('seat_group')">
+                  <th class="sortable cursor-pointer hover:bg-gray-100" onclick="sortParticipants('seat_group')">
                     좌석 그룹
-                    <span class="sort-icon" id="sort-icon-seat_group"></span>
+                    <span class="sort-icon ml-1" id="sort-icon-seat_group"></span>
                   </th>
-                  <th class="sortable" data-sort="seat_row" onclick="sortTable('seat_row')">
+                  <th class="sortable cursor-pointer hover:bg-gray-100" onclick="sortParticipants('seat_row')">
                     열
-                    <span class="sort-icon" id="sort-icon-seat_row"></span>
+                    <span class="sort-icon ml-1" id="sort-icon-seat_row"></span>
                   </th>
-                  <th class="sortable" data-sort="seat_number" onclick="sortTable('seat_number')">
+                  <th class="sortable cursor-pointer hover:bg-gray-100" onclick="sortParticipants('seat_number')">
                     좌석번호
-                    <span class="sort-icon" id="sort-icon-seat_number"></span>
+                    <span class="sort-icon ml-1" id="sort-icon-seat_number"></span>
                   </th>
-                  <th class="sortable" data-sort="seat_full" onclick="sortTable('seat_full')">
+                  <th class="sortable cursor-pointer hover:bg-gray-100" onclick="sortParticipants('seat_full')">
                     전체 좌석
-                    <span class="sort-icon" id="sort-icon-seat_full"></span>
+                    <span class="sort-icon ml-1" id="sort-icon-seat_full"></span>
                   </th>
-                  <th class="sortable" data-sort="created_at" onclick="sortTable('created_at')">
+                  <th class="sortable cursor-pointer hover:bg-gray-100" onclick="sortParticipants('created_at')">
                     신청 일시
-                    <span class="sort-icon" id="sort-icon-created_at"></span>
+                    <span class="sort-icon ml-1" id="sort-icon-created_at"></span>
                   </th>
                   <th>작업</th>
                 </tr>
@@ -306,7 +316,7 @@
             </table>
             <div id="emptyMessage" class="hidden text-center py-8 text-gray-500"></div>
           </div>
-
+          <div id="paginationContainer" class="flex justify-center items-center gap-2 mt-4"></div>
           <div class="mt-4 text-sm text-gray-600" id="countText"></div>
         </div>
 
@@ -470,22 +480,30 @@
         <!-- 문의 관리 탭 -->
         <div id="inquiriesSection" class="hidden">
           <div class="glass-card mb-6">
-            <div class="flex gap-3">
-              <div class="relative flex-1">
-                <input type="text" id="inquirySearchInput" class="input-glass pl-10" placeholder="이름 또는 전화번호로 검색..." />
+            <div class="flex justify-between items-center mb-4">
+              <div class="relative flex-1 min-w-0">
+                <input type="text" id="inquirySearchInput" class="input-glass pl-10 w-full"
+                  placeholder="이름 또는 전화번호로 검색..." />
                 <svg class="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none"
                   stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
-              <button onclick="loadInquiries()" class="btn-secondary-glass px-6 flex items-center gap-2" title="새로고침">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                <span class="hidden md:inline">새로고침</span>
-              </button>
+              <div class="flex gap-2 ml-3">
+                <select id="inquiryFilter" onchange="filterInquiries(this.value)" class="input-glass">
+                  <option value="all">전체 문의</option>
+                  <option value="unanswered">미응답 문의</option>
+                  <option value="answered">답변 완료</option>
+                </select>
+                <button onclick="loadInquiries()" class="btn-secondary-glass px-6 flex items-center gap-2" title="새로고침">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  <span class="hidden md:inline">새로고침</span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -512,7 +530,12 @@
     let participants = [];
     let isAuthenticated = false;
     let adminToken = null; // JWT 토큰 저장
-    let currentSort = { column: null, direction: 'asc' };
+    let currentSort = 'created_at';
+    let currentOrder = 'desc';
+    let currentPage = 1;
+    let itemsPerPage = 50;
+    let totalItems = 0;
+    let inquiryFilterState = 'all';
     let filteredParticipants = [];
     let participantsCache = null;
     let participantsCacheTime = null;
@@ -699,7 +722,7 @@
       if (searchInput) {
         // Debounce 적용된 검색 (300ms)
         const debouncedFilter = debounce(() => {
-          filterParticipants();
+          loadParticipants(1); // 검색 시 첫 페이지로 이동
         }, SEARCH_DEBOUNCE_MS);
 
         searchInput.addEventListener('input', debouncedFilter);
@@ -714,14 +737,14 @@
       initAdmin();
     }
 
-    async function loadParticipants(forceRefresh = false) {
-      // 캐시 확인
+    async function loadParticipants(page = 1, forceRefresh = false) {
+      // 캐시 확인 (전체 참가자 목록에만 적용, 검색/정렬/페이지네이션에는 적용 안함)
       const now = Date.now();
-      if (!forceRefresh && participantsCache && participantsCacheTime && (now - participantsCacheTime) < CACHE_DURATION) {
+      if (!forceRefresh && !document.getElementById('searchInput').value && currentSort === 'created_at' && currentOrder === 'desc' && page === 1 && participantsCache && participantsCacheTime && (now - participantsCacheTime) < CACHE_DURATION) {
         participants = participantsCache;
-        filteredParticipants = participants;
+        filteredParticipants = participants; // This line might be redundant if pagination is handled by backend
         updateStatistics();
-        filterParticipants();
+        displayParticipants(participants); // Display cached data
         return;
       }
 
@@ -729,7 +752,13 @@
       if (loading) loading.classList.remove('hidden');
 
       try {
-        const response = await authFetch('/api/admin/participants');
+        const search = document.getElementById('searchInput').value;
+        let url = `/api/admin/participants?page=${page}&limit=${itemsPerPage}&sort=${currentSort}&order=${currentOrder}`;
+        if (search) {
+          url += `&search=${encodeURIComponent(search)}`;
+        }
+
+        const response = await authFetch(url);
 
         if (!response.ok) {
           if (response.status === 401) {
@@ -749,12 +778,20 @@
 
         if (data.success) {
           participants = data.participants || [];
-          filteredParticipants = participants;
-          // 캐시 업데이트
-          participantsCache = participants;
-          participantsCacheTime = now;
+          filteredParticipants = participants; // For consistency, though backend handles filtering
+          currentPage = data.pagination.page;
+          totalItems = data.pagination.total;
+
+          // Cache only if it's the initial load without search/sort/pagination
+          if (!search && currentSort === 'created_at' && currentOrder === 'desc' && page === 1) {
+            participantsCache = participants;
+            participantsCacheTime = now;
+          }
+
           updateStatistics();
-          filterParticipants();
+          displayParticipants(participants);
+          renderPagination(data.pagination);
+          updateSortIcons();
         } else {
           console.error('API error:', data.error);
           showError('참가자 목록을 불러오는 중 오류가 발생했습니다: ' + (data.error || '알 수 없는 오류'));
@@ -765,6 +802,100 @@
       } finally {
         if (loading) loading.classList.add('hidden');
       }
+    }
+
+    function sortParticipants(column) {
+      if (currentSort === column) {
+        currentOrder = currentOrder === 'asc' ? 'desc' : 'asc';
+      } else {
+        currentSort = column;
+        currentOrder = 'desc';
+      }
+      loadParticipants(1); // 정렬 시 첫 페이지로 이동
+    }
+
+    function updateSortIcons() {
+      document.querySelectorAll('.sort-icon').forEach(icon => {
+        icon.innerHTML = '';
+        icon.style.color = '';
+      });
+      const icon = document.getElementById(`sort-icon-${currentSort}`);
+      if (icon) {
+        icon.innerHTML = currentOrder === 'asc' ? ' ▲' : ' ▼';
+        icon.style.color = '#dc2626';
+      }
+    }
+
+    function renderPagination(pagination) {
+      let container = document.getElementById('paginationContainer');
+      if (!container) {
+        // If container doesn't exist, create it below the participants table
+        const participantsSection = document.getElementById('participantsSection');
+        if (participantsSection) {
+          container = document.createElement('div');
+          container.id = 'paginationContainer';
+          container.className = 'flex justify-center items-center gap-2 mt-4';
+          participantsSection.appendChild(container);
+        } else {
+          console.error('Participants section not found, cannot render pagination.');
+          return;
+        }
+      }
+
+      container.innerHTML = '';
+
+      // 이전 버튼
+      const prevBtn = document.createElement('button');
+      prevBtn.className = `px-3 py-1 rounded ${pagination.hasPrev ? 'bg-gray-200 hover:bg-gray-300' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`;
+      prevBtn.innerText = '이전';
+      prevBtn.disabled = !pagination.hasPrev;
+      prevBtn.onclick = () => loadParticipants(pagination.page - 1);
+      container.appendChild(prevBtn);
+
+      // 페이지 정보
+      const info = document.createElement('span');
+      info.className = 'text-sm text-gray-600';
+      info.innerText = `${pagination.page} / ${pagination.totalPages} 페이지 (총 ${pagination.total}명)`;
+      container.appendChild(info);
+
+      // 다음 버튼
+      const nextBtn = document.createElement('button');
+      nextBtn.className = `px-3 py-1 rounded ${pagination.hasNext ? 'bg-gray-200 hover:bg-gray-300' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`;
+      nextBtn.innerText = '다음';
+      nextBtn.disabled = !pagination.hasNext;
+      nextBtn.onclick = () => loadParticipants(pagination.page + 1);
+      container.appendChild(nextBtn);
+    }
+
+    function downloadExcel() {
+      if (!participants || participants.length === 0) {
+        alert('다운로드할 데이터가 없습니다.');
+        return;
+      }
+
+      // 엑셀용 데이터 변환
+      const data = participants.map(p => ({
+        'ID': p.id,
+        '신청일시': formatDateTime(p.created_at),
+        '이름': p.user_name,
+        '전화번호': formatPhone(p.phone),
+        '생년월일(앞자리)': p.ssn_first || '-',
+        '티켓수': p.ticket_count,
+        '동반자 이름': p.guest2_name || '-',
+        '동반자 전화번호': p.guest2_phone ? formatPhone(p.guest2_phone) : '-',
+        '동반자 생년월일': p.guest2_ssn_first || '-',
+        '좌석(본인)': p.seat_full || '-',
+        '좌석(동반자)': p.seat_full_2 || '-',
+        '입금상태': p.is_paid ? '입금완료' : '대기',
+        '체크인': p.is_checked_in ? '완료' : '미완료'
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "참가자목록");
+
+      const date = new Date().toISOString().split('T')[0];
+      XLSX.writeFile(wb, `한컷콘서트_참가자목록_${date}.xlsx`);
     }
 
     function updateStatistics() {
@@ -845,112 +976,6 @@
       }
     }
 
-    function filterParticipants() {
-      const search = searchInput.value.toLowerCase();
-      filteredParticipants = search
-        ? participants.filter(p =>
-          p.user_name.toLowerCase().includes(search) ||
-          p.phone.includes(search) ||
-          (p.ssn_first && p.ssn_first.includes(search))
-        )
-        : participants;
-
-      // 정렬 적용
-      if (currentSort.column) {
-        sortData(filteredParticipants, currentSort.column, currentSort.direction);
-      }
-
-      displayParticipants(filteredParticipants);
-    }
-
-    function sortTable(column) {
-      // 같은 컬럼 클릭 시 방향 전환, 다른 컬럼 클릭 시 오름차순으로 시작
-      if (currentSort.column === column) {
-        currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
-      } else {
-        currentSort.column = column;
-        currentSort.direction = 'asc';
-      }
-
-      // 정렬 아이콘 업데이트
-      updateSortIcons();
-
-      // 데이터 정렬
-      sortData(filteredParticipants, currentSort.column, currentSort.direction);
-      displayParticipants(filteredParticipants);
-    }
-
-    function sortData(data, column, direction) {
-      data.sort((a, b) => {
-        let aVal = a[column];
-        let bVal = b[column];
-
-        // null/undefined 처리
-        if (aVal === null || aVal === undefined || aVal === '') aVal = '';
-        if (bVal === null || bVal === undefined || bVal === '') bVal = '';
-
-        let comparison = 0;
-
-        switch (column) {
-          case 'user_name':
-          case 'phone':
-          case 'ssn_first':
-          case 'seat_group':
-          case 'seat_full':
-            // 문자열 정렬
-            comparison = String(aVal).localeCompare(String(bVal), 'ko');
-            break;
-
-          case 'is_paid':
-          case 'is_checked_in':
-            // boolean 정렬 (true가 먼저)
-            comparison = (bVal ? 1 : 0) - (aVal ? 1 : 0);
-            break;
-
-          case 'seat_row':
-          case 'seat_number':
-            // 숫자 정렬 (빈 값은 뒤로)
-            if (aVal === '' && bVal === '') return 0;
-            if (aVal === '') return 1;
-            if (bVal === '') return -1;
-            comparison = parseInt(aVal) - parseInt(bVal);
-            break;
-
-          case 'created_at':
-            // 날짜 정렬
-            comparison = new Date(aVal) - new Date(bVal);
-            break;
-
-          default:
-            comparison = String(aVal).localeCompare(String(bVal), 'ko');
-        }
-
-        return direction === 'asc' ? comparison : -comparison;
-      });
-    }
-
-    function updateSortIcons() {
-      // 모든 아이콘 초기화
-      document.querySelectorAll('.sort-icon').forEach(icon => {
-        icon.innerHTML = '';
-      });
-
-      // 현재 정렬 컬럼 아이콘 표시
-      if (currentSort.column) {
-        const iconId = `sort-icon-${currentSort.column}`;
-        const icon = document.getElementById(iconId);
-        if (icon) {
-          if (currentSort.direction === 'asc') {
-            icon.innerHTML = ' ↑';
-            icon.style.color = '#dc2626';
-          } else {
-            icon.innerHTML = ' ↓';
-            icon.style.color = '#dc2626';
-          }
-        }
-      }
-    }
-
     function displayParticipants(list) {
       const tableBody = document.getElementById('tableBody');
       const table = document.getElementById('participantsTable');
@@ -963,7 +988,7 @@
       if (list.length === 0) {
         table.classList.add('hidden');
         emptyMessage.classList.remove('hidden');
-        emptyMessage.textContent = searchInput.value ? '검색 결과가 없습니다.' : '신청 내역이 없습니다.';
+        emptyMessage.textContent = document.getElementById('searchInput').value ? '검색 결과가 없습니다.' : '신청 내역이 없습니다.';
         countText.textContent = '';
         return;
       }
@@ -977,7 +1002,7 @@
         const ticketCount = p.ticket_count || 1;
         totalCount += ticketCount;
       });
-      countText.textContent = `총 ${totalCount}명`;
+      countText.textContent = `총 ${totalItems}명 (현재 페이지 ${list.length}명)`;
 
       // 참가자 목록을 평탄화하여 2번째 참가자도 별도 행으로 표시
       const flattenedList = [];
@@ -1024,7 +1049,7 @@
 
         return `
         <tr class="${rowClass}">
-          <td class="text-center text-gray-500">${index + 1}</td>
+          <td class="text-center text-gray-500">${(currentPage - 1) * itemsPerPage + index + 1}</td>
           <td>${p.display_name}${p.is_guest2_pending ? ' <span class="text-xs text-gray-400">(입력 대기)</span>' : ''}</td>
           <td>${p.representative_name || '-'}</td>
           <td>${formatPhone(p.display_phone)}</td>
@@ -1120,7 +1145,7 @@
 
     async function togglePayment(id, currentStatus) {
       try {
-        const response = await fetch(`/api/admin/participants/${id}/payment`, {
+        const response = await authFetch(`/api/admin/participants/${id}/payment`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ is_paid: !currentStatus }),
@@ -1128,7 +1153,7 @@
 
         const data = await response.json();
         if (data.success) {
-          loadParticipants();
+          loadParticipants(currentPage); // 현재 페이지 새로고침
         }
       } catch (err) {
         alert('입금 상태 변경 중 오류가 발생했습니다.');
@@ -1142,7 +1167,7 @@
       const number = document.getElementById(`seat-${id}${idSuffix}`)?.value || '';
 
       try {
-        const response = await fetch(`/api/admin/participants/${id}/seat`, {
+        const response = await authFetch(`/api/admin/participants/${id}/seat`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1155,7 +1180,7 @@
 
         const data = await response.json();
         if (data.success) {
-          loadParticipants();
+          loadParticipants(currentPage); // 현재 페이지 새로고침
         } else {
           alert(data.error || '좌석 배정 중 오류가 발생했습니다.');
         }
@@ -1201,7 +1226,7 @@
       }
 
       try {
-        const response = await fetch(endpoint, {
+        const response = await authFetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1214,7 +1239,7 @@
         const data = await response.json();
         if (data.success) {
           showSuccess(data.message);
-          loadParticipants();
+          loadParticipants(currentPage); // 현재 페이지 새로고침
         } else {
           showError(data.error || '좌석 배정 중 오류가 발생했습니다.');
         }
@@ -1245,14 +1270,14 @@
       }
 
       try {
-        const response = await fetch(`/api/admin/participants/${id}/seat`, {
+        const response = await authFetch(`/api/admin/participants/${id}/seat`, {
           method: 'DELETE',
         });
 
         const data = await response.json();
         if (data.success) {
           alert('좌석이 초기화되었습니다.');
-          loadParticipants();
+          loadParticipants(currentPage); // 현재 페이지 새로고침
         } else {
           alert(data.error || '좌석 초기화 중 오류가 발생했습니다.');
         }
@@ -1270,14 +1295,14 @@
       if (!confirm(confirmMessage)) return;
 
       try {
-        const response = await fetch(`/api/admin/participants/${id}`, {
+        const response = await authFetch(`/api/admin/participants/${id}`, {
           method: 'DELETE',
         });
 
         const data = await response.json();
         if (data.success) {
           alert('삭제되었습니다.');
-          loadParticipants();
+          loadParticipants(currentPage); // 현재 페이지 새로고침
         } else {
           alert(data.error || '삭제 중 오류가 발생했습니다.');
         }
@@ -1312,7 +1337,7 @@
         const data = await response.json();
         if (data.success) {
           alert(data.message || '모든 좌석이 초기화되었습니다.');
-          loadParticipants();
+          loadParticipants(currentPage); // 현재 페이지 새로고침
         } else {
           alert(data.error || '초기화 중 오류가 발생했습니다.');
         }
@@ -1323,9 +1348,11 @@
     }
 
     function formatPhone(value) {
-      if (value.length <= 3) return value;
-      if (value.length <= 7) return `${value.slice(0, 3)}-${value.slice(3)}`;
-      return `${value.slice(0, 3)}-${value.slice(3, 7)}-${value.slice(7, 11)}`;
+      if (!value) return '-';
+      const cleaned = value.replace(/\D/g, '');
+      if (cleaned.length <= 3) return cleaned;
+      if (cleaned.length <= 7) return `${cleaned.slice(0, 3)}-${cleaned.slice(3)}`;
+      return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 7)}-${cleaned.slice(7, 11)}`;
     }
 
     function formatDateTime(dateTimeStr) {
@@ -1356,13 +1383,15 @@
       document.getElementById('paymentSection').classList.add('hidden');
       document.getElementById('inquiriesSection').classList.add('hidden');
       document.getElementById('checkinSection').classList.add('hidden');
-      document.getElementById('checkinSection').classList.add('hidden');
       document.getElementById('participantsTab').classList.add('text-red-600', 'border-b-2', 'border-red-600');
       document.getElementById('participantsTab').classList.remove('text-gray-600');
       document.getElementById('paymentTab').classList.remove('text-red-600', 'border-b-2', 'border-red-600');
       document.getElementById('paymentTab').classList.add('text-gray-600');
       document.getElementById('inquiriesTab').classList.remove('text-red-600', 'border-b-2', 'border-red-600');
       document.getElementById('inquiriesTab').classList.add('text-gray-600');
+      document.getElementById('checkinTab').classList.remove('text-red-600', 'border-b-2', 'border-red-600');
+      document.getElementById('checkinTab').classList.add('text-gray-600');
+      loadParticipants();
     }
 
     function showPaymentTab() {
@@ -1370,13 +1399,14 @@
       document.getElementById('paymentSection').classList.remove('hidden');
       document.getElementById('inquiriesSection').classList.add('hidden');
       document.getElementById('checkinSection').classList.add('hidden');
-      document.getElementById('checkinSection').classList.add('hidden');
       document.getElementById('paymentTab').classList.add('text-red-600', 'border-b-2', 'border-red-600');
       document.getElementById('paymentTab').classList.remove('text-gray-600');
       document.getElementById('participantsTab').classList.remove('text-red-600', 'border-b-2', 'border-red-600');
       document.getElementById('participantsTab').classList.add('text-gray-600');
       document.getElementById('inquiriesTab').classList.remove('text-red-600', 'border-b-2', 'border-red-600');
       document.getElementById('inquiriesTab').classList.add('text-gray-600');
+      document.getElementById('checkinTab').classList.remove('text-red-600', 'border-b-2', 'border-red-600');
+      document.getElementById('checkinTab').classList.add('text-gray-600');
 
       // 저장된 데이터 복원
       if (paymentDataList.length === 0) {
@@ -1388,6 +1418,7 @@
       document.getElementById('participantsSection').classList.add('hidden');
       document.getElementById('paymentSection').classList.add('hidden');
       document.getElementById('inquiriesSection').classList.remove('hidden');
+      document.getElementById('checkinSection').classList.add('hidden');
       document.getElementById('inquiriesTab').classList.add('text-red-600', 'border-b-2', 'border-red-600');
       document.getElementById('inquiriesTab').classList.remove('text-gray-600');
       document.getElementById('participantsTab').classList.remove('text-red-600', 'border-b-2', 'border-red-600');
@@ -1396,7 +1427,6 @@
       document.getElementById('paymentTab').classList.add('text-gray-600');
       document.getElementById('checkinTab').classList.remove('text-red-600', 'border-b-2', 'border-red-600');
       document.getElementById('checkinTab').classList.add('text-gray-600');
-      document.getElementById('checkinSection').classList.add('hidden');
       loadInquiries();
     }
 
@@ -1437,8 +1467,7 @@
 
         if (data.success) {
           inquiries = data.inquiries || [];
-          filteredInquiries = inquiries;
-          displayInquiries(inquiries);
+          filterInquiries(inquiryFilterState); // Apply current filter state
         } else {
           console.error('API error:', data.error);
           alert('문의 목록을 불러오는 중 오류가 발생했습니다: ' + (data.error || '알 수 없는 오류'));
@@ -1449,6 +1478,31 @@
       } finally {
         if (loading) loading.classList.add('hidden');
       }
+    }
+
+    function filterInquiries(filter) {
+      inquiryFilterState = filter; // Update filter state
+      const searchInput = document.getElementById('inquirySearchInput');
+      const search = searchInput ? searchInput.value.toLowerCase() : '';
+
+      let tempFiltered = inquiries;
+
+      if (filter === 'unanswered') {
+        tempFiltered = tempFiltered.filter(inq => !inq.is_answered);
+      } else if (filter === 'answered') {
+        tempFiltered = tempFiltered.filter(inq => inq.is_answered);
+      }
+
+      if (search) {
+        tempFiltered = tempFiltered.filter(i =>
+          i.user_name.toLowerCase().includes(search) ||
+          i.phone.includes(search) ||
+          i.content.toLowerCase().includes(search)
+        );
+      }
+
+      filteredInquiries = tempFiltered;
+      displayInquiries(filteredInquiries);
     }
 
     function displayInquiries(list) {
@@ -1462,7 +1516,7 @@
       if (list.length === 0) {
         inquiriesList.classList.add('hidden');
         emptyMessage.classList.remove('hidden');
-        emptyMessage.textContent = '문의 내역이 없습니다.';
+        emptyMessage.textContent = document.getElementById('inquirySearchInput').value ? '검색 결과가 없습니다.' : '문의 내역이 없습니다.';
         countText.textContent = '';
         return;
       }
@@ -1526,17 +1580,12 @@
       // 검색 이벤트 리스너
       const inquirySearchInput = document.getElementById('inquirySearchInput');
       if (inquirySearchInput) {
-        inquirySearchInput.addEventListener('input', () => {
-          const search = inquirySearchInput.value.toLowerCase();
-          filteredInquiries = search
-            ? inquiries.filter(i =>
-              i.user_name.toLowerCase().includes(search) ||
-              i.phone.includes(search) ||
-              i.content.toLowerCase().includes(search)
-            )
-            : inquiries;
-          displayInquiries(filteredInquiries);
-        });
+        // Debounce 적용된 검색 (300ms)
+        const debouncedInquiryFilter = debounce(() => {
+          filterInquiries(inquiryFilterState);
+        }, SEARCH_DEBOUNCE_MS);
+        inquirySearchInput.removeEventListener('input', debouncedInquiryFilter); // Prevent multiple listeners
+        inquirySearchInput.addEventListener('input', debouncedInquiryFilter);
       }
     }
 
@@ -1548,7 +1597,7 @@
       }
 
       try {
-        const response = await fetch(`/api/admin/inquiries/${id}/answer`, {
+        const response = await authFetch(`/api/admin/inquiries/${id}/answer`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ answer: answerInput.value.trim() }),
@@ -1573,7 +1622,7 @@
       }
 
       try {
-        const response = await fetch(`/api/admin/inquiries/${id}`, {
+        const response = await authFetch(`/api/admin/inquiries/${id}`, {
           method: 'DELETE',
         });
 
@@ -1638,7 +1687,7 @@
         if (!Array.isArray(savedData) || savedData.length === 0) return false;
 
         // 참가자 목록 로드 (매칭을 위해 필요)
-        authFetch('/api/admin/participants')
+        authFetch('/api/admin/participants?limit=9999') // 모든 참가자 로드
           .then(function (response) { return response.json(); })
           .then(function (data) {
             if (data.success) {
@@ -1791,7 +1840,7 @@
       // 참가자 목록이 없으면 먼저 로드
       if (allParticipants.length === 0) {
         try {
-          const response = await authFetch('/api/admin/participants');
+          const response = await authFetch('/api/admin/participants?limit=9999'); // 모든 참가자 로드
           const data = await response.json();
           if (data.success) {
             allParticipants = data.participants || [];
