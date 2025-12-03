@@ -47,21 +47,34 @@ inquiriesRouter.post('/', async (c) => {
 
     const created_at = getKSTDateTime();
 
-    // 신청자 확인
+    // 신청자 확인 (본인 전화번호 또는 동반자 전화번호)
+    // 동반자인 경우 guest2_name을, 본인인 경우 user_name을 사용
     const participant = await c.env.DB.prepare(
-      'SELECT user_name FROM participants WHERE (phone = ? OR guest2_phone = ?) AND deleted_at IS NULL LIMIT 1'
+      `SELECT
+        user_name,
+        guest2_name,
+        phone,
+        guest2_phone
+      FROM participants
+      WHERE (phone = ? OR guest2_phone = ?) AND deleted_at IS NULL
+      LIMIT 1`
     )
       .bind(body.phone, body.phone)
-      .first<{ user_name: string }>();
+      .first<{ user_name: string; guest2_name: string | null; phone: string; guest2_phone: string | null }>();
 
     if (!participant) {
       return c.json({ error: '신청 내역을 찾을 수 없습니다. 신청 시 사용한 전화번호를 확인해주세요.' }, 400);
     }
 
+    // 동반자 전화번호로 문의한 경우 동반자 이름 사용, 아니면 본인 이름 사용
+    const inquirerName = (body.phone === participant.guest2_phone && participant.guest2_name)
+      ? participant.guest2_name
+      : participant.user_name;
+
     const result = await c.env.DB.prepare(
       'INSERT INTO inquiries (user_name, phone, content, created_at) VALUES (?, ?, ?, ?)'
     )
-      .bind(participant.user_name, body.phone, body.content.trim(), created_at)
+      .bind(inquirerName, body.phone, body.content.trim(), created_at)
       .run();
 
     return c.json({

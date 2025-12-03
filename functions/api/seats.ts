@@ -9,7 +9,7 @@ export const seatsRouter = new Hono<{ Bindings: Env }>();
 seatsRouter.get('/:phone', async (c) => {
   try {
     const phone = c.req.param('phone');
-    const eventDate = new Date('2025-12-14');
+    const eventDate = new Date('2025-12-21');
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     eventDate.setHours(0, 0, 0, 0);
@@ -18,15 +18,19 @@ seatsRouter.get('/:phone', async (c) => {
       return c.json({ error: '행사 당일 오픈됩니다.' }, 403);
     }
 
+    // Soft Delete 적용: deleted_at IS NULL 조건 추가
     const participant = await c.env.DB.prepare(
-      'SELECT seat_full, seat_group, seat_row, seat_number FROM participants WHERE phone = ?'
+      'SELECT seat_full, seat_full_2, seat_group, seat_row, seat_number, ticket_count, guest2_name FROM participants WHERE phone = ? AND deleted_at IS NULL'
     )
       .bind(phone)
       .first<{
         seat_full: string | null;
+        seat_full_2: string | null;
         seat_group: string | null;
         seat_row: string | null;
         seat_number: string | null;
+        ticket_count: number;
+        guest2_name: string | null;
       }>();
 
     if (!participant) {
@@ -41,9 +45,12 @@ seatsRouter.get('/:phone', async (c) => {
       success: true,
       seat: participant.seat_full,
       seat_full: participant.seat_full,
+      seat_full_2: participant.seat_full_2,
       seat_group: participant.seat_group,
       seat_row: participant.seat_row,
       seat_number: participant.seat_number,
+      ticket_count: participant.ticket_count,
+      guest2_name: participant.guest2_name,
     });
   } catch (error) {
     console.error('Error fetching seat:', error);

@@ -64,16 +64,23 @@ participantsRouter.post('/', async (c) => {
   }
 });
 
-// 참가자 수 조회
+// 참가자 수 조회 (ticket_count 합계로 실제 참석자 수 계산)
 participantsRouter.get('/count', async (c) => {
   try {
-    const result = await c.env.DB.prepare(
+    // 신청 건수
+    const countResult = await c.env.DB.prepare(
       'SELECT COUNT(*) as count FROM participants WHERE deleted_at IS NULL'
     ).first<{ count: number }>();
 
+    // 실제 참석자 수 (ticket_count 합계)
+    const totalResult = await c.env.DB.prepare(
+      'SELECT COALESCE(SUM(ticket_count), 0) as total FROM participants WHERE deleted_at IS NULL'
+    ).first<{ total: number }>();
+
     return c.json({
       success: true,
-      count: result?.count || 0,
+      count: countResult?.count || 0,           // 신청 건수
+      totalTickets: totalResult?.total || 0,    // 실제 참석자 수 (좌석 기준)
     });
   } catch (error) {
     console.error('Error getting participant count:', error);

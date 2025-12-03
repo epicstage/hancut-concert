@@ -434,15 +434,30 @@
 
     // 초기화
     document.addEventListener('DOMContentLoaded', async function() {
-      // 참가자 수 확인
+      // 참가자 수 확인 (실제 좌석 수 기준으로 체크)
       try {
         const response = await fetch('/api/participants/count');
         const data = await response.json();
 
-        if (data.success && data.count >= maxParticipants) {
+        // totalTickets: 실제 참석자 수 (1인+2인 합계)
+        const currentTotal = data.totalTickets || data.count || 0;
+        if (data.success && currentTotal >= maxParticipants) {
           document.getElementById('applyFormSection').classList.add('hidden');
           document.getElementById('applyClosedSection').classList.remove('hidden');
           return;
+        }
+
+        // 남은 좌석 수에 따라 2인 신청 가능 여부 결정
+        const remainingSeats = maxParticipants - currentTotal;
+        if (remainingSeats < 2) {
+          // 1좌석만 남음 → 2인 신청 비활성화
+          const twoPersonOption = document.querySelector('input[value="2"]');
+          if (twoPersonOption) {
+            twoPersonOption.disabled = true;
+            twoPersonOption.closest('.ticket-option').classList.add('opacity-50', 'cursor-not-allowed');
+            const priceEl = twoPersonOption.closest('.ticket-option').querySelector('.text-sm.text-gray-500');
+            if (priceEl) priceEl.textContent = '(잔여 좌석 부족)';
+          }
         }
       } catch (err) {
         console.error('Error checking participant count:', err);
