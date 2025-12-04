@@ -68,9 +68,9 @@
       <div class="glass-card mb-6">
         <!-- 이벤트 배지 -->
         <div class="flex items-center gap-2 mb-4">
-          <span id="statusBadge" class="badge badge-red">
-            <span class="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span>
-            <span>신청 접수 중</span>
+          <span id="statusBadge" class="badge badge-gray">
+            <span class="w-2 h-2 rounded-full bg-gray-500"></span>
+            <span>오픈 전</span>
           </span>
         </div>
 
@@ -287,6 +287,14 @@
       <!-- 액션 버튼들 -->
       <div class="space-y-3">
         <div id="applyButtonSection">
+          <!-- 오픈 전: 신청 버튼 비활성화 -->
+          <button class="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-semibold bg-gray-300 text-gray-500 cursor-not-allowed" disabled>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+            <span>곧 오픈 예정입니다</span>
+          </button>
+          <!-- 오픈 후 아래 코드로 교체
           <a href="/apply.html" class="block">
             <button class="btn-primary-glass w-full">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -294,7 +302,7 @@
               </svg>
               <span>참가 신청하기</span>
             </button>
-          </a>
+          -->
         </div>
 
         <div id="applyClosedMessage" class="hidden">
