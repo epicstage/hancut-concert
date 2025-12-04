@@ -575,7 +575,7 @@
       const paymentGuide = document.getElementById('paymentGuide');
       if (!participant.is_paid) {
         paymentGuide.classList.remove('hidden');
-        const amount = isTwoPerson ? '₩60,000' : '₩30,000';
+        const amount = isTwoPerson ? '₩70,000' : '₩35,000';
         document.getElementById('paymentAmount').textContent = amount;
         const phoneLast4 = participant.phone.slice(-4);
         document.getElementById('depositName').textContent = `${participant.user_name}${phoneLast4}`;
