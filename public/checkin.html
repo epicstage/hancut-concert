@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QR 체크인 - 한동훈 토크콘서트</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <style>
+    /* 프린트 전용 스타일 - 네모닉 3x3 용지 (약 76mm x 76mm) */
+    @media print {
+      @page {
+        size: 76mm 76mm;
+        margin: 0;
+      }
+      body * {
+        visibility: hidden !important;
+      }
+      #printArea, #printArea * {
+        visibility: visible !important;
+      }
+      #printArea {
+        position: fixed !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 76mm !important;
+        height: 76mm !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: white !important;
+      }
+      #printArea .label-content {
+        text-align: center;
+        width: 70mm;
+      }
+      #printArea .print-name {
+        font-size: 36pt !important;
+        font-weight: 900 !important;
+        color: #000 !important;
+        margin: 0 0 3mm 0 !important;
+        line-height: 1.1 !important;
+      }
+      #printArea .print-seat {
+        font-size: 26pt !important;
+        font-weight: 800 !important;
+        color: #000 !important;
+        margin: 3mm 0 !important;
+      }
+      #printArea .print-divider {
+        border: none !important;
+        border-top: 2px solid #000 !important;
+        margin: 4mm auto !important;
+        width: 50mm !important;
+      }
+      #printArea .print-event {
+        font-size: 11pt !important;
+        font-weight: 600 !important;
+        color: #333 !important;
+        margin: 0 !important;
+      }
+    }
+
+    #printArea {
+      display: none;
+    }
+
+    .glass-card {
+      background: rgba(255,255,255,0.95);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .input-glass {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+    }
+    .btn-primary {
+      background: #dc2626;
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-primary:hover { background: #b91c1c; }
+    .btn-secondary {
+      background: #6b7280;
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-secondary:hover { background: #4b5563; }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-red-50 via-white to-sky-50 min-h-screen">
+  <div class="container mx-auto px-4 py-6 max-w-4xl">
+    <!-- 헤더 -->
+    <div class="text-center mb-6">
+      <h1 class="text-2xl font-bold text-gray-900">QR 코드 체크인</h1>
+      <p class="text-gray-600">한동훈 토크콘서트</p>
+    </div>
+
+    <!-- 통계 -->
+    <div class="grid grid-cols-3 gap-4 mb-6">
+      <div class="bg-blue-50 p-4 rounded-lg border border-blue-200 text-center">
+        <div class="text-sm text-blue-600 mb-1">입금 완료</div>
+        <div class="text-3xl font-bold text-blue-900" id="checkinTotal">0</div>
+      </div>
+      <div class="bg-green-50 p-4 rounded-lg border border-green-200 text-center">
+        <div class="text-sm text-green-600 mb-1">입장 확인</div>
+        <div class="text-3xl font-bold text-green-900" id="checkinCount">0</div>
+      </div>
+      <div class="bg-orange-50 p-4 rounded-lg border border-orange-200 text-center">
+        <div class="text-sm text-orange-600 mb-1">남은 인원</div>
+        <div class="text-3xl font-bold text-orange-900" id="checkinRemaining">0</div>
+      </div>
+    </div>
+
+    <!-- 바코드 스캐너 입력 (메인) -->
+    <div class="glass-card mb-6">
+      <div class="mb-4 p-4 bg-green-50 border-2 border-green-300 rounded-lg">
+        <label class="block text-sm font-medium text-green-700 mb-2">
+          <span class="inline-flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h2M4 12h2m10 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+            </svg>
+            바코드 스캐너 (자동 체크인)
+          </span>
+        </label>
+        <input type="text" id="barcodeScannerInput"
+          class="input-glass w-full text-xl font-mono"
+          placeholder="바코드 스캐너로 스캔하세요"
+          autocomplete="off"
+          autofocus />
+        <div class="flex items-center gap-4 mt-3 flex-wrap">
+          <label class="flex items-center gap-2 text-sm text-green-700 cursor-pointer">
+            <input type="checkbox" id="autoFocusScanner" checked class="w-4 h-4" />
+            자동 포커스 유지
+          </label>
+          <label class="flex items-center gap-2 text-sm text-blue-700 cursor-pointer">
+            <input type="checkbox" id="autoPrintCheckin" class="w-4 h-4" checked />
+            체크인 시 자동 프린트
+          </label>
+          <span id="scannerStatus" class="text-sm text-green-600 font-medium">대기 중...</span>
+        </div>
+      </div>
+
+      <!-- 체크인 결과 -->
+      <div id="checkinResult" class="hidden mb-4 p-4 rounded-lg"></div>
+
+      <!-- 카메라 스캔 -->
+      <div class="border-t pt-4 mt-4">
+        <div class="flex gap-3 mb-4">
+          <button onclick="startQRScanner()" id="startScannerBtn" class="btn-primary px-6">
+            📷 카메라 스캔
+          </button>
+          <button onclick="stopQRScanner()" id="stopScannerBtn" class="btn-secondary px-6 hidden">
+            중지
+          </button>
+          <button onclick="loadCheckinStats()" class="btn-secondary px-6">
+            🔄 새로고침
+          </button>
+        </div>
+        <div id="qrScannerContainer" class="hidden mb-4">
+          <div id="qrReader" class="max-w-md mx-auto bg-white p-4 rounded-lg border border-gray-300"
+            style="min-height: 300px;"></div>
+        </div>
+      </div>
+
+      <!-- 수동 입력 -->
+      <div class="border-t pt-4 mt-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">QR 데이터 직접 입력</label>
+        <div class="flex gap-2">
+          <input type="text" id="manualQRInput" class="input-glass flex-1"
+            placeholder="QR 코드 데이터를 붙여넣거나 입력"
+            onkeypress="if(event.key==='Enter') processManualCheckin()" />
+          <button onclick="processManualCheckin()" class="btn-primary px-6">체크인</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 최근 체크인 목록 -->
+    <div class="glass-card">
+      <h3 class="text-lg font-bold text-gray-900 mb-4">최근 체크인</h3>
+      <div id="recentCheckins" class="space-y-2 max-h-80 overflow-y-auto">
+        <p class="text-gray-500 text-sm">아직 체크인 내역이 없습니다.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 프린트 영역 -->
+  <div id="printArea">
+    <div class="label-content" style="text-align: center; font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;">
+      <p id="printName" class="print-name"></p>
+      <p id="printSeat" class="print-seat"></p>
+      <hr class="print-divider" />
+      <p class="print-event">한동훈 토크콘서트</p>
+    </div>
+  </div>
+
+  <script>
+    // 인증 토큰 (부모 창에서 전달받거나 localStorage에서 가져옴)
+    let authToken = localStorage.getItem('adminToken') || '';
+    let html5QrCode = null;
+    let recentCheckins = [];
+    let barcodeBuffer = '';
+    let barcodeTimeout = null;
+    let isProcessingBarcode = false;
+
+    // 인증된 fetch
+    async function authFetch(url, options = {}) {
+      const headers = {
+        ...options.headers,
+        'Authorization': `Bearer ${authToken}`
+      };
+      return fetch(url, { ...options, headers });
+    }
+
+    // 초기화
+    document.addEventListener('DOMContentLoaded', function() {
+      // URL 파라미터에서 토큰 확인
+      const urlParams = new URLSearchParams(window.location.search);
+      const tokenParam = urlParams.get('token');
+      if (tokenParam) {
+        authToken = tokenParam;
+        sessionStorage.setItem('adminToken', tokenParam);
+      }
+
+      // sessionStorage에서도 확인
+      if (!authToken) {
+        authToken = sessionStorage.getItem('adminToken') || '';
+      }
+
+      if (!authToken) {
+        alert('인증 토큰이 없습니다. 관리자 페이지에서 다시 접속해주세요.');
+        window.close();
+        return;
+      }
+
+      loadCheckinStats();
+      loadRecentCheckins();
+      setupBarcodeScanner();
+
+      // 자동 새로고침 (30초마다)
+      setInterval(() => {
+        loadCheckinStats();
+        loadRecentCheckins();
+      }, 30000);
+    });
+
+    // 바코드 스캐너 설정
+    function setupBarcodeScanner() {
+      const barcodeInput = document.getElementById('barcodeScannerInput');
+      if (!barcodeInput) return;
+
+      // 자동 포커스
+      function maintainFocus() {
+        const autoFocus = document.getElementById('autoFocusScanner');
+        if (autoFocus && autoFocus.checked && document.activeElement !== barcodeInput) {
+          barcodeInput.focus();
+        }
+      }
+
+      setInterval(maintainFocus, 500);
+      barcodeInput.focus();
+
+      // 바코드 입력 처리
+      barcodeInput.addEventListener('input', function(e) {
+        clearTimeout(barcodeTimeout);
+        barcodeBuffer = e.target.value;
+
+        barcodeTimeout = setTimeout(() => {
+          if (barcodeBuffer.trim() && !isProcessingBarcode) {
+            processBarcodeInput(barcodeBuffer.trim());
+          }
+        }, 100);
+      });
+
+      barcodeInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          clearTimeout(barcodeTimeout);
+          if (barcodeBuffer.trim() && !isProcessingBarcode) {
+            processBarcodeInput(barcodeBuffer.trim());
+          }
+        }
+      });
+    }
+
+    // 바코드 입력 처리
+    async function processBarcodeInput(data) {
+      if (isProcessingBarcode) return;
+      isProcessingBarcode = true;
+
+      const statusEl = document.getElementById('scannerStatus');
+      const inputEl = document.getElementById('barcodeScannerInput');
+
+      if (statusEl) statusEl.textContent = '처리 중...';
+
+      try {
+        await processCheckin(data);
+      } finally {
+        if (inputEl) {
+          inputEl.value = '';
+          inputEl.focus();
+        }
+        barcodeBuffer = '';
+        if (statusEl) statusEl.textContent = '대기 중...';
+        isProcessingBarcode = false;
+      }
+    }
+
+    // 한글 자판 -> 영문 변환
+    function convertKorToEng(str) {
+      const korToEngMap = {
+        'ㅂ': 'q', 'ㅈ': 'w', 'ㄷ': 'e', 'ㄱ': 'r', 'ㅅ': 't', 'ㅛ': 'y', 'ㅕ': 'u', 'ㅑ': 'i', 'ㅐ': 'o', 'ㅔ': 'p',
+        'ㅁ': 'a', 'ㄴ': 's', 'ㅇ': 'd', 'ㄹ': 'f', 'ㅎ': 'g', 'ㅗ': 'h', 'ㅓ': 'j', 'ㅏ': 'k', 'ㅣ': 'l',
+        'ㅋ': 'z', 'ㅌ': 'x', 'ㅊ': 'c', 'ㅍ': 'v', 'ㅠ': 'b', 'ㅜ': 'n', 'ㅡ': 'm',
+        'ㅃ': 'Q', 'ㅉ': 'W', 'ㄸ': 'E', 'ㄲ': 'R', 'ㅆ': 'T', 'ㅒ': 'O', 'ㅖ': 'P'
+      };
+      if (/[ㄱ-ㅎㅏ-ㅣ]/.test(str)) {
+        return str.split('').map(char => korToEngMap[char] || char).join('');
+      }
+      return str;
+    }
+
+    // 체크인 처리
+    async function processCheckin(qrData) {
+      const resultDiv = document.getElementById('checkinResult');
+      if (!resultDiv) return;
+
+      resultDiv.classList.remove('hidden');
+      resultDiv.innerHTML = '<p class="text-gray-600">처리 중...</p>';
+      resultDiv.className = 'mb-4 p-4 rounded-lg bg-gray-50';
+
+      if (!qrData || !qrData.trim()) {
+        resultDiv.className = 'mb-4 p-4 rounded-lg bg-red-50 border border-red-200';
+        resultDiv.innerHTML = '<p class="font-semibold text-red-900">QR 코드 데이터가 없습니다.</p>';
+        return;
+      }
+
+      try {
+        // 한글 변환
+        let convertedData = convertKorToEng(qrData);
+
+        const response = await authFetch('/api/admin/checkin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ qrData: convertedData })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          resultDiv.className = 'mb-4 p-4 rounded-lg bg-green-50 border border-green-200';
+
+          if (data.alreadyCheckedIn) {
+            resultDiv.innerHTML = `
+              <div class="flex items-center gap-3">
+                <span class="text-3xl">⚠️</span>
+                <div>
+                  <p class="font-bold text-lg text-yellow-800">${data.message}</p>
+                  <p class="text-green-700">${data.participant.user_name} | ${data.participant.seat_full || '좌석 미배정'}</p>
+                </div>
+              </div>
+            `;
+          } else {
+            resultDiv.innerHTML = `
+              <div class="flex items-center gap-3">
+                <span class="text-3xl">✅</span>
+                <div>
+                  <p class="font-bold text-xl text-green-900">${data.participant.user_name}</p>
+                  <p class="text-lg text-green-700">${data.participant.seat_full || '좌석 미배정'}</p>
+                </div>
+              </div>
+            `;
+
+            // 자동 프린트
+            const autoPrint = document.getElementById('autoPrintCheckin');
+            if (autoPrint && autoPrint.checked) {
+              printCheckinLabel(data.participant.user_name, data.participant.seat_full || '좌석 미배정');
+            }
+          }
+
+          // 최근 체크인 목록에 추가
+          addToRecentCheckins(data.participant, data.alreadyCheckedIn);
+          loadCheckinStats();
+
+          // 5초 후 메시지 숨김
+          setTimeout(() => resultDiv.classList.add('hidden'), 5000);
+        } else {
+          resultDiv.className = 'mb-4 p-4 rounded-lg bg-red-50 border border-red-200';
+          resultDiv.innerHTML = `
+            <div class="flex items-center gap-3">
+              <span class="text-3xl">❌</span>
+              <div>
+                <p class="font-bold text-red-900">${data.error || '체크인 실패'}</p>
+              </div>
+            </div>
+          `;
+        }
+      } catch (err) {
+        console.error('Checkin error:', err);
+        resultDiv.className = 'mb-4 p-4 rounded-lg bg-red-50 border border-red-200';
+        resultDiv.innerHTML = `<p class="font-semibold text-red-900">오류: ${err.message}</p>`;
+      }
+    }
+
+    // 최근 체크인 목록에 추가
+    function addToRecentCheckins(participant, alreadyCheckedIn) {
+      const item = {
+        participant,
+        timestamp: new Date().toLocaleTimeString('ko-KR'),
+        alreadyCheckedIn
+      };
+
+      recentCheckins.unshift(item);
+      if (recentCheckins.length > 20) recentCheckins = recentCheckins.slice(0, 20);
+
+      renderRecentCheckins();
+    }
+
+    // 최근 체크인 렌더링
+    function renderRecentCheckins() {
+      const container = document.getElementById('recentCheckins');
+      if (!container) return;
+
+      if (recentCheckins.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-sm">아직 체크인 내역이 없습니다.</p>';
+        return;
+      }
+
+      container.innerHTML = recentCheckins.map(item => `
+        <div class="flex items-center justify-between p-3 rounded-lg ${item.alreadyCheckedIn ? 'bg-yellow-50' : 'bg-green-50'}">
+          <div>
+            <span class="font-semibold">${item.participant.user_name}</span>
+            <span class="text-gray-500 ml-2">${item.participant.seat_full || ''}</span>
+          </div>
+          <div class="text-sm text-gray-500">
+            ${item.timestamp}
+            ${item.alreadyCheckedIn ? '<span class="ml-2 text-yellow-600">(중복)</span>' : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 통계 로드
+    async function loadCheckinStats() {
+      try {
+        const response = await authFetch('/api/admin/checkin/stats');
+        const data = await response.json();
+
+        if (data.success) {
+          document.getElementById('checkinTotal').textContent = data.stats.total;
+          document.getElementById('checkinCount').textContent = data.stats.checkedIn;
+          document.getElementById('checkinRemaining').textContent = data.stats.remaining;
+        }
+      } catch (err) {
+        console.error('Error loading stats:', err);
+      }
+    }
+
+    // 최근 체크인 기록 로드 (서버에서)
+    async function loadRecentCheckins() {
+      try {
+        const response = await authFetch('/api/admin/checkin/recent?limit=20');
+        const data = await response.json();
+
+        if (data.success && data.records) {
+          recentCheckins = data.records.map(record => ({
+            participant: {
+              id: record.participant_id,
+              user_name: record.user_name,
+              phone: record.phone,
+              seat_full: record.seat_full
+            },
+            timestamp: new Date(record.checked_in_at).toLocaleTimeString('ko-KR'),
+            alreadyCheckedIn: false
+          }));
+          renderRecentCheckins();
+        }
+      } catch (err) {
+        console.error('Error loading recent checkins:', err);
+      }
+    }
+
+    // 수동 체크인
+    function processManualCheckin() {
+      const input = document.getElementById('manualQRInput');
+      if (input && input.value.trim()) {
+        processCheckin(input.value.trim());
+        input.value = '';
+      }
+    }
+
+    // QR 스캐너 시작
+    async function startQRScanner() {
+      const container = document.getElementById('qrScannerContainer');
+      const startBtn = document.getElementById('startScannerBtn');
+      const stopBtn = document.getElementById('stopScannerBtn');
+
+      container.classList.remove('hidden');
+      startBtn.classList.add('hidden');
+      stopBtn.classList.remove('hidden');
+
+      html5QrCode = new Html5Qrcode("qrReader");
+
+      try {
+        await html5QrCode.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 250, height: 250 } },
+          (decodedText) => {
+            processCheckin(decodedText);
+          },
+          () => {}
+        );
+      } catch (err) {
+        console.error('QR Scanner error:', err);
+        alert('카메라를 시작할 수 없습니다: ' + err.message);
+        stopQRScanner();
+      }
+    }
+
+    // QR 스캐너 중지
+    async function stopQRScanner() {
+      const container = document.getElementById('qrScannerContainer');
+      const startBtn = document.getElementById('startScannerBtn');
+      const stopBtn = document.getElementById('stopScannerBtn');
+
+      if (html5QrCode) {
+        try {
+          await html5QrCode.stop();
+        } catch (err) {}
+        html5QrCode = null;
+      }
+
+      container.classList.add('hidden');
+      startBtn.classList.remove('hidden');
+      stopBtn.classList.add('hidden');
+    }
+
+    // 프린트 관련
+    let isPrinting = false;
+    let printQueue = [];
+
+    window.addEventListener('afterprint', function() {
+      isPrinting = false;
+      if (printQueue.length > 0) {
+        const next = printQueue.shift();
+        setTimeout(() => printCheckinLabel(next.name, next.seat), 500);
+      }
+    });
+
+    function printCheckinLabel(name, seat) {
+      if (isPrinting) {
+        if (!printQueue.some(p => p.name === name && p.seat === seat)) {
+          printQueue.push({ name, seat });
+        }
+        return;
+      }
+
+      isPrinting = true;
+
+      const printName = document.getElementById('printName');
+      const printSeat = document.getElementById('printSeat');
+
+      if (printName && printSeat) {
+        printName.textContent = name;
+        printSeat.textContent = seat || '좌석 미배정';
+      }
+
+      setTimeout(() => window.print(), 100);
+    }
+  </script>
+</body>
+</html>

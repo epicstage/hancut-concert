@@ -11,6 +11,7 @@ import { adminParticipantsRouter } from './admin-participants';
 import { inquiriesRouter } from './inquiries';
 import { seatsRouter } from './seats';
 import { checkinRouter } from './checkin';
+import { storiesRouter } from './stories';
 
 // 메인 앱 생성
 export const app = new Hono<{ Bindings: Env }>();
@@ -39,6 +40,10 @@ api.route('/seat', seatsRouter);
 
 // 체크인
 api.route('/admin/checkin', checkinRouter);
+
+// 사연
+api.route('/stories', storiesRouter);
+api.route('/admin/stories', storiesRouter);
 
 // API 라우트 마운트
 app.route('/api', api);

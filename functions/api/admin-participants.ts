@@ -27,7 +27,7 @@ adminParticipantsRouter.get('/', async (c) => {
     const order = c.req.query('order') === 'asc' ? 'ASC' : 'DESC';
 
     // 허용된 정렬 컬럼
-    const allowedSortColumns = ['created_at', 'user_name', 'phone', 'is_paid', 'seat_full', 'id'];
+    const allowedSortColumns = ['created_at', 'user_name', 'phone', 'is_paid', 'seat_full', 'seat_group', 'ssn_first', 'is_checked_in', 'id'];
     const sortColumn = allowedSortColumns.includes(sort) ? sort : 'created_at';
 
     const offset = (page - 1) * limit;

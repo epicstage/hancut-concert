@@ -1,0 +1,24 @@
+{
+  "name": "한동훈 토크콘서트",
+  "short_name": "토크콘서트",
+  "description": "2025년 12월 21일 고양 킨텍스에서 열리는 한동훈 토크콘서트",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#dc2626",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>사연있어요 - 한동훈 토크콘서트</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#dc2626',
+            'primary-dark': '#b91c1c',
+            warm: '#ea580c',
+            'warm-dark': '#c2410c',
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="/styles.css?v=3" />
+  <style>
+    .warm-gradient {
+      background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 50%, #fed7aa 100%);
+    }
+    .warm-card {
+      background: rgba(255, 255, 255, 0.95);
+      border: 2px solid #fed7aa;
+      border-radius: 1rem;
+      box-shadow: 0 4px 6px rgba(234, 88, 12, 0.1);
+    }
+    .btn-warm {
+      background: linear-gradient(135deg, #ea580c, #f97316);
+      color: white;
+      padding: 1rem 2rem;
+      border-radius: 0.75rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 14px rgba(234, 88, 12, 0.3);
+    }
+    .btn-warm:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(234, 88, 12, 0.4);
+    }
+    .btn-warm:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .story-textarea {
+      min-height: 300px;
+      resize: vertical;
+      border: 2px solid #fed7aa;
+      border-radius: 0.75rem;
+      padding: 1rem;
+      font-size: 1rem;
+      line-height: 1.75;
+      transition: border-color 0.3s ease;
+    }
+    .story-textarea:focus {
+      outline: none;
+      border-color: #ea580c;
+      box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1);
+    }
+    .char-count {
+      font-size: 0.875rem;
+      color: #9a3412;
+    }
+    .heart-icon {
+      animation: heartbeat 1.5s ease-in-out infinite;
+    }
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+  </style>
+</head>
+<body class="warm-gradient min-h-screen">
+  <div class="max-w-2xl mx-auto px-4 py-8 pb-24">
+    <!-- 헤더 -->
+    <header class="text-center mb-8">
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-orange-100 mb-4">
+        <svg class="w-8 h-8 text-orange-500 heart-icon" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+        </svg>
+      </div>
+      <h1 class="text-2xl font-bold text-gray-900 mb-2">사연있어요</h1>
+      <p class="text-orange-700">한동훈 대표에게 전하고 싶은 이야기</p>
+    </header>
+
+    <!-- 안내 메시지 -->
+    <div class="warm-card p-5 mb-6">
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+          <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+          </svg>
+        </div>
+        <div>
+          <h3 class="font-semibold text-gray-900 mb-1">나만의 이야기를 들려주세요</h3>
+          <p class="text-sm text-gray-600 leading-relaxed">
+            나라와 국민을 생각하는 마음, 한동훈 대표에게 전하고 싶은 응원의 말씀,
+            또는 개인적인 사연이 있으시다면 자유롭게 적어주세요.
+            소중히 전달하겠습니다.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 입력 폼 -->
+    <form id="storyForm" class="warm-card p-6">
+      <!-- 이름 -->
+      <div class="mb-5">
+        <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+          이름 <span class="text-orange-500">*</span>
+        </label>
+        <input type="text" id="name" name="name" required
+          class="w-full px-4 py-3 border-2 border-orange-200 rounded-lg focus:border-orange-500 focus:outline-none transition-colors"
+          placeholder="이름을 입력해주세요" />
+      </div>
+
+      <!-- 연락처 -->
+      <div class="mb-5">
+        <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">
+          연락처 <span class="text-orange-500">*</span>
+        </label>
+        <input type="tel" id="phone" name="phone" required
+          class="w-full px-4 py-3 border-2 border-orange-200 rounded-lg focus:border-orange-500 focus:outline-none transition-colors"
+          placeholder="010-0000-0000" />
+      </div>
+
+      <!-- 사연 제목 -->
+      <div class="mb-5">
+        <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
+          제목 <span class="text-gray-400 text-xs">(선택)</span>
+        </label>
+        <input type="text" id="title" name="title"
+          class="w-full px-4 py-3 border-2 border-orange-200 rounded-lg focus:border-orange-500 focus:outline-none transition-colors"
+          placeholder="사연의 제목을 입력해주세요" />
+      </div>
+
+      <!-- 사연 내용 -->
+      <div class="mb-6">
+        <label for="content" class="block text-sm font-medium text-gray-700 mb-2">
+          사연 내용 <span class="text-orange-500">*</span>
+        </label>
+        <textarea id="content" name="content" required
+          class="story-textarea w-full"
+          placeholder="한동훈 대표에게 전하고 싶은 이야기를 자유롭게 적어주세요.
+
+나라와 국민을 위한 마음, 응원의 말씀, 개인적인 사연 등 어떤 이야기든 환영합니다."
+          maxlength="5000"></textarea>
+        <div class="flex justify-between items-center mt-2">
+          <p class="text-xs text-gray-500">진심을 담아 작성해주세요</p>
+          <p class="char-count"><span id="charCount">0</span> / 5,000자</p>
+        </div>
+      </div>
+
+      <!-- 동의 체크박스 -->
+      <div class="mb-6">
+        <label class="flex items-start gap-3 cursor-pointer">
+          <input type="checkbox" id="agree" required class="mt-1 w-5 h-5 text-orange-500 rounded border-orange-300 focus:ring-orange-500" />
+          <span class="text-sm text-gray-600">
+            작성한 사연이 한동훈 대표에게 전달되는 것에 동의합니다.
+            <span class="text-orange-600">(필수)</span>
+          </span>
+        </label>
+      </div>
+
+      <!-- 제출 버튼 -->
+      <button type="submit" id="submitBtn" class="btn-warm w-full flex items-center justify-center gap-2">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+        </svg>
+        <span>사연 보내기</span>
+      </button>
+    </form>
+
+    <!-- 제출 완료 화면 -->
+    <div id="successScreen" class="hidden warm-card p-8 text-center">
+      <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-orange-100 flex items-center justify-center">
+        <svg class="w-10 h-10 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+      </div>
+      <h2 class="text-2xl font-bold text-gray-900 mb-3">사연이 전달되었습니다</h2>
+      <p class="text-gray-600 mb-6">
+        소중한 이야기를 나눠주셔서 감사합니다.<br>
+        한동훈 대표에게 잘 전달하겠습니다.
+      </p>
+      <button onclick="resetForm()" class="btn-warm">
+        새 사연 작성하기
+      </button>
+    </div>
+  </div>
+
+  <!-- 하단 네비게이션 -->
+  <nav class="bottom-nav">
+    <a href="/" class="bottom-nav-item" aria-label="홈">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+      </svg>
+      <span>홈</span>
+    </a>
+    <a href="/apply.html" class="bottom-nav-item" aria-label="신청">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+      </svg>
+      <span>신청</span>
+    </a>
+    <a href="/check.html" class="bottom-nav-item" aria-label="확인">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+      </svg>
+      <span>확인</span>
+    </a>
+    <a href="/inquiry.html" class="bottom-nav-item" aria-label="문의">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4l-4 4z" />
+      </svg>
+      <span>문의</span>
+    </a>
+    <a href="/story.html" class="bottom-nav-item active" aria-label="사연" style="color: #ea580c;">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+      </svg>
+      <span>사연</span>
+    </a>
+  </nav>
+
+  <script>
+    const form = document.getElementById('storyForm');
+    const contentTextarea = document.getElementById('content');
+    const charCount = document.getElementById('charCount');
+    const phoneInput = document.getElementById('phone');
+    const submitBtn = document.getElementById('submitBtn');
+    const successScreen = document.getElementById('successScreen');
+
+    // 글자 수 카운트
+    contentTextarea.addEventListener('input', function() {
+      const count = this.value.length;
+      charCount.textContent = count.toLocaleString();
+
+      if (count > 4500) {
+        charCount.parentElement.classList.add('text-red-600');
+      } else {
+        charCount.parentElement.classList.remove('text-red-600');
+      }
+    });
+
+    // 전화번호 포맷팅
+    phoneInput.addEventListener('input', function(e) {
+      let value = e.target.value.replace(/\D/g, '');
+      if (value.length > 11) value = value.slice(0, 11);
+
+      if (value.length >= 7) {
+        value = value.slice(0, 3) + '-' + value.slice(3, 7) + '-' + value.slice(7);
+      } else if (value.length >= 3) {
+        value = value.slice(0, 3) + '-' + value.slice(3);
+      }
+
+      e.target.value = value;
+    });
+
+    // 폼 제출
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const name = document.getElementById('name').value.trim();
+      const phone = phoneInput.value.replace(/\D/g, '');
+      const title = document.getElementById('title').value.trim();
+      const content = contentTextarea.value.trim();
+      const agree = document.getElementById('agree').checked;
+
+      if (!name || !phone || !content || !agree) {
+        alert('필수 항목을 모두 입력해주세요.');
+        return;
+      }
+
+      if (phone.length < 10) {
+        alert('올바른 연락처를 입력해주세요.');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `
+        <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span>전송 중...</span>
+      `;
+
+      try {
+        const response = await fetch('/api/stories', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, phone, title, content })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          form.classList.add('hidden');
+          successScreen.classList.remove('hidden');
+        } else {
+          throw new Error(data.error || '사연 전송에 실패했습니다.');
+        }
+      } catch (err) {
+        alert(err.message || '사연 전송 중 오류가 발생했습니다.');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+          <span>사연 보내기</span>
+        `;
+      }
+    });
+
+    function resetForm() {
+      form.reset();
+      charCount.textContent = '0';
+      form.classList.remove('hidden');
+      successScreen.classList.add('hidden');
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+        </svg>
+        <span>사연 보내기</span>
+      `;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>

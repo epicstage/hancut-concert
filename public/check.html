@@ -373,6 +373,12 @@
       </svg>
       <span>문의</span>
     </a>
+    <a href="/story.html" class="bottom-nav-item" aria-label="사연" style="color: #ea580c;">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+      </svg>
+      <span>사연</span>
+    </a>
   </nav>
 
   <script>
@@ -468,7 +474,12 @@
         }
 
         currentParticipant = data.participant;
-        displayResult(data.participant);
+        // 동반참가자인 경우 표시
+        if (data.isGuest) {
+          currentParticipant._isGuest = true;
+          currentParticipant._guestInfo = data.guestInfo;
+        }
+        displayResult(data.participant, data.isGuest, data.guestInfo);
       } catch (err) {
         console.error('Fetch error:', err);
         
@@ -495,7 +506,13 @@
     }
 
     // 결과 표시
-    function displayResult(participant) {
+    function displayResult(participant, isGuest = false, guestInfo = null) {
+      // 동반참가자인 경우 전용 정보 표시
+      if (isGuest && guestInfo) {
+        displayGuestResult(participant, guestInfo);
+        return;
+      }
+
       // 기본 정보
       document.getElementById('userName').textContent = participant.user_name;
       document.getElementById('userPhone').textContent = formatPhone(participant.phone);
@@ -616,13 +633,10 @@
       const ticketCount = participant.ticket_count || 1;
       const isTwoPerson = ticketCount === 2 || participant.guest2_name;
 
-      // 본인 QR 데이터
+      // 본인 QR 데이터 - 간결하게 (id와 type만으로 체크인 가능)
       const qrData1 = JSON.stringify({
-        id: participant.id,
-        name: participant.user_name,
-        phone: participant.phone,
-        seat: participant.seat_full || null,
-        type: 'main'
+        i: participant.id,
+        t: 'm'  // main
       });
 
       // 2인 신청 시 라벨 표시
@@ -645,7 +659,7 @@
             height: 180,
             colorDark: '#000000',
             colorLight: '#FFFFFF',
-            correctLevel: QRCode.CorrectLevel.H
+            correctLevel: QRCode.CorrectLevel.M  // Medium 레벨로 변경 (더 많은 데이터 허용)
           });
 
           // 2인 신청 시 동반자 QR 코드 생성
@@ -653,12 +667,10 @@
             qrCode2Section.classList.remove('hidden');
             qrLabel2.textContent = `동반자: ${participant.guest2_name}`;
 
+            // 동반자 QR 데이터 - 간결하게
             const qrData2 = JSON.stringify({
-              id: participant.id,
-              name: participant.guest2_name,
-              phone: participant.guest2_phone || '',
-              seat: participant.seat_full_2 || null,
-              type: 'guest'
+              i: participant.id,
+              t: 'g'  // guest
             });
 
             qrCodeContainer2.innerHTML = '';
@@ -668,7 +680,7 @@
               height: 180,
               colorDark: '#1e40af',  // 파란색으로 동반자 구분
               colorLight: '#FFFFFF',
-              correctLevel: QRCode.CorrectLevel.H
+              correctLevel: QRCode.CorrectLevel.M
             });
           } else {
             qrCode2Section.classList.add('hidden');
@@ -694,6 +706,129 @@
         script.onerror = () => reject(new Error('Failed to load QRCode library'));
         document.head.appendChild(script);
       });
+    }
+
+    // 동반참가자 전용 결과 표시
+    function displayGuestResult(participant, guestInfo) {
+      // 동반참가자 정보로 표시
+      document.getElementById('userName').textContent = guestInfo.name + ' (동반참가자)';
+      document.getElementById('userPhone').textContent = formatPhone(guestInfo.phone);
+
+      // 이름 수정 버튼 숨기기 (동반참가자는 수정 불가)
+      document.getElementById('editBtn').classList.add('hidden');
+
+      // 신청 유형
+      document.getElementById('ticketType').textContent = '2인 신청 (동반참가자)';
+
+      // 입금 상태
+      const paymentBadge = document.getElementById('paymentBadge');
+      if (participant.is_paid) {
+        paymentBadge.className = 'badge badge-green';
+        paymentBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-green-600"></span> 입금 완료';
+      } else {
+        paymentBadge.className = 'badge badge-yellow';
+        paymentBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-yellow-600 animate-pulse"></span> 입금 대기';
+      }
+
+      // 좌석 배정 (동반참가자 좌석만 표시)
+      const seatBadge = document.getElementById('seatBadge');
+      const seatInfoRow = document.getElementById('seatInfoRow');
+      const seatInfo2Row = document.getElementById('seatInfo2Row');
+
+      if (guestInfo.seat) {
+        seatBadge.className = 'badge badge-green';
+        seatBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-green-600"></span> 배정 완료';
+        seatInfoRow.classList.remove('hidden');
+        document.getElementById('seatNumber').textContent = guestInfo.seat;
+        seatInfo2Row.classList.add('hidden'); // 동반참가자는 본인 좌석만 표시
+      } else {
+        seatBadge.className = 'badge badge-gray';
+        seatBadge.innerHTML = '배정 대기';
+        seatInfoRow.classList.add('hidden');
+        seatInfo2Row.classList.add('hidden');
+      }
+
+      // 신청 일시 (원 신청자의 신청일시)
+      if (participant.created_at) {
+        const date = new Date(participant.created_at.replace(' ', 'T'));
+        document.getElementById('createdAt').textContent = date.toLocaleString('ko-KR', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+          timeZone: 'Asia/Seoul'
+        });
+      }
+
+      // 입금 안내 (미입금 시)
+      const paymentGuide = document.getElementById('paymentGuide');
+      if (!participant.is_paid) {
+        paymentGuide.classList.remove('hidden');
+        document.getElementById('paymentAmount').textContent = '₩60,000 (2인)';
+        const phoneLast4 = participant.phone.slice(-4);
+        document.getElementById('depositName').textContent = `${participant.user_name}${phoneLast4}`;
+      } else {
+        paymentGuide.classList.add('hidden');
+      }
+
+      // QR 코드 (입금 완료 시) - 동반참가자용 QR만 생성
+      const qrCodeSection = document.getElementById('qrCodeSection');
+      if (participant.is_paid) {
+        qrCodeSection.classList.remove('hidden');
+        generateGuestQRCode(participant, guestInfo);
+      } else {
+        qrCodeSection.classList.add('hidden');
+      }
+
+      // 2번째 참가자 섹션 숨기기 (동반참가자 본인이므로)
+      document.getElementById('guest2Section').classList.add('hidden');
+
+      // 화면 전환
+      loginForm.classList.add('hidden');
+      resultCard.classList.remove('hidden');
+
+      // 스크롤 상단
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 동반참가자용 QR 코드 생성
+    function generateGuestQRCode(participant, guestInfo) {
+      const qrCodeContainer = document.getElementById('qrCodeContainer');
+      const qrCode2Section = document.getElementById('qrCode2Section');
+      const qrLabel1 = document.getElementById('qrLabel1');
+
+      // 동반참가자 QR 데이터
+      const qrData = JSON.stringify({
+        i: participant.id,
+        t: 'g'  // guest
+      });
+
+      qrLabel1.textContent = `동반참가자: ${guestInfo.name}`;
+
+      // 2번째 QR 섹션 숨기기
+      qrCode2Section.classList.add('hidden');
+
+      qrCodeContainer.innerHTML = '<div class="skeleton w-32 h-32"></div>';
+
+      // QR 라이브러리 로드
+      loadQRCodeLibrary()
+        .then(() => {
+          qrCodeContainer.innerHTML = '';
+          new QRCode(qrCodeContainer, {
+            text: qrData,
+            width: 180,
+            height: 180,
+            colorDark: '#1e40af',  // 파란색으로 동반자 구분
+            colorLight: '#FFFFFF',
+            correctLevel: QRCode.CorrectLevel.M
+          });
+        })
+        .catch(err => {
+          console.error('QR 코드 생성 실패:', err);
+          qrCodeContainer.innerHTML = '<p class="text-red-600 text-sm">QR 코드 생성 실패</p>';
+        });
     }
 
     // 이름 수정 설정
@@ -872,6 +1007,8 @@
       phoneInput.value = '';
       currentParticipant = null;
       hideError();
+      // 이름 수정 버튼 다시 표시 (동반참가자 조회 후 리셋 시)
+      document.getElementById('editBtn').classList.remove('hidden');
     }
 
     // 에러 표시

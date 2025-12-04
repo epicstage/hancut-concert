@@ -93,17 +93,42 @@ participantsRouter.get('/phone/:phone', async (c) => {
   try {
     const phone = c.req.param('phone');
 
-    const participant = await c.env.DB.prepare(
+    // 본인 전화번호로 먼저 검색
+    let participant = await c.env.DB.prepare(
       'SELECT * FROM participants WHERE phone = ? AND deleted_at IS NULL'
     )
       .bind(phone)
       .first<Participant>();
 
+    // 본인으로 없으면 동반참가자 전화번호로 검색
+    if (!participant) {
+      participant = await c.env.DB.prepare(
+        'SELECT * FROM participants WHERE guest2_phone = ? AND is_guest2_completed = 1 AND deleted_at IS NULL'
+      )
+        .bind(phone)
+        .first<Participant>();
+
+      if (participant) {
+        // 동반참가자로 조회된 경우, 동반참가자 전용 정보 반환
+        return c.json({
+          success: true,
+          participant,
+          isGuest: true,  // 동반참가자임을 표시
+          guestInfo: {
+            name: participant.guest2_name,
+            phone: participant.guest2_phone,
+            seat: participant.seat_full_2,
+            ssn_first: participant.guest2_ssn_first
+          }
+        });
+      }
+    }
+
     if (!participant) {
       return c.json({ error: '신청 내역을 찾을 수 없습니다.' }, 404);
     }
 
-    return c.json({ success: true, participant });
+    return c.json({ success: true, participant, isGuest: false });
   } catch (error) {
     console.error('Error fetching participant:', error);
     return c.json({ error: '조회 중 오류가 발생했습니다.' }, 500);

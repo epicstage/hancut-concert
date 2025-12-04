@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="한동훈 토크콘서트 - 2025년 12월 21일 고양 킨텍스" />
   <meta name="theme-color" content="#dc2626" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="토크콘서트" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/icon-192.png" />
   <title>한동훈 토크콘서트</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -25,6 +30,8 @@
   <meta property="og:title" content="한동훈 토크콘서트" />
   <meta property="og:description" content="2025년 12월 21일 고양 킨텍스에서 열리는 한동훈 토크콘서트에 참가하세요." />
   <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://hancut-concert2.pages.dev/og-image.png" />
+  <meta property="og:url" content="https://hancut-concert2.pages.dev/" />
 </head>
 <body>
   <div class="min-h-screen main-content">
@@ -204,6 +211,29 @@
           </div>
         </details>
 
+        <!-- 취소/환불 안내 -->
+        <details class="group mb-3">
+          <summary class="flex items-center justify-between p-3 bg-red-50 rounded-xl cursor-pointer hover:bg-red-100 transition-colors">
+            <div class="flex items-center gap-2">
+              <span class="text-base">🔄</span>
+              <span class="font-semibold text-gray-900 text-sm">취소/환불 안내</span>
+            </div>
+            <svg class="w-5 h-5 text-gray-500 transform group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </summary>
+          <div class="p-4 pt-3 space-y-2 text-gray-700">
+            <p class="flex items-start gap-2">
+              <span class="text-red-600 mt-0.5">•</span>
+              <span>결제 취소는 <strong class="text-red-600">12월 14일 자정까지</strong> 가능하며, 취소 후 14일 이내 환불처리됩니다.</span>
+            </p>
+            <p class="flex items-start gap-2">
+              <span class="text-red-600 mt-0.5">•</span>
+              <span>제한된 좌석으로 인해 꼭 함께 하고자 하셨던 분들이 아쉽게 되는 경우를 방지하기 위해, <strong class="text-red-600">꼭 스케줄을 확인하시어 신중하게 신청</strong>해주시길 부탁드립니다.</span>
+            </p>
+          </div>
+        </details>
+
         <!-- 문의 안내 -->
         <details class="group">
           <summary class="flex items-center justify-between p-3 bg-gray-100 rounded-xl cursor-pointer hover:bg-gray-200 transition-colors">
@@ -251,7 +281,7 @@
           <p class="text-sm text-gray-600 mt-2">예금주: <strong>샘커뮤니케이션즈</strong></p>
         </div>
 
-        <p class="text-xs text-gray-500 mt-3 text-center">참가비: 1인 30,000원</p>
+        <p class="text-xs text-gray-500 mt-3 text-center">참가비: 1인 35,000원 / 2인 70,000원</p>
       </div>
 
       <!-- 액션 버튼들 -->
@@ -296,6 +326,31 @@
             <span>문의하기</span>
           </button>
         </a>
+
+        <a href="/story.html" class="block">
+          <button class="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]" style="background: linear-gradient(135deg, #ea580c, #f97316); color: white; border: none; box-shadow: 0 4px 15px rgba(234, 88, 12, 0.3);">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+            <span>사연있어요</span>
+          </button>
+        </a>
+
+        <!-- 공유 및 설치 버튼 -->
+        <div class="flex gap-3 mt-2">
+          <button onclick="shareLink()" class="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] bg-blue-500 text-white">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+            </svg>
+            <span>공유하기</span>
+          </button>
+          <button id="installBtn" onclick="installPWA()" class="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] bg-gray-100 text-gray-700 border border-gray-200">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <span>바탕화면 저장</span>
+          </button>
+        </div>
       </div>
     </main>
 
@@ -336,9 +391,151 @@
       </svg>
       <span>문의</span>
     </a>
+    <a href="/story.html" class="bottom-nav-item" aria-label="사연" style="color: #ea580c;">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+      </svg>
+      <span>사연</span>
+    </a>
   </nav>
 
   <script>
+    // PWA 설치 관련 변수
+    let deferredPrompt = null;
+
+    // beforeinstallprompt 이벤트 캡처
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      // 설치 가능 상태 표시
+      const installBtn = document.getElementById('installBtn');
+      if (installBtn) {
+        installBtn.classList.remove('bg-gray-100', 'text-gray-700', 'border-gray-200');
+        installBtn.classList.add('bg-green-500', 'text-white');
+        installBtn.style.border = 'none';
+      }
+    });
+
+    // 공유하기 (Web Share API 또는 URL 복사)
+    function shareLink() {
+      const shareData = {
+        title: '한동훈 토크콘서트',
+        text: '2025년 12월 21일 고양 킨텍스에서 열리는 한동훈 토크콘서트에 함께해요!',
+        url: 'https://hancut-concert2.pages.dev'
+      };
+
+      if (navigator.share) {
+        navigator.share(shareData).catch(() => {
+          copyToClipboard('https://hancut-concert2.pages.dev');
+        });
+      } else {
+        copyToClipboard('https://hancut-concert2.pages.dev');
+      }
+    }
+
+    // 클립보드 복사
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('링크가 복사되었습니다', 'success');
+      }).catch(() => {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showToast('링크가 복사되었습니다', 'success');
+      });
+    }
+
+    // PWA 설치
+    function installPWA() {
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const isAndroid = /Android/.test(navigator.userAgent);
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+      // 이미 설치된 경우
+      if (isStandalone) {
+        showToast('이미 앱이 설치되어 있습니다', 'info');
+        return;
+      }
+
+      // 네이티브 설치 프롬프트가 있는 경우
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            showToast('앱이 설치되었습니다!', 'success');
+          }
+          deferredPrompt = null;
+        });
+        return;
+      }
+
+      // iOS Safari
+      if (isIOS) {
+        showInstallGuide('ios');
+        return;
+      }
+
+      // Android Chrome
+      if (isAndroid) {
+        showInstallGuide('android');
+        return;
+      }
+
+      // 데스크탑
+      showInstallGuide('desktop');
+    }
+
+    // 설치 가이드 모달 표시
+    function showInstallGuide(platform) {
+      const guides = {
+        ios: `
+          <div class="text-center">
+            <p class="font-semibold mb-3">iPhone/iPad에 추가하기</p>
+            <ol class="text-left text-sm space-y-2">
+              <li>1. 하단의 <strong>공유 버튼</strong> (□↑) 을 탭하세요</li>
+              <li>2. <strong>"홈 화면에 추가"</strong>를 선택하세요</li>
+              <li>3. <strong>"추가"</strong>를 탭하세요</li>
+            </ol>
+          </div>
+        `,
+        android: `
+          <div class="text-center">
+            <p class="font-semibold mb-3">Android에 추가하기</p>
+            <ol class="text-left text-sm space-y-2">
+              <li>1. 우측 상단의 <strong>메뉴 버튼</strong> (⋮)을 탭하세요</li>
+              <li>2. <strong>"홈 화면에 추가"</strong> 또는 <strong>"앱 설치"</strong>를 선택하세요</li>
+              <li>3. <strong>"추가"</strong>를 탭하세요</li>
+            </ol>
+          </div>
+        `,
+        desktop: `
+          <div class="text-center">
+            <p class="font-semibold mb-3">데스크탑에 추가하기</p>
+            <ol class="text-left text-sm space-y-2">
+              <li>1. 주소창 우측의 <strong>설치 아이콘</strong>을 클릭하세요</li>
+              <li>2. 또는 <strong>Ctrl+D</strong> (Mac: Cmd+D)로 북마크를 추가하세요</li>
+            </ol>
+          </div>
+        `
+      };
+
+      // 모달 생성
+      const modal = document.createElement('div');
+      modal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4';
+      modal.id = 'installGuideModal';
+      modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+      modal.innerHTML = `
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl">
+          ${guides[platform]}
+          <button onclick="document.getElementById('installGuideModal').remove()" class="mt-4 w-full py-2 bg-red-600 text-white rounded-xl font-semibold">확인</button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
     // 이벤트 날짜 (2025년 12월 21일)
     const eventDate = new Date('2025-12-21T00:00:00+09:00');
 

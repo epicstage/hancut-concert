@@ -253,7 +253,8 @@ checkinRouter.post('/lists/:listId/checkin', async (c) => {
     } else if (body.qrData) {
       try {
         const qrParsed = JSON.parse(body.qrData);
-        participantId = qrParsed.id;
+        // 새 형식 (i) 또는 기존 형식 (id) 지원
+        participantId = qrParsed.i || qrParsed.id;
       } catch {
         return errorResponse(c, 400, '유효하지 않은 QR 코드 형식입니다.', ErrorCode.VALIDATION_ERROR);
       }
@@ -439,14 +440,16 @@ checkinRouter.post('/', async (c) => {
     }
 
     // QR 코드 데이터 파싱
-    let participantData: { id?: number };
+    let participantData: { id?: number; i?: number };
     try {
       participantData = JSON.parse(body.qrData);
     } catch {
       return errorResponse(c, 400, '유효하지 않은 QR 코드 형식입니다.', ErrorCode.VALIDATION_ERROR);
     }
 
-    if (!participantData.id) {
+    // 새 형식 (i) 또는 기존 형식 (id) 지원
+    const participantId = participantData.i || participantData.id;
+    if (!participantId) {
       return errorResponse(c, 400, '참가자 ID가 없습니다.', ErrorCode.VALIDATION_ERROR);
     }
 
@@ -454,7 +457,7 @@ checkinRouter.post('/', async (c) => {
     const participant = await c.env.DB.prepare(
       'SELECT id, user_name, phone, is_paid, is_checked_in, seat_full FROM participants WHERE id = ? AND deleted_at IS NULL'
     )
-      .bind(participantData.id)
+      .bind(participantId)
       .first<{
         id: number;
         user_name: string;
@@ -689,6 +692,43 @@ checkinRouter.get('/stats/all', async (c) => {
 // 체크인 기록 조회 API
 // ============================================
 
+// 최근 체크인 기록 조회 (전체, 리스트 무관)
+checkinRouter.get('/recent', async (c) => {
+  try {
+    const limit = Math.min(parseInt(c.req.query('limit') || '20'), 100);
+
+    const records = await c.env.DB.prepare(`
+      SELECT
+        cr.id, cr.checked_in_at, cr.checked_in_by,
+        p.id as participant_id, p.user_name, p.phone, p.seat_full, p.is_checked_in
+      FROM checkin_records cr
+      JOIN participants p ON cr.participant_id = p.id
+      WHERE p.deleted_at IS NULL
+      ORDER BY cr.checked_in_at DESC
+      LIMIT ?
+    `)
+      .bind(limit)
+      .all<{
+        id: number;
+        checked_in_at: string;
+        checked_in_by: string | null;
+        participant_id: number;
+        user_name: string;
+        phone: string;
+        seat_full: string | null;
+        is_checked_in: number;
+      }>();
+
+    return c.json({
+      success: true,
+      records: records.results || []
+    });
+  } catch (error) {
+    console.error('Error fetching recent checkin records:', error);
+    return errorResponse(c, 500, '최근 체크인 기록 조회 중 오류가 발생했습니다.');
+  }
+});
+
 // 특정 리스트의 체크인 기록 조회 (페이지네이션)
 checkinRouter.get('/lists/:listId/records', async (c) => {
   try {
@@ -742,6 +782,46 @@ checkinRouter.get('/lists/:listId/records', async (c) => {
   }
 });
 
+// 특정 참가자의 체크인 초기화 (관리자 전용)
+checkinRouter.delete('/participant/:participantId', async (c) => {
+  try {
+    const participantId = parseInt(c.req.param('participantId'));
+    if (isNaN(participantId)) {
+      return errorResponse(c, 400, '유효하지 않은 참가자 ID입니다.', ErrorCode.VALIDATION_ERROR);
+    }
+
+    // 참가자 확인
+    const participant = await c.env.DB.prepare(
+      'SELECT id, user_name, is_checked_in FROM participants WHERE id = ? AND deleted_at IS NULL'
+    ).bind(participantId).first<{ id: number; user_name: string; is_checked_in: number }>();
+
+    if (!participant) {
+      return errorResponse(c, 404, '참가자를 찾을 수 없습니다.', ErrorCode.NOT_FOUND);
+    }
+
+    // 체크인 기록 삭제
+    await c.env.DB.prepare(
+      'DELETE FROM checkin_records WHERE participant_id = ?'
+    ).bind(participantId).run();
+
+    // is_checked_in 초기화
+    await c.env.DB.prepare(
+      'UPDATE participants SET is_checked_in = 0 WHERE id = ?'
+    ).bind(participantId).run();
+
+    // 캐시 무효화
+    await invalidateCacheByPrefix(c.env.CACHE, 'checkin:');
+
+    return c.json({
+      success: true,
+      message: `${participant.user_name}님의 체크인이 초기화되었습니다.`
+    });
+  } catch (error) {
+    console.error('Error resetting participant check-in:', error);
+    return errorResponse(c, 500, '체크인 초기화 중 오류가 발생했습니다.');
+  }
+});
+
 // 체크인 취소 (관리자 전용)
 checkinRouter.delete('/lists/:listId/records/:recordId', async (c) => {
   try {
@@ -785,5 +865,84 @@ checkinRouter.delete('/lists/:listId/records/:recordId', async (c) => {
   } catch (error) {
     console.error('Error canceling check-in:', error);
     return errorResponse(c, 500, '체크인 취소 중 오류가 발생했습니다.');
+  }
+});
+
+// 전체 체크인 초기화 (관리자 전용)
+checkinRouter.post('/reset-all', async (c) => {
+  try {
+    let body: { confirmToken: string };
+    try {
+      body = await c.req.json<{ confirmToken: string }>();
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError);
+      return errorResponse(c, 400, 'JSON 파싱 오류가 발생했습니다.', ErrorCode.VALIDATION_ERROR);
+    }
+
+    // 확인 토큰 검증
+    if (!body.confirmToken || body.confirmToken !== 'RESET_ALL_CHECKINS_CONFIRM') {
+      return errorResponse(c, 400, '체크인 전체 초기화를 위해서는 확인 토큰이 필요합니다.', ErrorCode.VALIDATION_ERROR);
+    }
+
+    // 현재 체크인된 인원 수 확인
+    let checkedInCount: { count: number } | null = null;
+    let recordCount: { count: number } | null = null;
+
+    try {
+      checkedInCount = await c.env.DB.prepare(
+        'SELECT COUNT(*) as count FROM participants WHERE is_checked_in = 1 AND deleted_at IS NULL'
+      ).first<{ count: number }>();
+    } catch (dbError) {
+      console.error('Error counting checked-in participants:', dbError);
+    }
+
+    try {
+      recordCount = await c.env.DB.prepare(
+        'SELECT COUNT(*) as count FROM checkin_records'
+      ).first<{ count: number }>();
+    } catch (dbError) {
+      console.error('Error counting checkin records:', dbError);
+    }
+
+    // 모든 체크인 기록 삭제
+    try {
+      await c.env.DB.prepare('DELETE FROM checkin_records').run();
+    } catch (dbError) {
+      console.error('Error deleting checkin records:', dbError);
+      return errorResponse(c, 500, '체크인 기록 삭제 중 오류가 발생했습니다.');
+    }
+
+    // 모든 참가자의 is_checked_in 초기화
+    try {
+      await c.env.DB.prepare(
+        'UPDATE participants SET is_checked_in = 0 WHERE deleted_at IS NULL'
+      ).run();
+    } catch (dbError) {
+      console.error('Error updating participants:', dbError);
+      return errorResponse(c, 500, '참가자 상태 초기화 중 오류가 발생했습니다.');
+    }
+
+    // 캐시 무효화 (실패해도 계속 진행)
+    try {
+      if (c.env.CACHE) {
+        await invalidateCacheByPrefix(c.env.CACHE, 'checkin:');
+      }
+    } catch (cacheError) {
+      console.error('Error invalidating cache:', cacheError);
+    }
+
+    console.log(`[Admin] Reset all check-ins. Participants: ${checkedInCount?.count || 0}, Records: ${recordCount?.count || 0}`);
+
+    return c.json({
+      success: true,
+      message: `체크인이 전체 초기화되었습니다. (${checkedInCount?.count || 0}명, ${recordCount?.count || 0}건)`,
+      affected: {
+        participants: checkedInCount?.count || 0,
+        records: recordCount?.count || 0
+      }
+    });
+  } catch (error) {
+    console.error('Error resetting all check-ins:', error);
+    return errorResponse(c, 500, '체크인 전체 초기화 중 오류가 발생했습니다.');
   }
 });
