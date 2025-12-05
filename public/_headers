@@ -1,0 +1,14 @@
+/index.html
+  Cache-Control: no-cache, must-revalidate
+
+/apply.html
+  Cache-Control: no-cache, must-revalidate
+
+/check.html
+  Cache-Control: no-cache, must-revalidate
+
+/seat.html
+  Cache-Control: no-cache, must-revalidate
+
+/admin.html
+  Cache-Control: no-cache, must-revalidate
