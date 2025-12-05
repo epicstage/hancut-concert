@@ -1,14 +1,24 @@
 /index.html
-  Cache-Control: no-cache, must-revalidate
+  Cache-Control: no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0
+  Pragma: no-cache
+  Expires: 0
 
 /apply.html
-  Cache-Control: no-cache, must-revalidate
+  Cache-Control: no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0
+  Pragma: no-cache
+  Expires: 0
 
 /check.html
-  Cache-Control: no-cache, must-revalidate
+  Cache-Control: no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0
+  Pragma: no-cache
+  Expires: 0
 
 /seat.html
-  Cache-Control: no-cache, must-revalidate
+  Cache-Control: no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0
+  Pragma: no-cache
+  Expires: 0
 
 /admin.html
-  Cache-Control: no-cache, must-revalidate
+  Cache-Control: no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0
+  Pragma: no-cache
+  Expires: 0
