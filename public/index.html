@@ -50,13 +50,42 @@
         <p>7일 공식 티케팅 시에는 <strong>새로운 계좌번호</strong>가 안내될 예정이오니 착오 없으시기 바랍니다.</p>
         <p class="text-gray-500">감사합니다.</p>
       </div>
-      <div class="px-5 pb-5">
-        <button onclick="document.getElementById('noticeModal').style.display='none'" class="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-colors">
+      <div class="px-5 pb-5 space-y-3">
+        <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+          <input type="checkbox" id="noticeToday" class="w-4 h-4 rounded border-gray-300">
+          <span>오늘 하루 열지 않기</span>
+        </label>
+        <button onclick="closeNotice()" class="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-colors">
           확인
         </button>
       </div>
     </div>
   </div>
+  <script>
+    // 공지 팝업 관리
+    (function() {
+      const modal = document.getElementById('noticeModal');
+      const hideUntil = localStorage.getItem('noticeHideUntil');
+
+      if (hideUntil && new Date().getTime() < parseInt(hideUntil)) {
+        modal.style.display = 'none';
+      }
+    })();
+
+    function closeNotice() {
+      const modal = document.getElementById('noticeModal');
+      const todayCheck = document.getElementById('noticeToday');
+
+      if (todayCheck.checked) {
+        // 오늘 자정까지 숨김
+        const tomorrow = new Date();
+        tomorrow.setHours(24, 0, 0, 0);
+        localStorage.setItem('noticeHideUntil', tomorrow.getTime().toString());
+      }
+
+      modal.style.display = 'none';
+    }
+  </script>
 
   <div class="min-h-screen main-content">
     <!-- 오프라인 배너 -->
