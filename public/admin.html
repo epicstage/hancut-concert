@@ -786,6 +786,17 @@
     // 오픈/마감 토글
     async function toggleOpen(isOpen) {
       const action = isOpen ? '오픈' : '마감';
+
+      // 비밀번호 확인
+      const password = prompt(`신청을 ${action}하려면 비밀번호를 입력하세요:`);
+      if (password === null) {
+        return; // 취소
+      }
+      if (password !== '2101') {
+        alert('비밀번호가 올바르지 않습니다.');
+        return;
+      }
+
       if (!confirm(`정말 신청을 ${action}하시겠습니까?`)) {
         return;
       }
