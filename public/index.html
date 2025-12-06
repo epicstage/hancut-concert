@@ -314,11 +314,16 @@
           <span>자주 묻는 질문 (FAQ)</span>
         </h2>
 
-        <!-- 한컷 시스템 관련 -->
+        <!-- 시스템 관련 -->
         <div class="mb-4">
           <h3 class="text-sm font-bold text-blue-600 mb-2 flex items-center gap-1">
             <span>💻</span> 시스템 관련
           </h3>
+
+          <!-- Q0 -->
+          <div class="p-3 bg-gray-100 rounded-xl mb-2">
+            <p class="text-sm text-gray-700"><strong>Q0.</strong> 본행사와 직접 관련 없는 질문에 대해서는 답변하지 않습니다. 양해 부탁드립니다.</p>
+          </div>
 
           <!-- Q1 -->
           <details class="group mb-2">
@@ -341,14 +346,14 @@
             <summary class="flex items-center justify-between p-3 bg-blue-50 rounded-xl cursor-pointer hover:bg-blue-100 transition-colors">
               <div class="flex items-start gap-2 flex-1">
                 <span class="font-bold text-blue-600 text-sm">Q2.</span>
-                <span class="font-medium text-gray-900 text-sm">입금 계좌는 어디서 확인하나요?</span>
+                <span class="font-medium text-gray-900 text-sm">입금 계좌는 어디서 확인하나요? 입금 시한은 언제입니까?</span>
               </div>
               <svg class="w-5 h-5 text-gray-500 transform group-open:rotate-180 transition-transform flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
               </svg>
             </summary>
             <div class="p-4 pt-3 text-gray-700 text-sm">
-              <p>참가 신청 링크에서 첫번째 화면에서 입금 계좌 확인하실 수 있습니다. 신청 매수(1매 또는 2매)를 꼭 확인하시고, 참가비를 송금하시기 바랍니다.</p>
+              <p>참가 신청 링크에서 첫번째 화면에서 입금 계좌 확인하실 수 있습니다. 신청 매수(1매 또는 2매)를 꼭 확인하시고, 참가비를 송금하시기 바랍니다. <strong class="text-red-600">입금 시한은 8일 12시(정오)</strong>입니다.</p>
             </div>
           </details>
 
@@ -357,14 +362,22 @@
             <summary class="flex items-center justify-between p-3 bg-blue-50 rounded-xl cursor-pointer hover:bg-blue-100 transition-colors">
               <div class="flex items-start gap-2 flex-1">
                 <span class="font-bold text-blue-600 text-sm">Q3.</span>
-                <span class="font-medium text-gray-900 text-sm">동반인의 정보는 어디서 입력하나요? 꼭 입력해야 하나요?</span>
+                <span class="font-medium text-gray-900 text-sm">저는 2인 신청을 하려 합니다. 신청은 어떻게 하나요? 동반인의 정보는 어떻게 입력하나요?</span>
               </div>
               <svg class="w-5 h-5 text-gray-500 transform group-open:rotate-180 transition-transform flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
               </svg>
             </summary>
             <div class="p-4 pt-3 text-gray-700 text-sm">
-              <p>대표자가 참가신청 후, 동반하시는 분의 정보도 꼭 입력해 주셔야 합니다. <strong class="text-red-600">번호당 1개의 입장 QR코드만 발급</strong>되오니, 2매 예매시 각각의 개인정보가 필요합니다.</p>
+              <p class="mb-2">2인 신청 프로세스를 알려드립니다.</p>
+              <ol class="list-decimal list-inside space-y-1 mb-2">
+                <li>신청하기 첫 화면에서 <strong>2인 신청</strong>을 클릭합니다.</li>
+                <li>대표 참가자 정보를 입력하고, 다음을 클릭합니다.</li>
+                <li>신청내용 확인 화면에서 신청 완료를 클릭합니다.</li>
+                <li>신청내역 확인 화면에서 대표 참가자 전화번호로 신청내역을 확인합니다.</li>
+                <li>대표 참가자 신청내역을 확인하고, 아래로 화면을 내려서, 동반 참가자 정보를 입력합니다.</li>
+              </ol>
+              <p><strong class="text-red-600">번호당 1개의 입장 QR 코드만 발급</strong>되오니 2인 신청시에는 동반인 정보를 꼭 입력하셔야 합니다.</p>
             </div>
           </details>
 
@@ -373,6 +386,22 @@
             <summary class="flex items-center justify-between p-3 bg-blue-50 rounded-xl cursor-pointer hover:bg-blue-100 transition-colors">
               <div class="flex items-start gap-2 flex-1">
                 <span class="font-bold text-blue-600 text-sm">Q4.</span>
+                <span class="font-medium text-gray-900 text-sm">2인 신청시, 대표 참가자가 2인 참가 비용을 내는 것인가요?</span>
+              </div>
+              <svg class="w-5 h-5 text-gray-500 transform group-open:rotate-180 transition-transform flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </summary>
+            <div class="p-4 pt-3 text-gray-700 text-sm">
+              <p>맞습니다. 대표 참가자가 <strong class="text-red-600">2인 참가 비용(7만원)</strong>을 송금하면 됩니다.</p>
+            </div>
+          </details>
+
+          <!-- Q5 -->
+          <details class="group mb-2">
+            <summary class="flex items-center justify-between p-3 bg-blue-50 rounded-xl cursor-pointer hover:bg-blue-100 transition-colors">
+              <div class="flex items-start gap-2 flex-1">
+                <span class="font-bold text-blue-600 text-sm">Q5.</span>
                 <span class="font-medium text-gray-900 text-sm">좌석은 어떻게 배정되는지요? 제가 배정할 수 있는지요?</span>
               </div>
               <svg class="w-5 h-5 text-gray-500 transform group-open:rotate-180 transition-transform flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -384,11 +413,27 @@
             </div>
           </details>
 
-          <!-- Q5 -->
+          <!-- Q6 -->
           <details class="group mb-2">
             <summary class="flex items-center justify-between p-3 bg-blue-50 rounded-xl cursor-pointer hover:bg-blue-100 transition-colors">
               <div class="flex items-start gap-2 flex-1">
-                <span class="font-bold text-blue-600 text-sm">Q5.</span>
+                <span class="font-bold text-blue-600 text-sm">Q6.</span>
+                <span class="font-medium text-gray-900 text-sm">신청자 변경이 가능한지요? (예: 부모님 대신 신청)</span>
+              </div>
+              <svg class="w-5 h-5 text-gray-500 transform group-open:rotate-180 transition-transform flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </summary>
+            <div class="p-4 pt-3 text-gray-700 text-sm">
+              <p><strong class="text-red-600">신청자=참가자</strong>입니다. 실제 참석자 기준으로 신청해 주셔야 하며, 입력 정보는 신청 이후 변경 불가합니다. 반드시 실제 참석자의 성함과 연락처를 기입해 주십시오.</p>
+            </div>
+          </details>
+
+          <!-- Q7 -->
+          <details class="group mb-2">
+            <summary class="flex items-center justify-between p-3 bg-blue-50 rounded-xl cursor-pointer hover:bg-blue-100 transition-colors">
+              <div class="flex items-start gap-2 flex-1">
+                <span class="font-bold text-blue-600 text-sm">Q7.</span>
                 <span class="font-medium text-gray-900 text-sm">좌석은 언제, 어떻게 알 수 있는지요?</span>
               </div>
               <svg class="w-5 h-5 text-gray-500 transform group-open:rotate-180 transition-transform flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -400,11 +445,11 @@
             </div>
           </details>
 
-          <!-- Q6 -->
+          <!-- Q8 -->
           <details class="group mb-2">
             <summary class="flex items-center justify-between p-3 bg-blue-50 rounded-xl cursor-pointer hover:bg-blue-100 transition-colors">
               <div class="flex items-start gap-2 flex-1">
-                <span class="font-bold text-blue-600 text-sm">Q6.</span>
+                <span class="font-bold text-blue-600 text-sm">Q8.</span>
                 <span class="font-medium text-gray-900 text-sm">환불은 가능한지요? 어떻게 진행하는지요?</span>
               </div>
               <svg class="w-5 h-5 text-gray-500 transform group-open:rotate-180 transition-transform flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -416,11 +461,11 @@
             </div>
           </details>
 
-          <!-- Q7 -->
+          <!-- Q9 -->
           <details class="group mb-2">
             <summary class="flex items-center justify-between p-3 bg-blue-50 rounded-xl cursor-pointer hover:bg-blue-100 transition-colors">
               <div class="flex items-start gap-2 flex-1">
-                <span class="font-bold text-blue-600 text-sm">Q7.</span>
+                <span class="font-bold text-blue-600 text-sm">Q9.</span>
                 <span class="font-medium text-gray-900 text-sm">전화 문의는 가능한가요?</span>
               </div>
               <svg class="w-5 h-5 text-gray-500 transform group-open:rotate-180 transition-transform flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -428,7 +473,7 @@
               </svg>
             </summary>
             <div class="p-4 pt-3 text-gray-700 text-sm">
-              <p>전화 문의는 진행하지 않습니다. <strong class="text-red-600">'문의하기'</strong>로 문의주시면 답을 드리겠습니다.</p>
+              <p>전화 문의는 진행하지 않습니다. <strong class="text-red-600">'문의하기'</strong>로 문의하시면 답을 드리겠습니다.</p>
             </div>
           </details>
         </div>
@@ -439,11 +484,11 @@
             <span>🚗</span> 장소 및 교통 관련
           </h3>
 
-          <!-- Q8 -->
+          <!-- Q10 -->
           <details class="group mb-2">
             <summary class="flex items-center justify-between p-3 bg-green-50 rounded-xl cursor-pointer hover:bg-green-100 transition-colors">
               <div class="flex items-start gap-2 flex-1">
-                <span class="font-bold text-green-600 text-sm">Q8.</span>
+                <span class="font-bold text-green-600 text-sm">Q10.</span>
                 <span class="font-medium text-gray-900 text-sm">행사장은 어디이고, 교통편은 어떻게 되나요?</span>
               </div>
               <svg class="w-5 h-5 text-gray-500 transform group-open:rotate-180 transition-transform flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -457,11 +502,11 @@
             </div>
           </details>
 
-          <!-- Q9 -->
+          <!-- Q11 -->
           <details class="group mb-2">
             <summary class="flex items-center justify-between p-3 bg-green-50 rounded-xl cursor-pointer hover:bg-green-100 transition-colors">
               <div class="flex items-start gap-2 flex-1">
-                <span class="font-bold text-green-600 text-sm">Q9.</span>
+                <span class="font-bold text-green-600 text-sm">Q11.</span>
                 <span class="font-medium text-gray-900 text-sm">주차는 가능한지요?</span>
               </div>
               <svg class="w-5 h-5 text-gray-500 transform group-open:rotate-180 transition-transform flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -483,11 +528,11 @@
             <span>🎤</span> 행사 진행 관련
           </h3>
 
-          <!-- Q10 -->
+          <!-- Q12 -->
           <details class="group mb-2">
             <summary class="flex items-center justify-between p-3 bg-orange-50 rounded-xl cursor-pointer hover:bg-orange-100 transition-colors">
               <div class="flex items-start gap-2 flex-1">
-                <span class="font-bold text-orange-600 text-sm">Q10.</span>
+                <span class="font-bold text-orange-600 text-sm">Q12.</span>
                 <span class="font-medium text-gray-900 text-sm">선물 전달이 가능한지요?</span>
               </div>
               <svg class="w-5 h-5 text-gray-500 transform group-open:rotate-180 transition-transform flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -499,11 +544,11 @@
             </div>
           </details>
 
-          <!-- Q11 -->
+          <!-- Q13 -->
           <details class="group mb-2">
             <summary class="flex items-center justify-between p-3 bg-orange-50 rounded-xl cursor-pointer hover:bg-orange-100 transition-colors">
               <div class="flex items-start gap-2 flex-1">
-                <span class="font-bold text-orange-600 text-sm">Q11.</span>
+                <span class="font-bold text-orange-600 text-sm">Q13.</span>
                 <span class="font-medium text-gray-900 text-sm">프로그램에 대해 알 수 있나요? (게스트 초청 등)</span>
               </div>
               <svg class="w-5 h-5 text-gray-500 transform group-open:rotate-180 transition-transform flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -515,27 +560,27 @@
             </div>
           </details>
 
-          <!-- Q12 -->
+          <!-- Q14 -->
           <details class="group mb-2">
             <summary class="flex items-center justify-between p-3 bg-orange-50 rounded-xl cursor-pointer hover:bg-orange-100 transition-colors">
               <div class="flex items-start gap-2 flex-1">
-                <span class="font-bold text-orange-600 text-sm">Q12.</span>
-                <span class="font-medium text-gray-900 text-sm">몇시부터 입장 가능한가요?</span>
+                <span class="font-bold text-orange-600 text-sm">Q14.</span>
+                <span class="font-medium text-gray-900 text-sm">몇시부터 입장 가능한가요? 행사 시작은 몇시인지요?</span>
               </div>
               <svg class="w-5 h-5 text-gray-500 transform group-open:rotate-180 transition-transform flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
               </svg>
             </summary>
             <div class="p-4 pt-3 text-gray-700 text-sm">
-              <p>행사는 <strong class="text-red-600">2시부터 시작</strong>입니다. 입장 가능 시간은 추후 알려드리겠습니다.</p>
+              <p><strong class="text-red-600">21일 오후 1시부터 입장</strong> 가능합니다. 행사 시작은 <strong class="text-red-600">오후 2시</strong>입니다.</p>
             </div>
           </details>
 
-          <!-- Q13 -->
+          <!-- Q15 -->
           <details class="group">
             <summary class="flex items-center justify-between p-3 bg-orange-50 rounded-xl cursor-pointer hover:bg-orange-100 transition-colors">
               <div class="flex items-start gap-2 flex-1">
-                <span class="font-bold text-orange-600 text-sm">Q13.</span>
+                <span class="font-bold text-orange-600 text-sm">Q15.</span>
                 <span class="font-medium text-gray-900 text-sm">현장에서 접수 가능한가요?</span>
               </div>
               <svg class="w-5 h-5 text-gray-500 transform group-open:rotate-180 transition-transform flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
