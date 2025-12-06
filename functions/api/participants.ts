@@ -6,16 +6,17 @@ import { getKSTDateTime, validatePhone, validateSsnFirst } from './utils';
 
 export const participantsRouter = new Hono<{ Bindings: Env }>();
 
-// 신청 오픈 시간 (2025년 12월 7일 오전 9시 KST)
-const OPEN_TIME = new Date('2025-12-07T09:00:00+09:00');
-
 // 참가자 신청
 participantsRouter.post('/', async (c) => {
   try {
-    // 오픈 시간 체크
-    const now = new Date();
-    if (now < OPEN_TIME) {
-      return c.json({ error: '아직 신청 기간이 아닙니다. 12월 7일 오전 9시에 오픈됩니다.' }, 403);
+    // 오픈 상태 체크 (DB 설정 기반)
+    const settingResult = await c.env.DB.prepare(
+      "SELECT value FROM settings WHERE key = 'is_open'"
+    ).first<{ value: string }>();
+
+    const isOpen = settingResult?.value === 'true';
+    if (!isOpen) {
+      return c.json({ error: '현재 신청이 마감되어 있습니다.' }, 403);
     }
 
     const body = await c.req.json<{

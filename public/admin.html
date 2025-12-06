@@ -154,8 +154,33 @@
         </div>
       </header>
 
+      <!-- 신청 오픈/마감 컨트롤 -->
+      <div class="max-w-7xl mx-auto px-4 pt-6">
+        <div class="glass-card mb-6 flex items-center justify-between flex-wrap gap-4">
+          <div class="flex items-center gap-3">
+            <div id="openStatusIcon" class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+              <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500">신청 상태</p>
+              <p id="openStatusText" class="text-lg font-bold text-gray-400">확인 중...</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <button id="openBtn" onclick="toggleOpen(true)" class="px-6 py-3 rounded-xl font-semibold bg-green-500 hover:bg-green-600 text-white transition-colors hidden">
+              신청 오픈
+            </button>
+            <button id="closeBtn" onclick="toggleOpen(false)" class="px-6 py-3 rounded-xl font-semibold bg-red-500 hover:bg-red-600 text-white transition-colors hidden">
+              신청 마감
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- 대시보드 메트릭 카드 -->
-      <div class="max-w-7xl mx-auto px-4 py-6">
+      <div class="max-w-7xl mx-auto px-4 pb-6">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div class="metric-card">
             <div class="flex items-center justify-between mb-2">
@@ -723,6 +748,67 @@
       return fetch(url, { ...options, headers });
     }
 
+    // 오픈 상태 조회
+    async function loadOpenStatus() {
+      try {
+        const response = await fetch('/api/settings/is-open');
+        const data = await response.json();
+        updateOpenStatusUI(data.isOpen);
+      } catch (error) {
+        console.error('Error loading open status:', error);
+      }
+    }
+
+    // 오픈 상태 UI 업데이트
+    function updateOpenStatusUI(isOpen) {
+      const statusIcon = document.getElementById('openStatusIcon');
+      const statusText = document.getElementById('openStatusText');
+      const openBtn = document.getElementById('openBtn');
+      const closeBtn = document.getElementById('closeBtn');
+
+      if (isOpen) {
+        statusIcon.className = 'w-12 h-12 rounded-full bg-green-100 flex items-center justify-center';
+        statusIcon.innerHTML = '<svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" /></svg>';
+        statusText.textContent = '신청 접수 중';
+        statusText.className = 'text-lg font-bold text-green-600';
+        openBtn.classList.add('hidden');
+        closeBtn.classList.remove('hidden');
+      } else {
+        statusIcon.className = 'w-12 h-12 rounded-full bg-red-100 flex items-center justify-center';
+        statusIcon.innerHTML = '<svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>';
+        statusText.textContent = '신청 마감';
+        statusText.className = 'text-lg font-bold text-red-600';
+        openBtn.classList.remove('hidden');
+        closeBtn.classList.add('hidden');
+      }
+    }
+
+    // 오픈/마감 토글
+    async function toggleOpen(isOpen) {
+      const action = isOpen ? '오픈' : '마감';
+      if (!confirm(`정말 신청을 ${action}하시겠습니까?`)) {
+        return;
+      }
+
+      try {
+        const response = await authFetch('/api/admin/settings/is-open', {
+          method: 'POST',
+          body: JSON.stringify({ isOpen })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          updateOpenStatusUI(data.isOpen);
+          alert(data.message);
+        } else {
+          throw new Error(data.error);
+        }
+      } catch (error) {
+        console.error('Error toggling open status:', error);
+        alert('상태 변경 중 오류가 발생했습니다.');
+      }
+    }
+
     // Debounce 유틸리티 함수
     function debounce(func, wait) {
       let timeout;
@@ -802,6 +888,7 @@
           if (adminScreen) adminScreen.classList.remove('hidden');
 
           loadParticipants();
+          loadOpenStatus();
           return true;
         } else {
           throw new Error('토큰을 받지 못했습니다.');
@@ -847,6 +934,7 @@
               if (loginScreen) loginScreen.classList.add('hidden');
               if (adminScreen) adminScreen.classList.remove('hidden');
               loadParticipants();
+              loadOpenStatus();
             } else {
               // 토큰 만료 - 로그인 화면 표시
               sessionStorage.removeItem('adminToken');

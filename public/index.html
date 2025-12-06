@@ -862,22 +862,32 @@
       document.body.appendChild(modal);
     }
 
-    // 신청 오픈 시간 (2025년 12월 7일 오전 9시 KST)
-    const OPEN_TIME = new Date('2025-12-07T09:00:00+09:00');
-
     // 이벤트 날짜 (2025년 12월 21일)
     const eventDate = new Date('2025-12-21T00:00:00+09:00');
 
-    // 오픈 상태 체크 및 UI 업데이트
-    function checkOpenStatus() {
-      const now = new Date();
-      const isOpen = now >= OPEN_TIME;
+    // 오픈 상태 체크 및 UI 업데이트 (API 기반)
+    async function checkOpenStatus() {
+      try {
+        const response = await fetch('/api/settings/is-open');
+        const data = await response.json();
+        updateOpenUI(data.isOpen);
+      } catch (error) {
+        console.error('Error checking open status:', error);
+        // API 실패 시 기본값 false (마감 상태)
+        updateOpenUI(false);
+      }
+    }
 
+    // 오픈 상태에 따른 UI 업데이트
+    function updateOpenUI(isOpen) {
       // 상태 배지 업데이트
       const statusBadge = document.getElementById('statusBadge');
       if (isOpen) {
         statusBadge.className = 'badge badge-green';
         statusBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-green-500"></span><span>신청 접수 중</span>';
+      } else {
+        statusBadge.className = 'badge badge-red';
+        statusBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-red-500"></span><span>신청 준비 중</span>';
       }
 
       // 신청 버튼 활성화/비활성화 (메인 버튼)
@@ -886,6 +896,9 @@
       if (isOpen) {
         applyButtonDisabled.classList.add('hidden');
         applyButtonEnabled.classList.remove('hidden');
+      } else {
+        applyButtonDisabled.classList.remove('hidden');
+        applyButtonEnabled.classList.add('hidden');
       }
 
       // 신청 버튼 활성화/비활성화 (하단 네비게이션)
@@ -894,6 +907,9 @@
       if (isOpen) {
         bottomNavApplyDisabled.classList.add('hidden');
         bottomNavApplyEnabled.classList.remove('hidden');
+      } else {
+        bottomNavApplyDisabled.classList.remove('hidden');
+        bottomNavApplyEnabled.classList.add('hidden');
       }
     }
 
