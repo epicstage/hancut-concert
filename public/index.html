@@ -646,7 +646,15 @@
       </svg>
       <span>홈</span>
     </a>
-    <a href="/apply.html" class="bottom-nav-item" aria-label="신청">
+    <!-- 오픈 전: 신청 버튼 비활성화 -->
+    <span id="bottomNavApplyDisabled" class="bottom-nav-item text-gray-400 cursor-not-allowed" aria-label="신청 (준비중)">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+      </svg>
+      <span>신청</span>
+    </span>
+    <!-- 오픈 후: 신청 버튼 활성화 -->
+    <a id="bottomNavApplyEnabled" href="/apply.html" class="bottom-nav-item hidden" aria-label="신청">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
       </svg>
@@ -827,12 +835,20 @@
         statusBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-green-500"></span><span>신청 접수 중</span>';
       }
 
-      // 신청 버튼 활성화/비활성화
+      // 신청 버튼 활성화/비활성화 (메인 버튼)
       const applyButtonDisabled = document.getElementById('applyButtonDisabled');
       const applyButtonEnabled = document.getElementById('applyButtonEnabled');
       if (isOpen) {
         applyButtonDisabled.classList.add('hidden');
         applyButtonEnabled.classList.remove('hidden');
+      }
+
+      // 신청 버튼 활성화/비활성화 (하단 네비게이션)
+      const bottomNavApplyDisabled = document.getElementById('bottomNavApplyDisabled');
+      const bottomNavApplyEnabled = document.getElementById('bottomNavApplyEnabled');
+      if (isOpen) {
+        bottomNavApplyDisabled.classList.add('hidden');
+        bottomNavApplyEnabled.classList.remove('hidden');
       }
     }
 
