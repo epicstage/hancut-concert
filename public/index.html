@@ -34,64 +34,47 @@
   <meta property="og:url" content="https://hancut-concert2.pages.dev/" />
 </head>
 <body>
-  <!-- 공지 팝업 모달 -->
-  <div id="noticeModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(0,0,0,0.6);">
-    <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
-      <div class="bg-red-600 px-5 py-4">
-        <h2 class="text-white font-bold text-lg flex items-center gap-2">
-          <span>📢</span> 공지사항
-        </h2>
+  <!-- 팝업 공지 (2차 티케팅 안내) -->
+  <div id="noticePopup" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md mx-4 p-6 text-center transform animate-bounce-in">
+      <div class="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+        </svg>
       </div>
-      <div class="p-5 text-gray-700 text-sm leading-relaxed space-y-3">
-        <p>시스템 오류로 인해 다시 한번 사과드립니다.</p>
-        <p>계좌이체를 진행하셨으나 신청내역이 확인되지 않은 분들이 일부 계셔서, <strong>환불안내 문자를 받지 못하신 분들</strong>은 아래 이메일로 정보를 보내주시길 부탁드립니다.</p>
-        <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
-          <p class="font-medium text-gray-800 mb-2">보내실 정보:</p>
-          <ul class="text-gray-600 space-y-1">
-            <li>• 성함</li>
-            <li>• 전화번호</li>
-            <li>• 생년월일</li>
-          </ul>
-        </div>
-        <p class="text-center">
-          <a href="mailto:hanofficial1214@gmail.com" class="text-red-600 font-bold underline">hanofficial1214@gmail.com</a>
+      <h2 class="text-xl font-bold text-gray-900 mb-3">2차 티케팅 마감</h2>
+      <div class="text-gray-700 text-left space-y-3 mb-4 text-sm max-h-80 overflow-y-auto">
+        <p class="bg-red-50 p-3 rounded-lg text-center">
+          <strong class="text-red-600 text-lg">2차 티케팅은 마감되었습니다.</strong><br>
+          <span class="text-gray-700">뜨거운 성원에 감사드립니다.</span>
         </p>
-        <p class="text-xs text-gray-500">(입금자명이 나와있는 이체내역을 캡쳐하여 보내주시면 더욱 빠른 처리가 가능합니다)</p>
+        <p class="bg-blue-50 p-3 rounded-lg text-center font-semibold text-blue-700">입금 계좌번호는 오전 중 문자메세지로 발송될 예정입니다.</p>
+        <p>입금계좌는 문자발송시 공지하며, 기존과 다른 계좌로 안내 예정입니다. <strong class="text-red-600">입금계좌를 SNS 등에 공개하거나 타인에게 공유하는 사례 등이 없기를 부탁드립니다.</strong></p>
+        <p class="bg-green-50 p-3 rounded-lg">미처 신청하지 못한 분들을 위해 <strong class="text-green-700">그랜드볼룸 옆 공간을 추가로 대관</strong>했습니다. 좌석이 없고, 공간이 한정돼 있다는 점을 양해 부탁드립니다. 인파가 많을 것으로 예상되므로 안전요원의 안내를 잘 따라주시길 부탁드립니다.</p>
+        <p class="bg-yellow-50 p-3 rounded-lg">아울러 <strong class="text-orange-600">신청 데이터 없이 입금해주신 분들</strong>이 아직 많습니다. 꼭 이름과 연락처, 환불계좌 등 정보를 아래 이메일로 꼭 보내주십시오.</p>
+        <p class="text-center font-bold text-lg text-blue-700 bg-blue-100 p-3 rounded-lg">hanofficial1214@gmail.com</p>
       </div>
-      <div class="px-5 pb-5 space-y-3">
-        <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-          <input type="checkbox" id="noticeToday" class="w-4 h-4 rounded border-gray-300">
-          <span>오늘 하루 열지 않기</span>
-        </label>
-        <button onclick="closeNotice()" class="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-colors">
-          확인
-        </button>
-      </div>
+      <button onclick="closeNoticePopup()" class="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors">
+        확인
+      </button>
     </div>
   </div>
+  <style>
+    @keyframes bounce-in {
+      0% { transform: scale(0.9); opacity: 0; }
+      50% { transform: scale(1.02); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-bounce-in { animation: bounce-in 0.3s ease-out; }
+  </style>
   <script>
-    // 공지 팝업 관리
-    (function() {
-      const modal = document.getElementById('noticeModal');
-      const hideUntil = localStorage.getItem('noticeHideUntil_v2');
+    function closeNoticePopup() {
+      document.getElementById('noticePopup').style.display = 'none';
+    }
 
-      if (hideUntil && new Date().getTime() < parseInt(hideUntil)) {
-        modal.style.display = 'none';
-      }
-    })();
-
-    function closeNotice() {
-      const modal = document.getElementById('noticeModal');
-      const todayCheck = document.getElementById('noticeToday');
-
-      if (todayCheck.checked) {
-        // 오늘 자정까지 숨김
-        const tomorrow = new Date();
-        tomorrow.setHours(24, 0, 0, 0);
-        localStorage.setItem('noticeHideUntil_v2', tomorrow.getTime().toString());
-      }
-
-      modal.style.display = 'none';
+    // 2차 모집 마감
+    function handleApplyClick() {
+      alert('2차 모집이 마감되었습니다');
     }
   </script>
 
@@ -262,6 +245,10 @@
             <p class="ml-6">
               <code class="bg-white px-3 py-1 rounded border border-gray-300 text-sm">예) 홍길동 3747</code>
             </p>
+            <p class="flex items-start gap-2 mt-3 bg-yellow-50 p-2 rounded-lg border border-yellow-200">
+              <span class="text-yellow-600 mt-0.5">⚠️</span>
+              <span class="text-yellow-800">입금 확인은 일괄적으로 처리될 예정이며 현재 '입금대기'로 표시되는 것은 정상입니다.</span>
+            </p>
           </div>
         </details>
 
@@ -409,7 +396,7 @@
               </svg>
             </summary>
             <div class="p-4 pt-3 text-gray-700 text-sm">
-              <p>좌석은 <strong class="text-red-600">입금순으로 배정</strong>됩니다. 개인이 배정하기는 어려운 점 양해 부탁드립니다.</p>
+              <p>좌석은 시스템에서 안배하여 배정되며, 개인이 배정하기는 어려운 점 양해 부탁드립니다. <strong class="text-red-600">(입금순으로 앞좌석에 배정되는 것이 아닙니다)</strong></p>
             </div>
           </details>
 
@@ -476,6 +463,23 @@
               <p>전화 문의는 진행하지 않습니다. <strong class="text-red-600">'문의하기'</strong>로 문의하시면 답을 드리겠습니다.</p>
             </div>
           </details>
+
+          <!-- Q10 현금영수증 -->
+          <details class="group mb-2">
+            <summary class="flex items-center justify-between p-3 bg-blue-50 rounded-xl cursor-pointer hover:bg-blue-100 transition-colors">
+              <div class="flex items-start gap-2 flex-1">
+                <span class="font-bold text-blue-600 text-sm">Q10.</span>
+                <span class="font-medium text-gray-900 text-sm">현금영수증 신청은 어떻게 하나요?</span>
+              </div>
+              <svg class="w-5 h-5 text-gray-500 transform group-open:rotate-180 transition-transform flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </summary>
+            <div class="p-4 pt-3 text-gray-700 text-sm">
+              <p class="mb-2">현금영수증 발급을 원하시는 분들은 <strong class="text-red-600">12월 19일 자정까지</strong> 신청바랍니다.</p>
+              <p><a href="https://forms.gle/DKC5RiX3p397gD9Y7" target="_blank" class="text-blue-600 underline font-semibold">[양식]</a>에 이름, 연락처, 현금영수증번호, 입금액을 기입해 주십시오.</p>
+            </div>
+          </details>
         </div>
 
         <!-- 장소 및 교통 관련 -->
@@ -484,11 +488,11 @@
             <span>🚗</span> 장소 및 교통 관련
           </h3>
 
-          <!-- Q10 -->
+          <!-- Q11 행사장 -->
           <details class="group mb-2">
             <summary class="flex items-center justify-between p-3 bg-green-50 rounded-xl cursor-pointer hover:bg-green-100 transition-colors">
               <div class="flex items-start gap-2 flex-1">
-                <span class="font-bold text-green-600 text-sm">Q10.</span>
+                <span class="font-bold text-green-600 text-sm">Q11.</span>
                 <span class="font-medium text-gray-900 text-sm">행사장은 어디이고, 교통편은 어떻게 되나요?</span>
               </div>
               <svg class="w-5 h-5 text-gray-500 transform group-open:rotate-180 transition-transform flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -502,11 +506,11 @@
             </div>
           </details>
 
-          <!-- Q11 -->
+          <!-- Q12 -->
           <details class="group mb-2">
             <summary class="flex items-center justify-between p-3 bg-green-50 rounded-xl cursor-pointer hover:bg-green-100 transition-colors">
               <div class="flex items-start gap-2 flex-1">
-                <span class="font-bold text-green-600 text-sm">Q11.</span>
+                <span class="font-bold text-green-600 text-sm">Q12.</span>
                 <span class="font-medium text-gray-900 text-sm">주차는 가능한지요?</span>
               </div>
               <svg class="w-5 h-5 text-gray-500 transform group-open:rotate-180 transition-transform flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -532,7 +536,7 @@
           <details class="group mb-2">
             <summary class="flex items-center justify-between p-3 bg-orange-50 rounded-xl cursor-pointer hover:bg-orange-100 transition-colors">
               <div class="flex items-start gap-2 flex-1">
-                <span class="font-bold text-orange-600 text-sm">Q12.</span>
+                <span class="font-bold text-orange-600 text-sm">Q13.</span>
                 <span class="font-medium text-gray-900 text-sm">선물 전달이 가능한지요?</span>
               </div>
               <svg class="w-5 h-5 text-gray-500 transform group-open:rotate-180 transition-transform flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -544,11 +548,11 @@
             </div>
           </details>
 
-          <!-- Q13 -->
+          <!-- Q14 -->
           <details class="group mb-2">
             <summary class="flex items-center justify-between p-3 bg-orange-50 rounded-xl cursor-pointer hover:bg-orange-100 transition-colors">
               <div class="flex items-start gap-2 flex-1">
-                <span class="font-bold text-orange-600 text-sm">Q13.</span>
+                <span class="font-bold text-orange-600 text-sm">Q14.</span>
                 <span class="font-medium text-gray-900 text-sm">프로그램에 대해 알 수 있나요? (게스트 초청 등)</span>
               </div>
               <svg class="w-5 h-5 text-gray-500 transform group-open:rotate-180 transition-transform flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -560,11 +564,11 @@
             </div>
           </details>
 
-          <!-- Q14 -->
+          <!-- Q15 -->
           <details class="group mb-2">
             <summary class="flex items-center justify-between p-3 bg-orange-50 rounded-xl cursor-pointer hover:bg-orange-100 transition-colors">
               <div class="flex items-start gap-2 flex-1">
-                <span class="font-bold text-orange-600 text-sm">Q14.</span>
+                <span class="font-bold text-orange-600 text-sm">Q15.</span>
                 <span class="font-medium text-gray-900 text-sm">몇시부터 입장 가능한가요? 행사 시작은 몇시인지요?</span>
               </div>
               <svg class="w-5 h-5 text-gray-500 transform group-open:rotate-180 transition-transform flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -576,11 +580,11 @@
             </div>
           </details>
 
-          <!-- Q15 -->
+          <!-- Q16 -->
           <details class="group">
             <summary class="flex items-center justify-between p-3 bg-orange-50 rounded-xl cursor-pointer hover:bg-orange-100 transition-colors">
               <div class="flex items-start gap-2 flex-1">
-                <span class="font-bold text-orange-600 text-sm">Q15.</span>
+                <span class="font-bold text-orange-600 text-sm">Q16.</span>
                 <span class="font-medium text-gray-900 text-sm">현장에서 접수 가능한가요?</span>
               </div>
               <svg class="w-5 h-5 text-gray-500 transform group-open:rotate-180 transition-transform flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -597,34 +601,13 @@
       <!-- 액션 버튼들 -->
       <div class="space-y-3">
         <div id="applyButtonSection">
-          <!-- 오픈 전: 신청 버튼 비활성화 -->
-          <button id="applyButtonDisabled" class="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-semibold bg-gray-300 text-gray-500 cursor-not-allowed" disabled>
+          <!-- 2차 모집 마감 버튼 -->
+          <button id="additionalApplyBtn" onclick="handleApplyClick()" class="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-semibold bg-gray-400 text-white cursor-not-allowed">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
             </svg>
-            <span>곧 오픈 예정입니다</span>
+            <span>2차 모집 마감되었습니다</span>
           </button>
-          <!-- 오픈 후: 신청 버튼 활성화 -->
-          <a id="applyButtonEnabled" href="/apply.html" class="block hidden">
-            <button class="btn-primary-glass w-full">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-              <span>참가 신청하기</span>
-            </button>
-          </a>
-        </div>
-
-        <div id="applyClosedMessage" class="hidden">
-          <div class="alert alert-warning">
-            <svg class="alert-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            <div class="alert-content">
-              <p class="alert-title">1차 모집이 완료되었습니다</p>
-              <p class="alert-message">2차 모집시 SNS를 통해 안내드리겠습니다.</p>
-            </div>
-          </div>
         </div>
 
         <a href="/check.html" class="block">
@@ -691,19 +674,12 @@
       </svg>
       <span>홈</span>
     </a>
-    <!-- 오픈 전: 신청 버튼 비활성화 -->
-    <span id="bottomNavApplyDisabled" class="bottom-nav-item text-gray-400 cursor-not-allowed" aria-label="신청 (준비중)">
+    <!-- 신청 버튼 (2차 마감) -->
+    <a id="bottomNavApply" href="javascript:void(0)" onclick="handleApplyClick()" class="bottom-nav-item text-gray-400" aria-label="신청 마감">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
       </svg>
-      <span>신청</span>
-    </span>
-    <!-- 오픈 후: 신청 버튼 활성화 -->
-    <a id="bottomNavApplyEnabled" href="/apply.html" class="bottom-nav-item hidden" aria-label="신청">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-      </svg>
-      <span>신청</span>
+      <span>마감</span>
     </a>
     <a href="/check.html" class="bottom-nav-item" aria-label="확인">
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -882,35 +858,11 @@
     function updateOpenUI(isOpen) {
       // 상태 배지 업데이트
       const statusBadge = document.getElementById('statusBadge');
-      if (isOpen) {
-        statusBadge.className = 'badge badge-green';
-        statusBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-green-500"></span><span>신청 접수 중</span>';
-      } else {
-        statusBadge.className = 'badge badge-red';
-        statusBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-red-500"></span><span>신청 준비 중</span>';
-      }
+      // 2차 접수 마감 상태 고정
+      statusBadge.className = 'badge badge-red';
+      statusBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-red-500"></span><span>2차 접수 마감</span>';
 
-      // 신청 버튼 활성화/비활성화 (메인 버튼)
-      const applyButtonDisabled = document.getElementById('applyButtonDisabled');
-      const applyButtonEnabled = document.getElementById('applyButtonEnabled');
-      if (isOpen) {
-        applyButtonDisabled.classList.add('hidden');
-        applyButtonEnabled.classList.remove('hidden');
-      } else {
-        applyButtonDisabled.classList.remove('hidden');
-        applyButtonEnabled.classList.add('hidden');
-      }
-
-      // 신청 버튼 활성화/비활성화 (하단 네비게이션)
-      const bottomNavApplyDisabled = document.getElementById('bottomNavApplyDisabled');
-      const bottomNavApplyEnabled = document.getElementById('bottomNavApplyEnabled');
-      if (isOpen) {
-        bottomNavApplyDisabled.classList.add('hidden');
-        bottomNavApplyEnabled.classList.remove('hidden');
-      } else {
-        bottomNavApplyDisabled.classList.remove('hidden');
-        bottomNavApplyEnabled.classList.add('hidden');
-      }
+      // 신청 버튼은 이제 시간 기반으로 동작 (handleApplyClick 함수에서 처리)
     }
 
     // 카운트다운 업데이트

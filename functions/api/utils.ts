@@ -3,6 +3,7 @@
 import * as jose from 'jose';
 import type { Context } from 'hono';
 import type { Env, D1Database, Seat } from './types';
+import { SEAT_GROUP_CAPACITY } from './types';
 
 // ===== 에러 처리 =====
 
@@ -112,23 +113,25 @@ export async function verifyJwtToken(token: string, env: Env): Promise<boolean> 
   }
 }
 
-// 사용 가능한 좌석 생성
+// 사용 가능한 좌석 생성 (새로운 그룹-번호 형식)
+// 각 그룹별 좌석 수가 다름: A(90), B(100), C(100), D(90) 등
 export function generateAvailableSeats(
   groups: string[],
-  rowsPerGroup: number,
-  seatsPerRow: number
+  _rowsPerGroup?: number,  // deprecated, 호환성 유지용
+  _seatsPerRow?: number    // deprecated, 호환성 유지용
 ): Seat[] {
   const availableSeats: Seat[] = [];
 
   for (const group of groups) {
-    for (let row = 1; row <= rowsPerGroup; row++) {
-      for (let seat = 1; seat <= seatsPerRow; seat++) {
-        availableSeats.push({
-          group,
-          row: row.toString(),
-          number: seat.toString(),
-        });
-      }
+    // 그룹별 좌석 수 가져오기 (없으면 기본 90)
+    const seatCount = SEAT_GROUP_CAPACITY[group] || 90;
+
+    for (let number = 1; number <= seatCount; number++) {
+      availableSeats.push({
+        group,
+        row: '',  // 더 이상 사용하지 않음 (호환성 유지)
+        number: number.toString(),
+      });
     }
   }
 
@@ -150,7 +153,7 @@ export async function getAssignedSeats(db: D1Database): Promise<Set<string>> {
   return assignedSet;
 }
 
-// 좌석 배정 업데이트
+// 좌석 배정 업데이트 (새 형식: 그룹-번호, 예: "A-1", "B-50")
 export async function assignSeatsToParticipant(
   db: D1Database,
   participantId: number,
@@ -158,20 +161,21 @@ export async function assignSeatsToParticipant(
   seat1: Seat,
   seat2?: Seat
 ): Promise<void> {
-  const seatFull1 = `${seat1.group}-${seat1.row}-${seat1.number}`;
+  // 새 형식: "그룹-번호" (예: "A-1", "B-50")
+  const seatFull1 = `${seat1.group}-${seat1.number}`;
 
   if (ticketCount === 2 && seat2) {
-    const seatFull2 = `${seat2.group}-${seat2.row}-${seat2.number}`;
+    const seatFull2 = `${seat2.group}-${seat2.number}`;
     await db.prepare(
-      'UPDATE participants SET seat_group = ?, seat_row = ?, seat_number = ?, seat_full = ?, seat_group_2 = ?, seat_row_2 = ?, seat_number_2 = ?, seat_full_2 = ? WHERE id = ?'
+      'UPDATE participants SET seat_group = ?, seat_row = NULL, seat_number = ?, seat_full = ?, seat_group_2 = ?, seat_row_2 = NULL, seat_number_2 = ?, seat_full_2 = ? WHERE id = ?'
     )
-      .bind(seat1.group, seat1.row, seat1.number, seatFull1, seat2.group, seat2.row, seat2.number, seatFull2, participantId)
+      .bind(seat1.group, seat1.number, seatFull1, seat2.group, seat2.number, seatFull2, participantId)
       .run();
   } else {
     await db.prepare(
-      'UPDATE participants SET seat_group = ?, seat_row = ?, seat_number = ?, seat_full = ? WHERE id = ?'
+      'UPDATE participants SET seat_group = ?, seat_row = NULL, seat_number = ?, seat_full = ? WHERE id = ?'
     )
-      .bind(seat1.group, seat1.row, seat1.number, seatFull1, participantId)
+      .bind(seat1.group, seat1.number, seatFull1, participantId)
       .run();
   }
 }

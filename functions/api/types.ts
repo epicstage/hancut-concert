@@ -41,6 +41,7 @@ export interface Participant {
   guest2_name: string | null;
   guest2_phone: string | null;
   guest2_ssn_first: string | null;
+  guest2_password: string | null;
   is_guest2_completed: number;
   seat_group: string | null;
   seat_row: string | null;
@@ -51,6 +52,25 @@ export interface Participant {
   seat_number_2: string | null;
   seat_full_2: string | null;
   is_checked_in: number;
+  deleted_at: string | null;
+  // 환불 관련 필드
+  is_cancelled: number;
+  cancelled_at: string | null;
+  cancel_reason: string | null;
+  refund_amount: number | null;
+  refund_bank: string | null;
+  refund_account: string | null;
+  refund_holder: string | null;
+  refund_status: string | null; // 'pending' | 'completed' | null
+  refund_completed_at: string | null;
+  refund_reason: string | null;
+  // 비밀번호
+  password: string | null;
+  // 개인정보 동의
+  privacy_agreed: number;
+  privacy_agreed_at: string | null;
+  guest2_privacy_agreed: number;
+  guest2_privacy_agreed_at: string | null;
 }
 
 // 문의 타입
@@ -80,9 +100,27 @@ export interface ApiResponse<T = unknown> {
   data?: T;
 }
 
-// 좌석 그룹 상수
-export const VALID_SEAT_GROUPS = ['가', '나', '다', '라', '마', '바', '사', '아', '자', '차', '카', '타', '파', '하'] as const;
-export type SeatGroup = typeof VALID_SEAT_GROUPS[number];
+// 좌석 그룹 상수 (A~P, 알파벳 순서 = 무대 가까운 순)
+export const SEAT_GROUPS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P'] as const;
+export type SeatGroup = typeof SEAT_GROUPS[number];
+
+// 그룹별 좌석 수 설정
+export const SEAT_GROUP_CAPACITY: Record<string, number> = {
+  'A': 90,  'B': 100, 'C': 100, 'D': 90,
+  'E': 100, 'F': 90,  'G': 90,  'H': 100,
+  'I': 100, 'J': 90,  'K': 90,  'L': 100,
+  'M': 90,  'N': 100, 'O': 100, 'P': 90,
+  'VIP': 40,
+  '예비': 34,
+};
+
+// 총 좌석 수
+export const TOTAL_REGULAR_SEATS = 1520; // A~P 합계
+export const TOTAL_VIP_SEATS = 40;
+export const TOTAL_RESERVE_SEATS = 34;
+
+// 기존 호환용 (deprecated)
+export const VALID_SEAT_GROUPS = SEAT_GROUPS;
 
 // 체크인 리스트 타입
 export interface CheckinList {

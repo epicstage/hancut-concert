@@ -47,7 +47,7 @@
             </svg>
           </div>
           <h2 class="text-2xl font-bold text-gray-900 mb-2">신청내역 확인</h2>
-          <p class="text-gray-500">신청 시 입력한 전화번호로 조회하세요</p>
+          <p class="text-gray-500">전화번호와 비밀번호를 입력하세요</p>
         </div>
 
         <form id="checkForm" class="space-y-6">
@@ -66,6 +66,23 @@
               />
             </div>
             <p class="input-hint">하이픈(-) 없이 11자리 숫자만 입력</p>
+          </div>
+
+          <div>
+            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">비밀번호</label>
+            <div class="input-group">
+              <input
+                id="password"
+                type="password"
+                inputmode="numeric"
+                autocomplete="current-password"
+                class="input-glass"
+                placeholder="생년월일 6자리 (예: 900101)"
+                maxlength="6"
+                required
+              />
+            </div>
+            <p class="input-hint">초기 비밀번호는 생년월일 6자리입니다</p>
           </div>
 
           <div id="error" class="alert alert-error hidden">
@@ -103,31 +120,39 @@
 
           <!-- 티켓 바디 -->
           <div class="ticket-body">
-            <!-- 참가자 정보 -->
-            <div class="space-y-1 mb-4">
+            <!-- 참가자 정보 (표시 모드) -->
+            <div id="userInfoDisplay" class="space-y-1 mb-4">
               <div class="flex items-center justify-between">
                 <span id="userName" class="text-xl font-bold text-gray-900"></span>
-                <button 
-                  id="editBtn" 
-                  class="btn-icon text-gray-400 hover:text-gray-600"
-                  aria-label="이름 수정"
-                  tabindex="0"
-                >
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                </button>
+                <button onclick="showEditUserInfo()" class="text-sm text-blue-600 hover:text-blue-800 underline">정보 수정</button>
               </div>
               <p id="userPhone" class="text-gray-500"></p>
+              <p id="userSsn" class="text-gray-400 text-sm"></p>
             </div>
 
-            <!-- 이름 수정 폼 -->
-            <div id="editForm" class="hidden mb-4 p-3 bg-gray-50 rounded-lg">
-              <label class="block text-sm font-medium text-gray-700 mb-2">이름 수정</label>
-              <div class="flex gap-2">
-                <input type="text" id="editNameInput" class="input-glass flex-1" placeholder="새 이름" />
-                <button id="saveBtn" class="btn-primary-glass px-4">저장</button>
-                <button id="cancelBtn" class="btn-secondary-glass px-4">취소</button>
+            <!-- 참가자 정보 (수정 모드) -->
+            <div id="userInfoEdit" class="hidden mb-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
+              <h4 class="font-semibold text-gray-900 mb-3">내 정보 수정</h4>
+              <div class="space-y-3">
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1">이름</label>
+                  <input id="editUserName" type="text" class="input-glass w-full bg-gray-100" disabled />
+                  <p class="text-xs text-gray-400 mt-1">이름은 변경할 수 없습니다</p>
+                </div>
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1">전화번호</label>
+                  <input id="editUserPhone" type="tel" inputmode="numeric" class="input-glass w-full" placeholder="01012345678" maxlength="11" />
+                  <p class="text-xs text-gray-400 mt-1">하이픈(-) 없이 11자리</p>
+                </div>
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1">주민번호 앞자리 (생년월일)</label>
+                  <input id="editUserSsn" type="tel" inputmode="numeric" class="input-glass w-full" placeholder="620126" maxlength="6" />
+                </div>
+                <div id="editUserError" class="text-sm text-red-600 hidden"></div>
+                <div class="flex gap-2 pt-2">
+                  <button type="button" onclick="cancelEditUserInfo()" class="btn-secondary-glass flex-1">취소</button>
+                  <button type="button" onclick="saveEditUserInfo()" class="btn-primary-glass flex-1">저장</button>
+                </div>
               </div>
             </div>
 
@@ -302,13 +327,22 @@
           <!-- 저장된 정보 표시 -->
           <div id="guest2Info" class="hidden">
             <div class="p-4 bg-green-50 rounded-xl border border-green-200">
-              <div class="flex items-center gap-2 mb-3">
-                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                <span class="font-semibold text-green-800">동반자 정보 등록 완료</span>
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                  <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span class="font-semibold text-green-800">동반자 정보 등록 완료</span>
+                </div>
+                <button
+                  id="editGuest2Btn"
+                  onclick="toggleEditGuest2()"
+                  class="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  수정
+                </button>
               </div>
-              <div class="space-y-2 text-sm">
+              <div id="guest2DisplayInfo" class="space-y-2 text-sm">
                 <div class="flex justify-between">
                   <span class="text-gray-500">이름</span>
                   <span id="guest2NameDisplay" class="font-medium text-gray-900"></span>
@@ -322,7 +356,297 @@
                   <span id="guest2SsnFirstDisplay" class="font-medium text-gray-900"></span>
                 </div>
               </div>
+              <!-- 수정 폼 (숨김) -->
+              <div id="guest2EditForm" class="hidden mt-4 pt-4 border-t border-green-200 space-y-3">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">전화번호</label>
+                  <input type="tel" id="editGuest2Phone" class="input-glass w-full" placeholder="01012345678" maxlength="11" inputmode="numeric" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">생년월일 (6자리)</label>
+                  <input type="tel" id="editGuest2Ssn" class="input-glass w-full" placeholder="YYMMDD" maxlength="6" inputmode="numeric" />
+                </div>
+                <div id="editGuest2Error" class="text-sm text-red-600 hidden"></div>
+                <div class="flex gap-2">
+                  <button type="button" onclick="cancelEditGuest2()" class="btn-secondary-glass flex-1">취소</button>
+                  <button type="button" onclick="saveEditGuest2()" class="btn-primary-glass flex-1">저장</button>
+                </div>
+              </div>
             </div>
+          </div>
+        </div>
+
+        <!-- 비밀번호 변경 섹션 -->
+        <div id="passwordSection" class="glass-card mb-6 hidden">
+          <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+            </svg>
+            <span>비밀번호 변경</span>
+          </h3>
+          <div id="passwordChangeForm" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">현재 비밀번호</label>
+              <input type="password" id="currentPassword" class="input-glass w-full" placeholder="현재 비밀번호 6자리" maxlength="6" inputmode="numeric" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">새 비밀번호</label>
+              <input type="password" id="newPassword" class="input-glass w-full" placeholder="새 비밀번호 6자리" maxlength="6" inputmode="numeric" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">새 비밀번호 확인</label>
+              <input type="password" id="confirmPassword" class="input-glass w-full" placeholder="새 비밀번호 확인" maxlength="6" inputmode="numeric" />
+            </div>
+            <div id="passwordError" class="hidden text-sm text-red-600"></div>
+            <div id="passwordSuccess" class="hidden text-sm text-green-600"></div>
+            <button onclick="changePassword()" class="w-full py-3 px-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+              </svg>
+              <span>비밀번호 변경</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 취소 및 환불 섹션 -->
+        <div id="cancelSection" class="glass-card mb-6 hidden">
+          <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span>신청 취소 / 환불</span>
+          </h3>
+
+          <!-- 이미 취소된 경우 -->
+          <div id="alreadyCancelled" class="hidden p-4 bg-gray-100 rounded-xl border border-gray-300">
+            <div class="flex items-center gap-2 text-gray-600">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              <span class="font-medium">이미 취소된 신청입니다.</span>
+            </div>
+            <p id="cancelledInfo" class="text-sm text-gray-500 mt-2"></p>
+            <p id="cancelledRefundNotice" class="hidden text-sm text-blue-600 mt-2 font-medium">※ 이미 입금하신 경우 아래 환불신청도 완료해주세요.</p>
+          </div>
+
+          <!-- 취소 옵션 -->
+          <div id="cancelOptions" class="space-y-4">
+            <!-- 전체 취소 버튼 -->
+            <div id="cancelFullOption" class="p-4 bg-red-50 rounded-xl border border-red-200">
+              <p id="cancelFullDesc" class="text-sm text-gray-700 mb-3">신청을 취소하시겠습니까?</p>
+              <button onclick="showCancelModal('full')" class="w-full py-3 px-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                <span id="cancelFullBtnText">참가신청 취소</span>
+              </button>
+            </div>
+
+            <!-- 동반자만 취소 (2인 신청인 경우만 표시) -->
+            <div id="cancelGuest2Only" class="hidden p-4 bg-orange-50 rounded-xl border border-orange-200">
+              <p class="text-sm text-gray-700 mb-2">동반자만 취소하고 1인 신청으로 변경하시겠습니까?</p>
+              <p class="text-xs text-orange-700 mb-3">※ 동반자 명의 변경은 불가하며, 최초 신청한 동반자가 불참시 취소하셔야 합니다.</p>
+              <button onclick="showCancelModal('guest2')" class="w-full py-3 px-4 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6" />
+                </svg>
+                <span>동반자만 취소 (2인→1인)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 중복입금 / 환불 계좌 섹션 -->
+        <div id="refundSection" class="glass-card mb-6 hidden">
+          <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+            </svg>
+            <span>중복입금 / 환불 신청</span>
+          </h3>
+
+          <!-- 환불 대기 중인 경우 -->
+          <div id="refundPending" class="hidden p-4 bg-yellow-50 rounded-xl border border-yellow-200">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2 text-yellow-700">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span class="font-medium">환불 처리 대기 중</span>
+              </div>
+              <button onclick="showRefundEditForm()" id="refundEditBtn" class="text-sm text-blue-600 hover:text-blue-800 underline">
+                정보 수정
+              </button>
+            </div>
+            <div id="refundPendingInfo" class="text-sm text-gray-600 space-y-1"></div>
+
+            <!-- 환불 정보 수정 폼 -->
+            <div id="refundEditForm" class="hidden mt-4 pt-4 border-t border-yellow-200 space-y-3">
+              <p class="text-sm font-medium text-gray-700 mb-2">환불 계좌 정보 수정</p>
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">환불 은행</label>
+                <select id="editRefundBank" class="input-glass text-sm py-2">
+                  <option value="">은행 선택</option>
+                  <option value="KB국민은행">KB국민은행</option>
+                  <option value="신한은행">신한은행</option>
+                  <option value="우리은행">우리은행</option>
+                  <option value="하나은행">하나은행</option>
+                  <option value="NH농협은행">NH농협은행</option>
+                  <option value="IBK기업은행">IBK기업은행</option>
+                  <option value="카카오뱅크">카카오뱅크</option>
+                  <option value="토스뱅크">토스뱅크</option>
+                  <option value="케이뱅크">케이뱅크</option>
+                  <option value="SC제일은행">SC제일은행</option>
+                  <option value="씨티은행">씨티은행</option>
+                  <option value="대구은행">대구은행</option>
+                  <option value="부산은행">부산은행</option>
+                  <option value="경남은행">경남은행</option>
+                  <option value="광주은행">광주은행</option>
+                  <option value="전북은행">전북은행</option>
+                  <option value="제주은행">제주은행</option>
+                  <option value="새마을금고">새마을금고</option>
+                  <option value="신협">신협</option>
+                  <option value="우체국">우체국</option>
+                  <option value="수협">수협</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">계좌번호</label>
+                <input type="text" id="editRefundAccount" class="input-glass text-sm py-2" placeholder="- 없이 숫자만 입력" />
+              </div>
+              <div>
+                <label class="block text-xs text-gray-600 mb-1">예금주</label>
+                <input type="text" id="editRefundHolder" class="input-glass text-sm py-2" placeholder="예금주명" />
+              </div>
+              <div id="refundEditError" class="hidden text-sm text-red-600"></div>
+              <div class="flex gap-2">
+                <button onclick="cancelRefundEdit()" class="flex-1 btn-secondary-glass text-sm py-2">취소</button>
+                <button onclick="saveRefundEdit()" class="flex-1 btn-primary-glass text-sm py-2">저장</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 환불 완료된 경우 -->
+          <div id="refundCompleted" class="hidden p-4 bg-green-50 rounded-xl border border-green-200">
+            <div class="flex items-center gap-2 text-green-700 mb-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              <span class="font-medium">환불 완료</span>
+            </div>
+            <div id="refundCompletedInfo" class="text-sm text-gray-600"></div>
+          </div>
+
+          <!-- 환불 신청 폼 -->
+          <div id="refundForm" class="space-y-4">
+            <div class="alert alert-info mb-4">
+              <svg class="alert-icon flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div class="alert-content">
+                <p class="alert-message">중복 입금하셨거나 환불이 필요한 경우 아래 정보를 입력해주세요.</p>
+              </div>
+            </div>
+
+            <div>
+              <label for="refundAmount" class="block text-sm font-medium text-gray-700 mb-2">
+                <span class="text-red-500">*</span> 환불 요청 금액
+              </label>
+              <div class="relative">
+                <input
+                  id="refundAmount"
+                  type="tel"
+                  inputmode="numeric"
+                  class="input-glass pr-12"
+                  placeholder="35000"
+                />
+                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">원</span>
+              </div>
+              <p class="input-hint">중복 입금된 금액 또는 환불받을 금액</p>
+            </div>
+
+            <div>
+              <label for="refundBank" class="block text-sm font-medium text-gray-700 mb-2">
+                <span class="text-red-500">*</span> 환불 은행
+              </label>
+              <select id="refundBank" class="input-glass">
+                <option value="">은행 선택</option>
+                <option value="국민은행">국민은행</option>
+                <option value="신한은행">신한은행</option>
+                <option value="우리은행">우리은행</option>
+                <option value="하나은행">하나은행</option>
+                <option value="농협은행">농협은행</option>
+                <option value="기업은행">기업은행</option>
+                <option value="SC제일은행">SC제일은행</option>
+                <option value="카카오뱅크">카카오뱅크</option>
+                <option value="토스뱅크">토스뱅크</option>
+                <option value="케이뱅크">케이뱅크</option>
+                <option value="우체국">우체국</option>
+                <option value="새마을금고">새마을금고</option>
+                <option value="수협">수협</option>
+                <option value="신협">신협</option>
+                <option value="대구은행">대구은행</option>
+                <option value="부산은행">부산은행</option>
+                <option value="경남은행">경남은행</option>
+                <option value="광주은행">광주은행</option>
+                <option value="전북은행">전북은행</option>
+                <option value="제주은행">제주은행</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="refundAccount" class="block text-sm font-medium text-gray-700 mb-2">
+                <span class="text-red-500">*</span> 환불 계좌번호
+              </label>
+              <input
+                id="refundAccount"
+                type="tel"
+                inputmode="numeric"
+                class="input-glass"
+                placeholder="계좌번호 (숫자만 입력)"
+              />
+            </div>
+
+            <div>
+              <label for="refundHolder" class="block text-sm font-medium text-gray-700 mb-2">
+                <span class="text-red-500">*</span> 예금주
+              </label>
+              <input
+                id="refundHolder"
+                type="text"
+                class="input-glass"
+                placeholder="예금주 이름"
+              />
+            </div>
+
+            <div>
+              <label for="refundReason" class="block text-sm font-medium text-gray-700 mb-2">
+                환불 사유 (선택)
+              </label>
+              <textarea
+                id="refundReason"
+                class="input-glass"
+                rows="3"
+                placeholder="예: 35,000원 2회 입금하여 1회분 환불 요청합니다."
+              ></textarea>
+              <p class="input-hint">중복입금 상황이나 환불 사유를 자세히 기입해주세요</p>
+            </div>
+
+            <div id="refundError" class="alert alert-error hidden">
+              <svg class="alert-icon flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <div class="alert-content">
+                <p class="alert-message" id="refundErrorMessage"></p>
+              </div>
+            </div>
+
+            <button id="submitRefundBtn" onclick="submitRefundRequest()" class="btn-primary-glass w-full">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>환불 신청하기</span>
+            </button>
           </div>
         </div>
 
@@ -333,6 +657,106 @@
           </svg>
           <span>다른 번호로 조회하기</span>
         </button>
+      </div>
+
+      <!-- 취소 확인 모달 -->
+      <div id="cancelModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/50">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl">
+          <h3 id="cancelModalTitle" class="text-xl font-bold text-gray-900 mb-4"></h3>
+          <p id="cancelModalMessage" class="text-gray-600 mb-6"></p>
+
+          <!-- 환불 계좌 입력 (입금완료자만) -->
+          <div id="cancelRefundFields" class="hidden space-y-4 mb-6 p-4 bg-gray-50 rounded-xl">
+            <p class="text-sm font-medium text-gray-700">환불받을 계좌 정보를 입력해주세요</p>
+            <div>
+              <label class="block text-sm text-gray-600 mb-1">환불 은행</label>
+              <select id="cancelRefundBank" class="input-glass w-full text-sm">
+                <option value="">은행 선택</option>
+                <option value="국민은행">국민은행</option>
+                <option value="신한은행">신한은행</option>
+                <option value="우리은행">우리은행</option>
+                <option value="하나은행">하나은행</option>
+                <option value="농협은행">농협은행</option>
+                <option value="기업은행">기업은행</option>
+                <option value="SC제일은행">SC제일은행</option>
+                <option value="카카오뱅크">카카오뱅크</option>
+                <option value="토스뱅크">토스뱅크</option>
+                <option value="케이뱅크">케이뱅크</option>
+                <option value="우체국">우체국</option>
+                <option value="새마을금고">새마을금고</option>
+                <option value="수협">수협</option>
+                <option value="신협">신협</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm text-gray-600 mb-1">계좌번호</label>
+              <input id="cancelRefundAccount" type="tel" inputmode="numeric" class="input-glass w-full text-sm" placeholder="숫자만 입력" />
+            </div>
+            <div>
+              <label class="block text-sm text-gray-600 mb-1">예금주</label>
+              <input id="cancelRefundHolder" type="text" class="input-glass w-full text-sm" placeholder="예금주 이름" />
+            </div>
+          </div>
+
+          <div id="cancelModalError" class="text-sm text-red-600 mb-4 hidden"></div>
+
+          <div class="flex gap-3">
+            <button onclick="closeCancelModal()" class="flex-1 py-3 px-4 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-xl transition-colors">
+              취소
+            </button>
+            <button id="confirmCancelBtn" onclick="confirmCancel()" class="flex-1 py-3 px-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-colors">
+              확인
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 개인정보 수집 동의 모달 -->
+      <div id="privacyModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/50">
+        <div class="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-xl">
+          <div class="p-6">
+            <div class="text-center mb-4">
+              <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <h3 class="text-xl font-bold text-gray-900">개인정보 수집 및 이용 동의</h3>
+            </div>
+
+            <div class="bg-gray-50 rounded-xl p-4 mb-4 text-sm text-gray-700 max-h-60 overflow-y-auto">
+              <p class="font-semibold mb-2">1. 수집하는 개인정보 항목</p>
+              <p class="mb-3">- 필수항목: 성명, 연락처(휴대전화번호), 생년월일</p>
+
+              <p class="font-semibold mb-2">2. 개인정보의 수집 및 이용 목적</p>
+              <p class="mb-3">- 한동훈 토크콘서트 참가 신청 및 본인 확인<br>
+              - 입장 시 본인확인 및 좌석 배정<br>
+              - 행사 관련 공지사항 안내</p>
+
+              <p class="font-semibold mb-2">3. 개인정보의 보유 및 이용 기간</p>
+              <p class="mb-3">- 행사 종료 후 1개월 이내 파기<br>
+              - 단, 관련 법령에 따라 보존이 필요한 경우 해당 기간 동안 보관</p>
+
+              <p class="font-semibold mb-2">4. 동의 거부권 및 불이익</p>
+              <p>- 귀하는 개인정보 수집 및 이용에 대한 동의를 거부할 권리가 있습니다.<br>
+              - 다만, 동의를 거부할 경우 행사 참가가 제한될 수 있습니다.</p>
+            </div>
+
+            <label class="flex items-center gap-3 p-4 bg-blue-50 rounded-xl cursor-pointer mb-4">
+              <input type="checkbox" id="privacyAgreeCheck" class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500" />
+              <span class="text-gray-900 font-medium">위 개인정보 수집 및 이용에 동의합니다.</span>
+            </label>
+
+            <div id="privacyError" class="text-sm text-red-600 mb-4 hidden">동의에 체크해주세요.</div>
+
+            <button onclick="submitPrivacyAgree()" class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>동의하고 계속하기</span>
+            </button>
+          </div>
+        </div>
       </div>
     </main>
 
@@ -384,6 +808,14 @@
   <script>
     let currentParticipant = null;
 
+    // 정보수정 마감 시간 체크 (2025년 12월 8일 오후 6시 3분 KST)
+    function isEditDeadlinePassed() {
+      // KST 기준 마감 시간: 2025-12-08 18:03:00
+      const deadline = new Date('2025-12-08T18:03:00+09:00');
+      const now = new Date();
+      return now >= deadline;
+    }
+
     // DOM 요소
     const phoneInput = document.getElementById('phone');
     const form = document.getElementById('checkForm');
@@ -399,9 +831,6 @@
 
       // 폼 제출
       form.addEventListener('submit', handleSubmit);
-
-      // 이름 수정 이벤트
-      setupNameEdit();
 
       // 2번째 참가자 입력 설정
       setupGuest2Form();
@@ -438,6 +867,14 @@
       return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
     }
 
+    // 주민번호 앞자리 포맷 (YYMMDD -> YY.MM.DD)
+    function formatSsnFirst(value) {
+      if (!value) return '';
+      const numbers = value.replace(/[^0-9]/g, '');
+      if (numbers.length !== 6) return numbers;
+      return `${numbers.slice(0, 2)}.${numbers.slice(2, 4)}.${numbers.slice(4, 6)}`;
+    }
+
     // 폼 제출 처리
     async function handleSubmit(e) {
       e.preventDefault();
@@ -456,15 +893,35 @@
         <span>조회 중...</span>
       `;
 
+      const password = document.getElementById('password').value.trim();
+
+      if (!password) {
+        showError('비밀번호를 입력해주세요.');
+        showToast('비밀번호를 입력해주세요.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <span>조회하기</span>
+        `;
+        return;
+      }
+
       try {
         // 타임아웃 설정 (30초)
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30000);
-        
-        const response = await fetch(`/api/participants/phone/${phone}`, {
+
+        const response = await fetch('/api/participants/verify', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ phone, password }),
           signal: controller.signal
         });
-        
+
         clearTimeout(timeoutId);
         
         const data = await response.json();
@@ -479,7 +936,19 @@
           currentParticipant._isGuest = true;
           currentParticipant._guestInfo = data.guestInfo;
         }
-        displayResult(data.participant, data.isGuest, data.guestInfo);
+
+        // 개인정보 동의 여부 확인
+        const needsPrivacyAgree = data.isGuest
+          ? !data.participant.guest2_privacy_agreed
+          : !data.participant.privacy_agreed;
+
+        if (needsPrivacyAgree) {
+          // 동의 필요 시 팝업 표시
+          showPrivacyModal();
+        } else {
+          // 이미 동의한 경우 바로 결과 표시
+          displayResult(data.participant, data.isGuest, data.guestInfo);
+        }
       } catch (err) {
         console.error('Fetch error:', err);
         
@@ -516,6 +985,21 @@
       // 기본 정보
       document.getElementById('userName').textContent = participant.user_name;
       document.getElementById('userPhone').textContent = formatPhone(participant.phone);
+      document.getElementById('userSsn').textContent = participant.ssn_first ? `생년월일: ${formatSsnFirst(participant.ssn_first)}` : '';
+
+      // 수정 모드 초기화
+      document.getElementById('userInfoDisplay').classList.remove('hidden');
+      document.getElementById('userInfoEdit').classList.add('hidden');
+
+      // 마감 시간이 지났으면 정보수정 버튼 숨기기
+      const editUserInfoBtn = document.querySelector('#userInfoDisplay button[onclick="showEditUserInfo()"]');
+      if (editUserInfoBtn) {
+        if (isEditDeadlinePassed()) {
+          editUserInfoBtn.style.display = 'none';
+        } else {
+          editUserInfoBtn.style.display = '';
+        }
+      }
 
       // 신청 유형
       const ticketCount = participant.ticket_count || 1;
@@ -600,18 +1084,43 @@
       if (isTwoPerson) {
         guest2Section.classList.remove('hidden');
 
-        if (participant.is_guest2_completed && participant.guest2_name) {
+        // 동반자 정보가 등록된 경우: is_guest2_completed=1 이거나 guest2_name이 있는 경우
+        const isGuest2Registered = participant.is_guest2_completed || participant.guest2_name;
+
+        if (isGuest2Registered) {
           guest2Form.classList.add('hidden');
           guest2Info.classList.remove('hidden');
-          document.getElementById('guest2NameDisplay').textContent = participant.guest2_name;
-          document.getElementById('guest2PhoneDisplay').textContent = formatPhone(participant.guest2_phone || '');
+          document.getElementById('guest2NameDisplay').textContent = participant.guest2_name || '(이름 미입력)';
+          document.getElementById('guest2PhoneDisplay').textContent = formatPhone(participant.guest2_phone || '') || '-';
           document.getElementById('guest2SsnFirstDisplay').textContent = participant.guest2_ssn_first || '-';
+
+          // 마감 시간이 지났으면 동반자 정보 수정 버튼 숨기기
+          const editGuest2Btn = document.getElementById('editGuest2Btn');
+          if (editGuest2Btn) {
+            if (isEditDeadlinePassed()) {
+              editGuest2Btn.style.display = 'none';
+            } else {
+              editGuest2Btn.style.display = '';
+            }
+          }
         } else {
+          // 동반자 정보 미등록 상태 - 마감 시간 상관없이 등록 가능
           guest2Form.classList.remove('hidden');
           guest2Info.classList.add('hidden');
         }
       } else {
         guest2Section.classList.add('hidden');
+      }
+
+      // 취소/환불 섹션 표시
+      displayCancelRefundSection(participant, false);
+
+      // 비밀번호 변경 섹션 표시 (취소되지 않은 경우만)
+      const passwordSection = document.getElementById('passwordSection');
+      if (!participant.is_cancelled) {
+        passwordSection.classList.remove('hidden');
+      } else {
+        passwordSection.classList.add('hidden');
       }
 
       // 화면 전환
@@ -714,9 +1223,6 @@
       document.getElementById('userName').textContent = guestInfo.name + ' (동반참가자)';
       document.getElementById('userPhone').textContent = formatPhone(guestInfo.phone);
 
-      // 이름 수정 버튼 숨기기 (동반참가자는 수정 불가)
-      document.getElementById('editBtn').classList.add('hidden');
-
       // 신청 유형
       document.getElementById('ticketType').textContent = '2인 신청 (동반참가자)';
 
@@ -762,16 +1268,9 @@
         });
       }
 
-      // 입금 안내 (미입금 시)
+      // 입금 안내 - 동반참가자는 입금 안내 표시하지 않음 (주 신청자가 입금)
       const paymentGuide = document.getElementById('paymentGuide');
-      if (!participant.is_paid) {
-        paymentGuide.classList.remove('hidden');
-        document.getElementById('paymentAmount').textContent = '₩60,000 (2인)';
-        const phoneLast4 = participant.phone.slice(-4);
-        document.getElementById('depositName').textContent = `${participant.user_name}${phoneLast4}`;
-      } else {
-        paymentGuide.classList.add('hidden');
-      }
+      paymentGuide.classList.add('hidden');
 
       // QR 코드 (입금 완료 시) - 동반참가자용 QR만 생성
       const qrCodeSection = document.getElementById('qrCodeSection');
@@ -784,6 +1283,17 @@
 
       // 2번째 참가자 섹션 숨기기 (동반참가자 본인이므로)
       document.getElementById('guest2Section').classList.add('hidden');
+
+      // 취소/환불 섹션 숨기기 (동반참가자는 취소할 수 없음)
+      displayCancelRefundSection(participant, true);
+
+      // 비밀번호 변경 섹션 표시 (동반참가자도 변경 가능)
+      const passwordSection = document.getElementById('passwordSection');
+      if (!participant.is_cancelled) {
+        passwordSection.classList.remove('hidden');
+      } else {
+        passwordSection.classList.add('hidden');
+      }
 
       // 화면 전환
       loginForm.classList.add('hidden');
@@ -831,51 +1341,6 @@
         });
     }
 
-    // 이름 수정 설정
-    function setupNameEdit() {
-      const editBtn = document.getElementById('editBtn');
-      const cancelBtn = document.getElementById('cancelBtn');
-      const saveBtn = document.getElementById('saveBtn');
-      const editForm = document.getElementById('editForm');
-      const editNameInput = document.getElementById('editNameInput');
-
-      editBtn?.addEventListener('click', () => {
-        editForm.classList.remove('hidden');
-        editNameInput.value = currentParticipant?.user_name || '';
-        editNameInput.focus();
-      });
-
-      cancelBtn?.addEventListener('click', () => {
-        editForm.classList.add('hidden');
-      });
-
-      saveBtn?.addEventListener('click', async () => {
-        const newName = editNameInput.value.trim();
-        if (!newName) {
-          showToast('이름을 입력해주세요.', 'error');
-          return;
-        }
-
-        try {
-          const response = await fetch(`/api/participants/${currentParticipant.id}/name`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_name: newName }),
-          });
-
-          const data = await response.json();
-          if (!response.ok) throw new Error(data.error);
-
-          currentParticipant.user_name = newName;
-          document.getElementById('userName').textContent = newName;
-          editForm.classList.add('hidden');
-          showToast('이름이 수정되었습니다.', 'success');
-        } catch (err) {
-          showToast(err.message || '이름 수정 중 오류가 발생했습니다.', 'error');
-        }
-      });
-    }
-
     // 2번째 참가자 폼 설정
     function setupGuest2Form() {
       const guest2PhoneInput = document.getElementById('guest2Phone');
@@ -886,6 +1351,8 @@
       setupNumericInput(guest2SsnFirstInput, 6);
 
       saveGuest2Btn?.addEventListener('click', async () => {
+        // 동반자 정보 첫 등록은 마감 시간 상관없이 허용
+
         const guest2Name = document.getElementById('guest2Name').value.trim();
         const guest2Phone = document.getElementById('guest2Phone').value.replace(/[^0-9]/g, '');
         const guest2SsnFirst = document.getElementById('guest2SsnFirst').value.replace(/[^0-9]/g, '');
@@ -1007,8 +1474,6 @@
       phoneInput.value = '';
       currentParticipant = null;
       hideError();
-      // 이름 수정 버튼 다시 표시 (동반참가자 조회 후 리셋 시)
-      document.getElementById('editBtn').classList.remove('hidden');
     }
 
     // 에러 표시
@@ -1028,6 +1493,743 @@
 
     function hideGuest2Error() {
       document.getElementById('guest2Error').classList.add('hidden');
+    }
+
+    // 동반자 정보 수정 토글
+    function toggleEditGuest2() {
+      // 마감 시간 체크
+      if (isEditDeadlinePassed()) {
+        alert('정보수정 기간이 마감되었습니다.\n(마감: 2025년 12월 8일 오후 6시 3분)');
+        return;
+      }
+
+      const displayInfo = document.getElementById('guest2DisplayInfo');
+      const editForm = document.getElementById('guest2EditForm');
+      const editBtn = document.getElementById('editGuest2Btn');
+
+      // 수정 폼 표시
+      displayInfo.classList.add('hidden');
+      editForm.classList.remove('hidden');
+      editBtn.classList.add('hidden');
+
+      // 현재 값으로 폼 채우기 (전화번호, 생년월일만)
+      document.getElementById('editGuest2Phone').value = currentParticipant.guest2_phone || '';
+      document.getElementById('editGuest2Ssn').value = currentParticipant.guest2_ssn_first || '';
+
+      // 숫자만 입력되도록 설정
+      setupNumericInput(document.getElementById('editGuest2Phone'), 11);
+      setupNumericInput(document.getElementById('editGuest2Ssn'), 6);
+
+      // 에러 숨기기
+      document.getElementById('editGuest2Error').classList.add('hidden');
+    }
+
+    // 동반자 정보 수정 취소
+    function cancelEditGuest2() {
+      const displayInfo = document.getElementById('guest2DisplayInfo');
+      const editForm = document.getElementById('guest2EditForm');
+      const editBtn = document.getElementById('editGuest2Btn');
+
+      displayInfo.classList.remove('hidden');
+      editForm.classList.add('hidden');
+      editBtn.classList.remove('hidden');
+      document.getElementById('editGuest2Error').classList.add('hidden');
+    }
+
+    // 동반자 정보 저장 (전화번호, 생년월일만)
+    async function saveEditGuest2() {
+      const phone = document.getElementById('editGuest2Phone').value.replace(/[^0-9]/g, '');
+      const ssn = document.getElementById('editGuest2Ssn').value.replace(/[^0-9]/g, '');
+      const errorDiv = document.getElementById('editGuest2Error');
+
+      // 유효성 검사
+      if (phone.length !== 11) {
+        errorDiv.textContent = '전화번호를 정확히 입력해주세요. (11자리)';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+
+      if (ssn.length !== 6) {
+        errorDiv.textContent = '생년월일을 정확히 입력해주세요. (6자리)';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+
+      // 생년월일 검증
+      const mm = parseInt(ssn.substring(2, 4));
+      const dd = parseInt(ssn.substring(4, 6));
+      const daysInMonth = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+      if (mm < 1 || mm > 12) {
+        errorDiv.textContent = '생년월일의 월이 올바르지 않습니다. (01-12)';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+
+      if (dd < 1 || dd > daysInMonth[mm - 1]) {
+        errorDiv.textContent = `생년월일의 일이 올바르지 않습니다. (${mm}월은 01-${daysInMonth[mm-1]}일)`;
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+
+      errorDiv.classList.add('hidden');
+
+      try {
+        const response = await fetch(`/api/participants/phone/${currentParticipant.phone}/update`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            guest2_phone: phone,
+            guest2_ssn_first: ssn,
+          }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error);
+
+        // 새로고침
+        const refreshResponse = await fetch(`/api/participants/phone/${currentParticipant.phone}`);
+        const refreshData = await refreshResponse.json();
+
+        if (refreshData.success) {
+          currentParticipant = refreshData.participant;
+          displayResult(refreshData.participant);
+          showToast('동반자 정보가 수정되었습니다.', 'success');
+        }
+
+        cancelEditGuest2();
+      } catch (err) {
+        errorDiv.textContent = err.message || '수정 중 오류가 발생했습니다.';
+        errorDiv.classList.remove('hidden');
+      }
+    }
+
+    // 내 정보 수정 모드 표시
+    function showEditUserInfo() {
+      // 마감 시간 체크
+      if (isEditDeadlinePassed()) {
+        alert('정보수정 기간이 마감되었습니다.\n(마감: 2025년 12월 8일 오후 6시 3분)');
+        return;
+      }
+
+      const displayDiv = document.getElementById('userInfoDisplay');
+      const editDiv = document.getElementById('userInfoEdit');
+
+      // 현재 정보로 폼 채우기
+      document.getElementById('editUserName').value = currentParticipant.user_name;
+      document.getElementById('editUserPhone').value = currentParticipant.phone;
+      document.getElementById('editUserSsn').value = currentParticipant.ssn_first || '';
+
+      displayDiv.classList.add('hidden');
+      editDiv.classList.remove('hidden');
+      document.getElementById('editUserError').classList.add('hidden');
+    }
+
+    // 내 정보 수정 취소
+    function cancelEditUserInfo() {
+      const displayDiv = document.getElementById('userInfoDisplay');
+      const editDiv = document.getElementById('userInfoEdit');
+
+      displayDiv.classList.remove('hidden');
+      editDiv.classList.add('hidden');
+      document.getElementById('editUserError').classList.add('hidden');
+    }
+
+    // 내 정보 저장
+    async function saveEditUserInfo() {
+      const newPhone = document.getElementById('editUserPhone').value.replace(/[^0-9]/g, '');
+      const newSsn = document.getElementById('editUserSsn').value.replace(/[^0-9]/g, '');
+      const errorDiv = document.getElementById('editUserError');
+
+      // 유효성 검사
+      if (newPhone.length !== 11) {
+        errorDiv.textContent = '전화번호를 정확히 입력해주세요. (11자리)';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+
+      if (newSsn && newSsn.length !== 6) {
+        errorDiv.textContent = '생년월일을 정확히 입력해주세요. (6자리)';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+
+      // 생년월일 검증 (입력된 경우)
+      if (newSsn) {
+        const mm = parseInt(newSsn.substring(2, 4));
+        const dd = parseInt(newSsn.substring(4, 6));
+        const daysInMonth = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+        if (mm < 1 || mm > 12) {
+          errorDiv.textContent = '생년월일의 월이 올바르지 않습니다. (01-12)';
+          errorDiv.classList.remove('hidden');
+          return;
+        }
+
+        if (dd < 1 || dd > daysInMonth[mm - 1]) {
+          errorDiv.textContent = `생년월일의 일이 올바르지 않습니다. (${mm}월은 01-${daysInMonth[mm-1]}일)`;
+          errorDiv.classList.remove('hidden');
+          return;
+        }
+      }
+
+      errorDiv.classList.add('hidden');
+
+      try {
+        const oldPhone = currentParticipant.phone;
+        const response = await fetch(`/api/participants/phone/${oldPhone}/update-self`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phone: newPhone,
+            ssn_first: newSsn || null,
+          }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error);
+
+        // 새 전화번호로 다시 조회
+        const refreshResponse = await fetch(`/api/participants/phone/${newPhone}`);
+        const refreshData = await refreshResponse.json();
+
+        if (refreshData.success) {
+          currentParticipant = refreshData.participant;
+          displayResult(refreshData.participant);
+          showToast('정보가 수정되었습니다.', 'success');
+        }
+
+        cancelEditUserInfo();
+      } catch (err) {
+        errorDiv.textContent = err.message || '수정 중 오류가 발생했습니다.';
+        errorDiv.classList.remove('hidden');
+      }
+    }
+
+    // 취소/환불 섹션 표시
+    function displayCancelRefundSection(participant, isGuest = false) {
+      const cancelSection = document.getElementById('cancelSection');
+      const refundSection = document.getElementById('refundSection');
+
+      // 동반참가자인 경우 취소/환불 섹션 숨김
+      if (isGuest) {
+        cancelSection.classList.add('hidden');
+        refundSection.classList.add('hidden');
+        return;
+      }
+
+      // 취소 섹션 표시
+      cancelSection.classList.remove('hidden');
+
+      const alreadyCancelled = document.getElementById('alreadyCancelled');
+      const cancelOptions = document.getElementById('cancelOptions');
+      const cancelGuest2Only = document.getElementById('cancelGuest2Only');
+
+      // 이미 취소된 경우
+      if (participant.is_cancelled) {
+        alreadyCancelled.classList.remove('hidden');
+        cancelOptions.classList.add('hidden');
+        const cancelledAt = participant.cancelled_at ? new Date(participant.cancelled_at.replace(' ', 'T')).toLocaleString('ko-KR') : '';
+        document.getElementById('cancelledInfo').textContent = `취소일: ${cancelledAt}`;
+        // 입금완료 상태이고 환불 신청이 없는 경우 안내 문구 표시
+        const refundNotice = document.getElementById('cancelledRefundNotice');
+        if (participant.is_paid && !participant.refund_status) {
+          refundNotice.classList.remove('hidden');
+        } else {
+          refundNotice.classList.add('hidden');
+        }
+      } else {
+        alreadyCancelled.classList.add('hidden');
+        cancelOptions.classList.remove('hidden');
+
+        // 2인 신청인 경우 동반자 취소 옵션 표시
+        const ticketCount = participant.ticket_count || 1;
+        const isTwoPerson = ticketCount === 2 || participant.guest2_name;
+        if (isTwoPerson) {
+          cancelGuest2Only.classList.remove('hidden');
+          // 2인 신청: 전체 취소 문구
+          document.getElementById('cancelFullDesc').textContent = '본인과 동반자 신청을 모두 취소하시겠습니까?';
+          document.getElementById('cancelFullBtnText').textContent = '전체 신청 취소';
+        } else {
+          cancelGuest2Only.classList.add('hidden');
+          // 1인 신청: 단순 취소 문구
+          document.getElementById('cancelFullDesc').textContent = '참가신청을 취소하시겠습니까?';
+          document.getElementById('cancelFullBtnText').textContent = '참가신청 취소';
+        }
+      }
+
+      // 환불 섹션 표시
+      refundSection.classList.remove('hidden');
+
+      const refundPending = document.getElementById('refundPending');
+      const refundCompleted = document.getElementById('refundCompleted');
+      const refundForm = document.getElementById('refundForm');
+
+      // 환불 상태에 따른 표시
+      if (participant.refund_status === 'completed') {
+        refundPending.classList.add('hidden');
+        refundCompleted.classList.remove('hidden');
+        refundForm.classList.add('hidden');
+        document.getElementById('refundCompletedInfo').innerHTML = `
+          <p>환불 금액: ₩${(participant.refund_amount || 0).toLocaleString()}</p>
+          <p>환불 완료일: ${participant.refund_completed_at ? new Date(participant.refund_completed_at.replace(' ', 'T')).toLocaleString('ko-KR') : '-'}</p>
+        `;
+      } else if (participant.refund_status === 'pending') {
+        refundPending.classList.remove('hidden');
+        refundCompleted.classList.add('hidden');
+        refundForm.classList.add('hidden');
+        let pendingInfo = `
+          <p>환불 요청 금액: ₩${(participant.refund_amount || 0).toLocaleString()}</p>
+          <p>환불 은행: ${participant.refund_bank || '-'}</p>
+          <p>계좌번호: ${participant.refund_account || '-'}</p>
+          <p>예금주: ${participant.refund_holder || '-'}</p>
+        `;
+        if (participant.refund_reason) {
+          pendingInfo += `<p class="mt-2 pt-2 border-t border-yellow-200">사유: ${participant.refund_reason}</p>`;
+        }
+        document.getElementById('refundPendingInfo').innerHTML = pendingInfo;
+      } else {
+        refundPending.classList.add('hidden');
+        refundCompleted.classList.add('hidden');
+        refundForm.classList.remove('hidden');
+      }
+    }
+
+    // 취소 모달 관련 변수
+    let cancelType = null; // 'full' or 'guest2'
+
+    // 취소 모달 표시
+    function showCancelModal(type) {
+      cancelType = type;
+      const modal = document.getElementById('cancelModal');
+      const title = document.getElementById('cancelModalTitle');
+      const message = document.getElementById('cancelModalMessage');
+      const refundFields = document.getElementById('cancelRefundFields');
+      const errorDiv = document.getElementById('cancelModalError');
+
+      errorDiv.classList.add('hidden');
+
+      if (type === 'full') {
+        title.textContent = '전체 신청 취소';
+        const ticketCount = currentParticipant.ticket_count || 1;
+        if (ticketCount === 2) {
+          message.textContent = '본인 및 동반자 신청이 모두 취소됩니다. 정말 취소하시겠습니까?';
+        } else {
+          message.textContent = '신청이 취소됩니다. 정말 취소하시겠습니까?';
+        }
+      } else {
+        title.textContent = '동반자 취소';
+        message.textContent = '동반자 신청만 취소하고 1인 신청으로 변경됩니다. 정말 취소하시겠습니까?';
+      }
+
+      // 입금 완료자인 경우 환불 계좌 입력 필드 표시
+      if (currentParticipant.is_paid) {
+        refundFields.classList.remove('hidden');
+        // 기존 환불 정보가 있으면 채우기
+        if (currentParticipant.refund_bank) {
+          document.getElementById('cancelRefundBank').value = currentParticipant.refund_bank;
+        }
+        if (currentParticipant.refund_account) {
+          document.getElementById('cancelRefundAccount').value = currentParticipant.refund_account;
+        }
+        if (currentParticipant.refund_holder) {
+          document.getElementById('cancelRefundHolder').value = currentParticipant.refund_holder;
+        }
+      } else {
+        refundFields.classList.add('hidden');
+      }
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    // 취소 모달 닫기
+    function closeCancelModal() {
+      const modal = document.getElementById('cancelModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      cancelType = null;
+    }
+
+    // 취소 확인
+    async function confirmCancel() {
+      const errorDiv = document.getElementById('cancelModalError');
+      const confirmBtn = document.getElementById('confirmCancelBtn');
+      errorDiv.classList.add('hidden');
+
+      // 입금 완료자인 경우 환불 계좌 검증
+      let refundData = {};
+      if (currentParticipant.is_paid) {
+        const bank = document.getElementById('cancelRefundBank').value;
+        const account = document.getElementById('cancelRefundAccount').value.replace(/[^0-9]/g, '');
+        const holder = document.getElementById('cancelRefundHolder').value.trim();
+
+        if (!bank) {
+          errorDiv.textContent = '환불 은행을 선택해주세요.';
+          errorDiv.classList.remove('hidden');
+          return;
+        }
+        if (!account) {
+          errorDiv.textContent = '환불 계좌번호를 입력해주세요.';
+          errorDiv.classList.remove('hidden');
+          return;
+        }
+        if (!holder) {
+          errorDiv.textContent = '예금주를 입력해주세요.';
+          errorDiv.classList.remove('hidden');
+          return;
+        }
+
+        refundData = {
+          refund_bank: bank,
+          refund_account: account,
+          refund_holder: holder
+        };
+      }
+
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = '처리 중...';
+
+      try {
+        let endpoint = '';
+        if (cancelType === 'full') {
+          endpoint = `/api/participants/phone/${currentParticipant.phone}/cancel`;
+        } else {
+          endpoint = `/api/participants/phone/${currentParticipant.phone}/cancel-guest2`;
+        }
+
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            cancel_reason: cancelType === 'full' ? '본인 취소 요청' : '동반자 취소 요청',
+            ...refundData
+          })
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error);
+
+        closeCancelModal();
+        showToast(cancelType === 'full' ? '신청이 취소되었습니다.' : '동반자가 취소되었습니다.', 'success');
+
+        // 새로고침
+        const refreshResponse = await fetch(`/api/participants/phone/${currentParticipant.phone}`);
+        const refreshData = await refreshResponse.json();
+        if (refreshData.success) {
+          currentParticipant = refreshData.participant;
+          displayResult(refreshData.participant);
+        }
+      } catch (err) {
+        errorDiv.textContent = err.message || '처리 중 오류가 발생했습니다.';
+        errorDiv.classList.remove('hidden');
+      } finally {
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = '확인';
+      }
+    }
+
+    // 환불 신청
+    async function submitRefundRequest() {
+      const errorDiv = document.getElementById('refundError');
+      const errorMessage = document.getElementById('refundErrorMessage');
+      const submitBtn = document.getElementById('submitRefundBtn');
+
+      errorDiv.classList.add('hidden');
+
+      const amount = document.getElementById('refundAmount').value.replace(/[^0-9]/g, '');
+      const bank = document.getElementById('refundBank').value;
+      const account = document.getElementById('refundAccount').value.replace(/[^0-9]/g, '');
+      const holder = document.getElementById('refundHolder').value.trim();
+      const reason = document.getElementById('refundReason').value.trim();
+
+      // 유효성 검사
+      if (!amount || parseInt(amount) <= 0) {
+        errorMessage.textContent = '환불 요청 금액을 입력해주세요.';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+      if (!bank) {
+        errorMessage.textContent = '환불 은행을 선택해주세요.';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+      if (!account) {
+        errorMessage.textContent = '환불 계좌번호를 입력해주세요.';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+      if (!holder) {
+        errorMessage.textContent = '예금주를 입력해주세요.';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `
+        <div class="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></div>
+        <span>신청 중...</span>
+      `;
+
+      try {
+        const response = await fetch(`/api/participants/phone/${currentParticipant.phone}/refund-account`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            refund_amount: parseInt(amount),
+            refund_bank: bank,
+            refund_account: account,
+            refund_holder: holder,
+            refund_reason: reason || null
+          })
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error);
+
+        showToast('환불 신청이 완료되었습니다.', 'success');
+
+        // 새로고침
+        const refreshResponse = await fetch(`/api/participants/phone/${currentParticipant.phone}`);
+        const refreshData = await refreshResponse.json();
+        if (refreshData.success) {
+          currentParticipant = refreshData.participant;
+          displayResult(refreshData.participant);
+        }
+      } catch (err) {
+        errorMessage.textContent = err.message || '신청 중 오류가 발생했습니다.';
+        errorDiv.classList.remove('hidden');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+          <span>환불 신청하기</span>
+        `;
+      }
+    }
+
+    // 환불 정보 수정 폼 표시
+    function showRefundEditForm() {
+      const editForm = document.getElementById('refundEditForm');
+      const editBtn = document.getElementById('refundEditBtn');
+      const pendingInfo = document.getElementById('refundPendingInfo');
+
+      // 현재 정보를 폼에 채우기
+      if (currentParticipant.refund_bank) {
+        document.getElementById('editRefundBank').value = currentParticipant.refund_bank;
+      }
+      if (currentParticipant.refund_account) {
+        document.getElementById('editRefundAccount').value = currentParticipant.refund_account;
+      }
+      if (currentParticipant.refund_holder) {
+        document.getElementById('editRefundHolder').value = currentParticipant.refund_holder;
+      }
+
+      editForm.classList.remove('hidden');
+      editBtn.classList.add('hidden');
+      pendingInfo.classList.add('hidden');
+      document.getElementById('refundEditError').classList.add('hidden');
+    }
+
+    // 환불 정보 수정 취소
+    function cancelRefundEdit() {
+      const editForm = document.getElementById('refundEditForm');
+      const editBtn = document.getElementById('refundEditBtn');
+      const pendingInfo = document.getElementById('refundPendingInfo');
+
+      editForm.classList.add('hidden');
+      editBtn.classList.remove('hidden');
+      pendingInfo.classList.remove('hidden');
+    }
+
+    // 환불 정보 저장
+    async function saveRefundEdit() {
+      const errorDiv = document.getElementById('refundEditError');
+      errorDiv.classList.add('hidden');
+
+      const bank = document.getElementById('editRefundBank').value;
+      const account = document.getElementById('editRefundAccount').value.replace(/[^0-9]/g, '');
+      const holder = document.getElementById('editRefundHolder').value.trim();
+
+      // 유효성 검사
+      if (!bank) {
+        errorDiv.textContent = '환불 은행을 선택해주세요.';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+      if (!account) {
+        errorDiv.textContent = '계좌번호를 입력해주세요.';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+      if (!holder) {
+        errorDiv.textContent = '예금주를 입력해주세요.';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/participants/phone/${currentParticipant.phone}/refund-account`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            refund_amount: currentParticipant.refund_amount,
+            refund_bank: bank,
+            refund_account: account,
+            refund_holder: holder,
+            refund_reason: currentParticipant.refund_reason || null
+          })
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error);
+
+        showToast('환불 계좌 정보가 수정되었습니다.', 'success');
+
+        // 새로고침
+        const refreshResponse = await fetch(`/api/participants/phone/${currentParticipant.phone}`);
+        const refreshData = await refreshResponse.json();
+        if (refreshData.success) {
+          currentParticipant = refreshData.participant;
+          displayResult(refreshData.participant);
+        }
+
+        cancelRefundEdit();
+      } catch (err) {
+        errorDiv.textContent = err.message || '수정 중 오류가 발생했습니다.';
+        errorDiv.classList.remove('hidden');
+      }
+    }
+
+    // 비밀번호 변경
+    async function changePassword() {
+      const errorDiv = document.getElementById('passwordError');
+      const successDiv = document.getElementById('passwordSuccess');
+      errorDiv.classList.add('hidden');
+      successDiv.classList.add('hidden');
+
+      const currentPw = document.getElementById('currentPassword').value.trim();
+      const newPw = document.getElementById('newPassword').value.trim();
+      const confirmPw = document.getElementById('confirmPassword').value.trim();
+
+      // 유효성 검사
+      if (!currentPw) {
+        errorDiv.textContent = '현재 비밀번호를 입력해주세요.';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+      if (!newPw) {
+        errorDiv.textContent = '새 비밀번호를 입력해주세요.';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+      if (newPw.length !== 6 || !/^\d{6}$/.test(newPw)) {
+        errorDiv.textContent = '새 비밀번호는 숫자 6자리여야 합니다.';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+      if (newPw !== confirmPw) {
+        errorDiv.textContent = '새 비밀번호가 일치하지 않습니다.';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+      if (currentPw === newPw) {
+        errorDiv.textContent = '새 비밀번호는 현재 비밀번호와 달라야 합니다.';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        const phone = currentParticipant._isGuest ? currentParticipant._guestInfo.phone : currentParticipant.phone;
+
+        const response = await fetch('/api/participants/password', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phone: phone,
+            current_password: currentPw,
+            new_password: newPw
+          })
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error);
+
+        successDiv.textContent = '비밀번호가 변경되었습니다.';
+        successDiv.classList.remove('hidden');
+        showToast('비밀번호가 변경되었습니다.', 'success');
+
+        // 입력 필드 초기화
+        document.getElementById('currentPassword').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
+      } catch (err) {
+        errorDiv.textContent = err.message || '비밀번호 변경 중 오류가 발생했습니다.';
+        errorDiv.classList.remove('hidden');
+      }
+    }
+
+    // 개인정보 동의 모달 표시
+    function showPrivacyModal() {
+      const modal = document.getElementById('privacyModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.getElementById('privacyAgreeCheck').checked = false;
+      document.getElementById('privacyError').classList.add('hidden');
+    }
+
+    // 개인정보 동의 제출
+    async function submitPrivacyAgree() {
+      const checkbox = document.getElementById('privacyAgreeCheck');
+      const errorDiv = document.getElementById('privacyError');
+
+      if (!checkbox.checked) {
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+
+      errorDiv.classList.add('hidden');
+
+      try {
+        const phone = currentParticipant._isGuest
+          ? currentParticipant._guestInfo.phone
+          : currentParticipant.phone;
+
+        const response = await fetch('/api/participants/privacy-agree', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone })
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error);
+
+        // 모달 닫기
+        const modal = document.getElementById('privacyModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+
+        // 동의 상태 업데이트
+        if (currentParticipant._isGuest) {
+          currentParticipant.guest2_privacy_agreed = 1;
+        } else {
+          currentParticipant.privacy_agreed = 1;
+        }
+
+        showToast('개인정보 수집에 동의하셨습니다.', 'success');
+
+        // 결과 화면 표시
+        displayResult(
+          currentParticipant,
+          currentParticipant._isGuest,
+          currentParticipant._guestInfo
+        );
+      } catch (err) {
+        errorDiv.textContent = err.message || '동의 처리 중 오류가 발생했습니다.';
+        errorDiv.classList.remove('hidden');
+      }
     }
 
     // 토스트 알림

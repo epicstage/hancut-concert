@@ -157,15 +157,17 @@
       <!-- 신청 오픈/마감 컨트롤 -->
       <div class="max-w-7xl mx-auto px-4 pt-6">
         <div class="glass-card mb-6 flex items-center justify-between flex-wrap gap-4">
-          <div class="flex items-center gap-3">
-            <div id="openStatusIcon" class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
-              <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-            </div>
-            <div>
-              <p class="text-sm text-gray-500">신청 상태</p>
-              <p id="openStatusText" class="text-lg font-bold text-gray-400">확인 중...</p>
+          <div class="flex items-center gap-6">
+            <div class="flex items-center gap-3">
+              <div id="openStatusIcon" class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <div>
+                <p class="text-sm text-gray-500">신청 상태</p>
+                <p id="openStatusText" class="text-lg font-bold text-gray-400">확인 중...</p>
+              </div>
             </div>
           </div>
           <div class="flex items-center gap-3">
@@ -280,6 +282,11 @@
               사연 관리
               <span id="unreadStoriesBadge" class="hidden absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[1.25rem] text-center">0</span>
             </button>
+            <button onclick="showRefundsTab()" id="refundsTab"
+              class="px-4 py-2 font-semibold text-gray-600 hover:text-red-600 relative">
+              환불/취소
+              <span id="pendingRefundsBadge" class="hidden absolute -top-1 -right-1 bg-yellow-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[1.25rem] text-center">0</span>
+            </button>
           </div>
         </div>
 
@@ -292,24 +299,21 @@
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">그룹 형태</label>
                 <select id="groupType" class="input-glass" onchange="updateGroupDisplay()">
+                  <option value="alphabet" selected>알파벳 (A,B,C...)</option>
                   <option value="korean">가나다 (가,나,다...)</option>
-                  <option value="alphabet">알파벳 (A,B,C...)</option>
                   <option value="number">숫자 (1,2,3...)</option>
                 </select>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">그룹 개수</label>
-                <input type="number" id="groupCount" class="input-glass" placeholder="14" value="14" min="1" max="26"
+                <input type="number" id="groupCount" class="input-glass" placeholder="16" value="16" min="1" max="26"
                   onchange="updateGroupDisplay()" />
-                <p class="text-xs text-gray-500 mt-1" id="groupDisplay">가,나,다,라,마,바,사,아,자,차,카,타,파,하</p>
+                <p class="text-xs text-gray-500 mt-1" id="groupDisplay">A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P</p>
               </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">그룹당 열 수</label>
-                <input type="number" id="rowsPerGroup" class="input-glass" placeholder="10" value="10" min="1" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">열당 좌석 수</label>
-                <input type="number" id="seatsPerRow" class="input-glass" placeholder="20" value="20" min="1" />
+              <div class="col-span-2">
+                <p class="text-xs text-gray-500">
+                  <strong>그룹별 좌석 수:</strong> A(90), B(100), C(100), D(90), E(100), F(90), G(90), H(100), I(100), J(90), K(90), L(100), M(90), N(100), O(100), P(90) = 총 1,520석
+                </p>
               </div>
             </div>
             <div class="flex gap-3 flex-wrap mb-4">
@@ -356,6 +360,59 @@
                 </svg>
                 엑셀 다운로드
               </button>
+              <button onclick="downloadCancelledExcel()" class="btn-secondary-glass px-4 flex items-center gap-2" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: #dc2626;">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                취소/환불자
+              </button>
+              <button onclick="downloadArchivedExcel()" class="btn-secondary-glass px-4 flex items-center gap-2" style="background: rgba(107, 114, 128, 0.1); border-color: rgba(107, 114, 128, 0.3); color: #6b7280;">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                </svg>
+                삭제 데이터
+              </button>
+              <button onclick="showAddParticipantModal()" class="btn-primary-glass px-6 flex items-center gap-2" style="background: rgba(16, 185, 129, 0.9);">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                신규 등록
+              </button>
+            </div>
+          </div>
+
+          <!-- 개인정보 동의 현황 -->
+          <div class="glass-card mb-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                개인정보 수집 동의 현황
+              </h3>
+              <button onclick="loadPrivacyStats()" class="text-sm text-blue-600 hover:text-blue-800">
+                새로고침
+              </button>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div class="text-center p-4 bg-blue-50 rounded-xl">
+                <div class="text-2xl font-bold text-blue-600" id="privacyTotalCount">-</div>
+                <div class="text-sm text-gray-600">전체 인원</div>
+              </div>
+              <div class="text-center p-4 bg-green-50 rounded-xl">
+                <div class="text-2xl font-bold text-green-600" id="privacyAgreedCount">-</div>
+                <div class="text-sm text-gray-600">동의 완료</div>
+              </div>
+              <div class="text-center p-4 bg-yellow-50 rounded-xl">
+                <div class="text-2xl font-bold text-yellow-600" id="privacyPendingCount">-</div>
+                <div class="text-sm text-gray-600">동의 미완료</div>
+              </div>
+              <div class="text-center p-4 bg-purple-50 rounded-xl">
+                <div class="text-2xl font-bold text-purple-600" id="privacyRate">-</div>
+                <div class="text-sm text-gray-600">동의율</div>
+              </div>
             </div>
           </div>
 
@@ -422,60 +479,134 @@
         </div>
 
         <!-- 입금확인 탭 -->
-        <div id="paymentSection" class="hidden">
-          <div class="glass-card mb-6">
+        <div id="paymentSection" class="hidden" style="margin-left: -2rem; margin-right: -2rem; padding-left: 1rem; padding-right: 1rem;">
+          <div class="glass-card mb-6" style="max-width: none;">
             <h3 class="text-lg font-bold text-gray-900 mb-4">입금 내역 확인</h3>
-            <p class="text-sm text-gray-600 mb-4">엑셀에서 데이터를 복사(Ctrl+C)한 후 아래 테이블에 붙여넣기(Ctrl+V)하거나 직접 입력하세요.</p>
+            <div class="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <p class="text-sm text-gray-700 mb-3"><strong>CSV 파일 업로드:</strong> 엑셀에서 CSV로 저장 후 업로드하세요.</p>
+              <div class="flex gap-3 items-center flex-wrap">
+                <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="handleCSVUpload(this)" />
+                <button onclick="document.getElementById('csvFileInput').click()"
+                  style="background-color: #3b82f6; color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: bold; box-shadow: 0 10px 15px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s; border: none;"
+                  onmouseover="this.style.backgroundColor='#2563eb'" onmouseout="this.style.backgroundColor='#3b82f6'">
+                  📁 CSV 파일 선택
+                </button>
+                <span id="csvFileName" class="text-sm text-gray-600"></span>
+              </div>
+              <p class="text-xs text-gray-500 mt-2">* CSV 파일은 쉼표(,)로 구분되어야 합니다. 컬럼: 거래일시, 구분, 거래금액, 거래 후 잔액, 거래구분, 내용, 메모</p>
+            </div>
 
-            <div id="paymentTableContainer" class="overflow-x-auto mb-4">
-              <table id="paymentTable" class="w-full border-collapse border border-gray-300 bg-white">
+            <!-- 버튼들을 테이블 위로 이동 -->
+            <div class="flex gap-3 flex-wrap mb-4">
+              <button id="addPaymentRowBtn" onclick="addPaymentRow()"
+                style="background-color: #475569; color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: bold; box-shadow: 0 10px 15px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s; border: none;"
+                onmouseover="this.style.backgroundColor='#334155'" onmouseout="this.style.backgroundColor='#475569'">
+                + 행 추가
+              </button>
+              <button id="savePaymentBtn" onclick="savePaymentDataWithLock()"
+                style="background-color: #3b82f6; color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: bold; box-shadow: 0 10px 15px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s; border: none;"
+                onmouseover="this.style.backgroundColor='#2563eb'" onmouseout="this.style.backgroundColor='#3b82f6'">
+                💾 저장하기
+              </button>
+              <button id="bulkApproveBtn" onclick="bulkApproveMatched()"
+                style="background-color: #10b981; color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: bold; box-shadow: 0 10px 15px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s; border: none;"
+                onmouseover="this.style.backgroundColor='#059669'" onmouseout="this.style.backgroundColor='#10b981'">
+                ✓ 매칭된 항목 일괄승인
+              </button>
+              <button id="resetPaymentBtn" onclick="resetPaymentTableWithLock()"
+                style="background-color: #f97316; color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: bold; box-shadow: 0 10px 15px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s; border: none;"
+                onmouseover="this.style.backgroundColor='#ea580c'" onmouseout="this.style.backgroundColor='#f97316'">
+                🗑️ 초기화
+              </button>
+            </div>
+
+            <!-- 필터 버튼 -->
+            <div class="flex gap-2 flex-wrap mb-4">
+              <span class="text-sm text-gray-600 mr-2 self-center">필터:</span>
+              <button onclick="filterPaymentData('all')" id="filterAll"
+                style="background-color: #6b7280; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-size: 0.875rem; cursor: pointer; border: none;">
+                전체 보기
+              </button>
+              <button onclick="filterPaymentData('matched')" id="filterMatched"
+                style="background-color: #e5e7eb; color: #374151; padding: 0.5rem 1rem; border-radius: 0.375rem; font-size: 0.875rem; cursor: pointer; border: none;">
+                ✓ 매칭됨
+              </button>
+              <button onclick="filterPaymentData('unmatched')" id="filterUnmatched"
+                style="background-color: #e5e7eb; color: #374151; padding: 0.5rem 1rem; border-radius: 0.375rem; font-size: 0.875rem; cursor: pointer; border: none;">
+                ✗ 미매칭
+              </button>
+              <button onclick="filterPaymentData('duplicate')" id="filterDuplicate"
+                style="background-color: #e5e7eb; color: #374151; padding: 0.5rem 1rem; border-radius: 0.375rem; font-size: 0.875rem; cursor: pointer; border: none;">
+                ⚠ 동명이인
+              </button>
+              <button onclick="filterPaymentData('noPhone')" id="filterNoPhone"
+                style="background-color: #e5e7eb; color: #374151; padding: 0.5rem 1rem; border-radius: 0.375rem; font-size: 0.875rem; cursor: pointer; border: none;">
+                📱 전화번호 없음
+              </button>
+              <button onclick="filterPaymentData('pending')" id="filterPending"
+                style="background-color: #e5e7eb; color: #374151; padding: 0.5rem 1rem; border-radius: 0.375rem; font-size: 0.875rem; cursor: pointer; border: none;">
+                ⏳ 대기중
+              </button>
+              <button onclick="filterPaymentData('approved')" id="filterApproved"
+                style="background-color: #e5e7eb; color: #374151; padding: 0.5rem 1rem; border-radius: 0.375rem; font-size: 0.875rem; cursor: pointer; border: none;">
+                ✅ 승인됨
+              </button>
+              <span id="filterCount" class="text-sm text-gray-500 self-center ml-2"></span>
+            </div>
+
+            <div id="paymentTableContainer" class="overflow-x-auto mb-4" style="max-width: 100vw;">
+              <table id="paymentTable" class="border-collapse border border-gray-300 bg-white" style="min-width: 1600px;">
                 <thead>
                   <tr class="bg-gray-100">
-                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700">연번</th>
-                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700">거래일시</th>
-                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700">구분</th>
-                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700">거래금액</th>
-                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700">거래 후 잔액</th>
-                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700">거래구분</th>
-                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700">내용</th>
-                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700">메모</th>
-                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700">매칭된 신청자</th>
-                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700">예상되는 신청자</th>
-                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700">비고</th>
-                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700">상태</th>
-                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700">작업</th>
+                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700" style="min-width: 40px;">연번</th>
+                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-200" style="min-width: 140px;" onclick="sortPaymentData('date')">
+                      거래일시 <span id="paymentSort_date" class="text-xs text-gray-400"></span>
+                    </th>
+                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-200" style="min-width: 60px;" onclick="sortPaymentData('type')">
+                      구분 <span id="paymentSort_type" class="text-xs text-gray-400"></span>
+                    </th>
+                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-200" style="min-width: 100px;" onclick="sortPaymentData('amount')">
+                      거래금액 <span id="paymentSort_amount" class="text-xs text-gray-400"></span>
+                    </th>
+                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-200" style="min-width: 100px;" onclick="sortPaymentData('balance')">
+                      거래 후 잔액 <span id="paymentSort_balance" class="text-xs text-gray-400"></span>
+                    </th>
+                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-200" style="min-width: 80px;" onclick="sortPaymentData('transactionType')">
+                      거래구분 <span id="paymentSort_transactionType" class="text-xs text-gray-400"></span>
+                    </th>
+                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-200" style="min-width: 150px;" onclick="sortPaymentData('content')">
+                      내용 <span id="paymentSort_content" class="text-xs text-gray-400"></span>
+                    </th>
+                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-200" style="min-width: 100px;" onclick="sortPaymentData('memo')">
+                      메모 <span id="paymentSort_memo" class="text-xs text-gray-400"></span>
+                    </th>
+                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-200" style="min-width: 180px;" onclick="sortPaymentData('matchedName')">
+                      매칭된 신청자 <span id="paymentSort_matchedName" class="text-xs text-gray-400"></span>
+                    </th>
+                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700" style="min-width: 180px;">예상되는 신청자</th>
+                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700" style="min-width: 80px;">비고</th>
+                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-200" style="min-width: 70px;" onclick="sortPaymentData('approved')">
+                      상태 <span id="paymentSort_approved" class="text-xs text-gray-400"></span>
+                    </th>
+                    <th class="border border-gray-300 px-2 py-2 text-sm font-semibold text-gray-700 sticky right-0 bg-gray-100 z-10" style="min-width: 140px;">작업</th>
                   </tr>
                 </thead>
                 <tbody id="paymentTableBody">
                   <!-- 빈 행 하나 추가 -->
                   <tr>
                     <td class="border border-gray-300 px-2 py-1 text-sm text-center text-gray-500">1</td>
-                    <td class="border border-gray-300 px-2 py-1"><input type="text"
-                        class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" />
-                    </td>
-                    <td class="border border-gray-300 px-2 py-1"><input type="text"
-                        class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" />
-                    </td>
-                    <td class="border border-gray-300 px-2 py-1"><input type="text"
-                        class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" />
-                    </td>
-                    <td class="border border-gray-300 px-2 py-1"><input type="text"
-                        class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" />
-                    </td>
-                    <td class="border border-gray-300 px-2 py-1"><input type="text"
-                        class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" />
-                    </td>
-                    <td class="border border-gray-300 px-2 py-1"><input type="text"
-                        class="w-full border-0 bg-transparent text-sm"
-                        onchange="updatePaymentDataFromInput(this); reMatchPaymentFromInput(this)" /></td>
-                    <td class="border border-gray-300 px-2 py-1"><input type="text"
-                        class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this); reMatchPaymentFromInput(this)" />
-                    </td>
+                    <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
+                    <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
+                    <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
+                    <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
+                    <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
+                    <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this); reMatchPaymentFromInput(this)" /></td>
+                    <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this); reMatchPaymentFromInput(this)" /></td>
                     <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">-</td>
                     <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">-</td>
                     <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">-</td>
                     <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">대기중</td>
-                    <td class="border border-gray-300 px-2 py-2">
+                    <td class="border border-gray-300 px-2 py-2 sticky right-0 bg-white z-10">
                       <div class="flex gap-2">
                         <button onclick="approvePaymentFromTable(0)"
                           style="background-color: #22c55e; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: bold; font-size: 0.875rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s;"
@@ -490,23 +621,6 @@
                   </tr>
                 </tbody>
               </table>
-            </div>
-            <div class="flex gap-3 flex-wrap">
-              <button onclick="addPaymentRow()"
-                style="background-color: #475569; color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: bold; box-shadow: 0 10px 15px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s; border: none;"
-                onmouseover="this.style.backgroundColor='#334155'" onmouseout="this.style.backgroundColor='#475569'">
-                + 행 추가
-              </button>
-              <button onclick="savePaymentData()"
-                style="background-color: #3b82f6; color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: bold; box-shadow: 0 10px 15px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s; border: none;"
-                onmouseover="this.style.backgroundColor='#2563eb'" onmouseout="this.style.backgroundColor='#3b82f6'">
-                💾 저장하기
-              </button>
-              <button onclick="resetPaymentTable()"
-                style="background-color: #f97316; color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: bold; box-shadow: 0 10px 15px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s; border: none;"
-                onmouseover="this.style.backgroundColor='#ea580c'" onmouseout="this.style.backgroundColor='#f97316'">
-                🗑️ 초기화
-              </button>
             </div>
           </div>
         </div>
@@ -641,6 +755,13 @@
                   <option value="unanswered">미응답 문의</option>
                   <option value="answered">답변 완료</option>
                 </select>
+                <button onclick="exportInquiriesToExcel()" class="btn-secondary-glass px-4 flex items-center gap-2" title="엑셀 다운로드">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span class="hidden md:inline">엑셀</span>
+                </button>
                 <button onclick="loadInquiries()" class="btn-secondary-glass px-6 flex items-center gap-2" title="새로고침">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -706,6 +827,76 @@
 
           <div class="mt-4 text-sm text-gray-600" id="storyCountText"></div>
         </div>
+
+        <!-- 환불/취소 관리 탭 -->
+        <div id="refundsSection" class="hidden">
+          <div class="glass-card mb-6">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-bold text-gray-900">환불/취소 관리</h3>
+              <div class="flex gap-2">
+                <select id="refundFilter" onchange="filterRefunds()" class="input-glass">
+                  <option value="pending">대기 중</option>
+                  <option value="completed">완료</option>
+                  <option value="cancelled">취소됨</option>
+                  <option value="all">전체</option>
+                </select>
+                <button onclick="loadRefunds()" class="btn-secondary-glass px-6 flex items-center gap-2" title="새로고침">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  <span class="hidden md:inline">새로고침</span>
+                </button>
+                <button onclick="downloadCancelledExcel()" class="btn-primary-glass px-4 flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  <span class="hidden md:inline">엑셀</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 통계 카드 -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="glass-card text-center">
+              <div class="text-3xl font-bold text-yellow-600" id="pendingRefundCount">0</div>
+              <div class="text-sm text-gray-600">환불 대기</div>
+            </div>
+            <div class="glass-card text-center">
+              <div class="text-3xl font-bold text-green-600" id="completedRefundCount">0</div>
+              <div class="text-sm text-gray-600">환불 완료</div>
+            </div>
+            <div class="glass-card text-center">
+              <div class="text-3xl font-bold text-red-600" id="cancelledCount">0</div>
+              <div class="text-sm text-gray-600">취소됨</div>
+            </div>
+          </div>
+
+          <div class="glass-card overflow-x-auto">
+            <div id="refundLoading" class="text-center py-8 text-gray-500">로딩 중...</div>
+            <table id="refundsTable" class="hidden w-full">
+              <thead>
+                <tr class="bg-gray-50">
+                  <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">상태</th>
+                  <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">신청자</th>
+                  <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">연락처</th>
+                  <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">환불금액</th>
+                  <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">은행/계좌</th>
+                  <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">예금주</th>
+                  <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">사유</th>
+                  <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">요청일</th>
+                  <th class="px-4 py-3 text-center text-sm font-semibold text-gray-700">관리</th>
+                </tr>
+              </thead>
+              <tbody id="refundsBody"></tbody>
+            </table>
+            <div id="refundEmptyMessage" class="hidden text-center py-8 text-gray-500">환불/취소 요청이 없습니다.</div>
+          </div>
+
+          <div class="mt-4 text-sm text-gray-600" id="refundCountText"></div>
+        </div>
       </main>
 
       <!-- 푸터 (나중에 배포사/운영사 정보 추가 예정) -->
@@ -735,6 +926,20 @@
     let searchDebounceTimeout = null; // 검색 debounce용
     const SEARCH_DEBOUNCE_MS = 300; // 검색 debounce 시간 (300ms)
 
+    // 문의 및 사연 관련 변수 (전역)
+    let inquiries = [];
+    let filteredInquiries = [];
+    let stories = [];
+    let filteredStories = [];
+
+    // 참가자 수정 모달 관련 변수 (전역)
+    let editingParticipantId = null;
+    let editingIsGuest = false;
+
+    // 환불/취소 관련 변수 (전역)
+    let refundsList = [];
+    let filteredRefundsList = [];
+
     // 인증된 API 호출을 위한 헬퍼 함수
     function authFetch(url, options = {}) {
       if (!adminToken) {
@@ -753,9 +958,16 @@
       try {
         const response = await fetch('/api/settings/is-open');
         const data = await response.json();
-        updateOpenStatusUI(data.isOpen);
+        if (data.success !== undefined) {
+          updateOpenStatusUI(data.isOpen);
+        } else {
+          // API 오류 시 기본값 (마감 상태)
+          updateOpenStatusUI(false);
+        }
       } catch (error) {
         console.error('Error loading open status:', error);
+        // 오류 시 기본값 (마감 상태)
+        updateOpenStatusUI(false);
       }
     }
 
@@ -900,6 +1112,7 @@
 
           loadParticipants();
           loadOpenStatus();
+          loadPrivacyStats();
           return true;
         } else {
           throw new Error('토큰을 받지 못했습니다.');
@@ -946,6 +1159,7 @@
               if (adminScreen) adminScreen.classList.remove('hidden');
               loadParticipants();
               loadOpenStatus();
+              loadPrivacyStats();
             } else {
               // 토큰 만료 - 로그인 화면 표시
               sessionStorage.removeItem('adminToken');
@@ -1129,38 +1343,274 @@
       container.appendChild(nextBtn);
     }
 
-    function downloadExcel() {
-      if (!participants || participants.length === 0) {
-        alert('다운로드할 데이터가 없습니다.');
-        return;
+    async function downloadExcel() {
+      try {
+        // 전체 데이터를 가져오기 위해 limit을 크게 설정
+        const response = await authFetch('/api/admin/participants?limit=100000');
+        if (!response.ok) {
+          throw new Error('데이터를 불러오는데 실패했습니다.');
+        }
+        const result = await response.json();
+        const allParticipants = result.participants || [];
+
+        if (allParticipants.length === 0) {
+          alert('다운로드할 데이터가 없습니다.');
+          return;
+        }
+
+        // 엑셀용 데이터 변환
+        const data = allParticipants.map(p => ({
+          'ID': p.id,
+          '신청일시': formatDateTime(p.created_at),
+          '이름': p.user_name,
+          '전화번호': formatPhone(p.phone),
+          '생년월일(앞자리)': p.ssn_first || '-',
+          '티켓수': p.ticket_count,
+          '동반자 이름': p.guest2_name || '-',
+          '동반자 전화번호': p.guest2_phone ? formatPhone(p.guest2_phone) : '-',
+          '동반자 생년월일': p.guest2_ssn_first || '-',
+          '좌석(본인)': p.seat_full || '-',
+          '좌석(동반자)': p.seat_full_2 || '-',
+          '입금상태': p.is_paid ? '입금완료' : '대기',
+          '체크인': p.is_checked_in ? '완료' : '미완료'
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "참가자목록");
+
+        const date = new Date().toISOString().split('T')[0];
+        XLSX.writeFile(wb, `한동훈토크콘서트_참가자목록_${date}.xlsx`);
+      } catch (error) {
+        console.error('Excel download error:', error);
+        alert('엑셀 다운로드 중 오류가 발생했습니다: ' + error.message);
       }
-
-      // 엑셀용 데이터 변환
-      const data = participants.map(p => ({
-        'ID': p.id,
-        '신청일시': formatDateTime(p.created_at),
-        '이름': p.user_name,
-        '전화번호': formatPhone(p.phone),
-        '생년월일(앞자리)': p.ssn_first || '-',
-        '티켓수': p.ticket_count,
-        '동반자 이름': p.guest2_name || '-',
-        '동반자 전화번호': p.guest2_phone ? formatPhone(p.guest2_phone) : '-',
-        '동반자 생년월일': p.guest2_ssn_first || '-',
-        '좌석(본인)': p.seat_full || '-',
-        '좌석(동반자)': p.seat_full_2 || '-',
-        '입금상태': p.is_paid ? '입금완료' : '대기',
-        '체크인': p.is_checked_in ? '완료' : '미완료'
-      }));
-
-      const ws = XLSX.utils.json_to_sheet(data);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "참가자목록");
-
-      const date = new Date().toISOString().split('T')[0];
-      XLSX.writeFile(wb, `한컷콘서트_참가자목록_${date}.xlsx`);
     }
 
-    function updateStatistics() {
+    // 취소/환불자 엑셀 다운로드 (취소 요청자 - 활성 데이터에서 is_cancelled=1인 참가자)
+    async function downloadCancelledExcel() {
+      try {
+        const response = await authFetch('/api/admin/participants?limit=100000');
+        if (!response.ok) {
+          throw new Error('데이터를 불러오는데 실패했습니다.');
+        }
+        const result = await response.json();
+        const allParticipants = result.participants || [];
+
+        // 취소자만 필터링 (is_cancelled=1)
+        const cancelledParticipants = allParticipants.filter(p => p.is_cancelled === 1);
+
+        if (cancelledParticipants.length === 0) {
+          alert('취소/환불 요청자 데이터가 없습니다.');
+          return;
+        }
+
+        // 엑셀용 데이터 변환
+        const data = cancelledParticipants.map(p => ({
+          'ID': p.id,
+          '신청일시': formatDateTime(p.created_at),
+          '이름': p.user_name,
+          '전화번호': formatPhone(p.phone),
+          '생년월일(앞자리)': p.ssn_first || '-',
+          '티켓수': p.ticket_count,
+          '동반자 이름': p.guest2_name || '-',
+          '동반자 전화번호': p.guest2_phone ? formatPhone(p.guest2_phone) : '-',
+          '상태': '취소요청',
+          '취소일시': p.cancelled_at ? formatDateTime(p.cancelled_at) : '-',
+          '취소사유': p.cancel_reason || '-',
+          '환불상태': p.refund_status || '-',
+          '환불금액': p.refund_amount ? p.refund_amount.toLocaleString() + '원' : '-',
+          '환불은행': p.refund_bank || '-',
+          '환불계좌': p.refund_account || '-',
+          '예금주': p.refund_holder || '-'
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "취소환불자목록");
+
+        const date = new Date().toISOString().split('T')[0];
+        XLSX.writeFile(wb, `한동훈토크콘서트_취소환불자_${date}.xlsx`);
+      } catch (error) {
+        console.error('Cancelled Excel download error:', error);
+        alert('엑셀 다운로드 중 오류가 발생했습니다: ' + error.message);
+      }
+    }
+
+    // 삭제(아카이브) 데이터 엑셀 다운로드
+    async function downloadArchivedExcel() {
+      try {
+        const response = await authFetch('/api/admin/participants/archive/download');
+        if (!response.ok) {
+          throw new Error('아카이브 데이터를 불러오는데 실패했습니다.');
+        }
+        const result = await response.json();
+        const archivedParticipants = result.participants || [];
+
+        if (archivedParticipants.length === 0) {
+          alert('삭제된 데이터가 없습니다.');
+          return;
+        }
+
+        // 엑셀용 데이터 변환
+        const data = archivedParticipants.map(p => ({
+          '아카이브ID': p.id,
+          '원본ID': p.original_id,
+          '신청일시': formatDateTime(p.created_at),
+          '이름': p.user_name,
+          '전화번호': formatPhone(p.original_phone || p.phone),
+          '생년월일(앞자리)': p.ssn_first || '-',
+          '티켓수': p.ticket_count,
+          '동반자 이름': p.guest2_name || '-',
+          '동반자 전화번호': p.guest2_phone ? formatPhone(p.guest2_phone) : '-',
+          '입금여부': p.is_paid ? '입금' : '미입금',
+          '좌석': p.seat_full || '-',
+          '동반자 좌석': p.seat_full_2 || '-',
+          '삭제일시': formatDateTime(p.deleted_at),
+          '아카이브일시': formatDateTime(p.archived_at),
+          '취소여부': p.is_cancelled ? '취소됨' : '-',
+          '취소사유': p.cancel_reason || '-',
+          '환불상태': p.refund_status || '-',
+          '환불금액': p.refund_amount ? p.refund_amount.toLocaleString() + '원' : '-',
+          '환불은행': p.refund_bank || '-',
+          '환불계좌': p.refund_account || '-',
+          '예금주': p.refund_holder || '-'
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "삭제데이터");
+
+        const date = new Date().toISOString().split('T')[0];
+        XLSX.writeFile(wb, `한동훈토크콘서트_삭제데이터_${date}.xlsx`);
+      } catch (error) {
+        console.error('Archived Excel download error:', error);
+        alert('엑셀 다운로드 중 오류가 발생했습니다: ' + error.message);
+      }
+    }
+
+    // 참가자 신규 등록 모달 관련 함수들
+    function showAddParticipantModal() {
+      document.getElementById('addParticipantModal').classList.remove('hidden');
+      document.getElementById('addParticipantModal').classList.add('flex');
+      // 폼 초기화
+      document.getElementById('addParticipantForm').reset();
+      document.getElementById('companionFields').classList.add('hidden');
+    }
+
+    function closeAddParticipantModal() {
+      document.getElementById('addParticipantModal').classList.add('hidden');
+      document.getElementById('addParticipantModal').classList.remove('flex');
+    }
+
+    function toggleCompanionFields() {
+      const hasCompanion = document.getElementById('addHasCompanion').checked;
+      const companionFields = document.getElementById('companionFields');
+      if (hasCompanion) {
+        companionFields.classList.remove('hidden');
+      } else {
+        companionFields.classList.add('hidden');
+      }
+    }
+
+    // 참가자 신규 등록 폼 제출 핸들러
+    async function handleAddParticipantSubmit(e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const userName = document.getElementById('addUserName').value.trim();
+      const phone = document.getElementById('addPhone').value.trim().replace(/-/g, '');
+      const ssnFirst = document.getElementById('addSsnFirst').value.trim();
+      const isPaid = document.getElementById('addIsPaid').value === '1';
+      const hasCompanion = document.getElementById('addHasCompanion').checked;
+
+      // 유효성 검사
+      if (!userName || !phone || !ssnFirst) {
+        alert('이름, 전화번호, 생년월일은 필수입니다.');
+        return false;
+      }
+
+      if (phone.length < 10 || phone.length > 11) {
+        alert('전화번호는 10~11자리여야 합니다.');
+        return false;
+      }
+
+      if (ssnFirst.length !== 6) {
+        alert('생년월일은 6자리여야 합니다. (예: 880101)');
+        return false;
+      }
+
+      const data = {
+        user_name: userName,
+        phone: phone,
+        ssn_first: ssnFirst,
+        is_paid: isPaid,
+        ticket_count: hasCompanion ? 2 : 1,
+        admin_note: document.getElementById('addAdminNote').value.trim() || '관리자가 수동 등록'
+      };
+
+      // 동반자 정보
+      if (hasCompanion) {
+        data.guest2_name = document.getElementById('addCompanionName').value.trim();
+        data.guest2_phone = document.getElementById('addCompanionPhone').value.trim().replace(/-/g, '');
+        data.guest2_ssn_first = document.getElementById('addCompanionSsn').value.trim();
+      }
+
+      // 좌석 정보
+      const seatGroup = document.getElementById('addSeatGroup').value.trim();
+      const seatRow = document.getElementById('addSeatRow').value;
+      const seatNumber = document.getElementById('addSeatNumber').value;
+
+      if (seatGroup && seatRow && seatNumber) {
+        data.seat_group = seatGroup;
+        data.seat_row = parseInt(seatRow);
+        data.seat_number = parseInt(seatNumber);
+        data.seat_full = `${seatGroup}구역 ${seatRow}열 ${seatNumber}번`;
+      }
+
+      try {
+        const response = await authFetch('/api/admin/participants/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          const errorMsg = result.details ? `${result.error} (${result.details})` : (result.error || '등록에 실패했습니다.');
+          throw new Error(errorMsg);
+        }
+
+        alert('참가자가 성공적으로 등록되었습니다.');
+        closeAddParticipantModal();
+        // 캐시 무효화 후 목록 새로고침
+        participantsCache = null;
+        participantsCacheTime = null;
+        loadParticipants(1, true); // 목록 새로고침
+      } catch (error) {
+        console.error('Add participant error:', error);
+        alert('등록 중 오류가 발생했습니다: ' + error.message);
+      }
+      return false;
+    }
+
+    // DOM 로드 후 폼 이벤트 등록
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('addParticipantForm');
+        if (form) {
+          form.addEventListener('submit', handleAddParticipantSubmit);
+        }
+      });
+    } else {
+      const form = document.getElementById('addParticipantForm');
+      if (form) {
+        form.addEventListener('submit', handleAddParticipantSubmit);
+      }
+    }
+
+    async function updateStatistics() {
       const totalCountEl = document.getElementById('totalCount');
       const paidCountEl = document.getElementById('paidCount');
       const seatedCountEl = document.getElementById('seatedCount');
@@ -1168,73 +1618,66 @@
 
       if (!totalCountEl || !paidCountEl) return;
 
-      // 전체 신청 인원수 (1인 신청은 1명, 2인 신청은 2명으로 계산)
-      let totalCount = 0;
-      let paidCount = 0;
-      let seatedCount = 0;
-      let checkedInCount = 0;
+      // 서버에서 전체 통계 가져오기
+      try {
+        const response = await authFetch('/api/admin/participants/dashboard-stats');
+        const data = await response.json();
 
-      participants.forEach(function (p) {
-        const ticketCount = p.ticket_count || 1;
-        totalCount += ticketCount;
-
-        // 입금 완료된 경우
-        if (p.is_paid) {
-          paidCount += ticketCount;
+        if (!data.success) {
+          console.error('Failed to load dashboard stats:', data.error);
+          return;
         }
 
-        // 좌석 배정된 경우
-        if (p.seat_full) {
-          seatedCount += ticketCount;
+        const stats = data.stats;
+        const totalCount = stats.totalPeople || 0;
+        const paidCount = stats.paidPeople || 0;
+        const seatedCount = stats.seatedPeople || 0;
+        const checkedInCount = stats.checkedInPeople || 0;
+
+        const maxParticipants = 1500;
+
+        // 총 신청자
+        totalCountEl.textContent = totalCount.toLocaleString();
+        const totalProgress = document.getElementById('totalProgress');
+        if (totalProgress) {
+          totalProgress.style.width = Math.min((totalCount / maxParticipants) * 100, 100) + '%';
         }
 
-        // 체크인 완료된 경우
-        if (p.is_checked_in) {
-          checkedInCount += ticketCount;
+        // 입금 완료
+        paidCountEl.textContent = paidCount.toLocaleString();
+        const paidProgress = document.getElementById('paidProgress');
+        const paidPercent = document.getElementById('paidPercent');
+        if (paidProgress && totalCount > 0) {
+          const paidPct = (paidCount / totalCount) * 100;
+          paidProgress.style.width = paidPct + '%';
+          if (paidPercent) paidPercent.textContent = paidPct.toFixed(1) + '%';
         }
-      });
 
-      const maxParticipants = 1500;
-
-      // 총 신청자
-      totalCountEl.textContent = totalCount.toLocaleString();
-      const totalProgress = document.getElementById('totalProgress');
-      if (totalProgress) {
-        totalProgress.style.width = Math.min((totalCount / maxParticipants) * 100, 100) + '%';
-      }
-
-      // 입금 완료
-      paidCountEl.textContent = paidCount.toLocaleString();
-      const paidProgress = document.getElementById('paidProgress');
-      const paidPercent = document.getElementById('paidPercent');
-      if (paidProgress && totalCount > 0) {
-        const paidPct = (paidCount / totalCount) * 100;
-        paidProgress.style.width = paidPct + '%';
-        if (paidPercent) paidPercent.textContent = paidPct.toFixed(1) + '%';
-      }
-
-      // 좌석 배정
-      if (seatedCountEl) {
-        seatedCountEl.textContent = seatedCount.toLocaleString();
-        const seatedProgress = document.getElementById('seatedProgress');
-        const seatedPercent = document.getElementById('seatedPercent');
-        if (seatedProgress && paidCount > 0) {
-          const seatedPct = (seatedCount / paidCount) * 100;
-          seatedProgress.style.width = seatedPct + '%';
-          if (seatedPercent) seatedPercent.textContent = seatedPct.toFixed(1) + '%';
+        // 좌석 배정
+        if (seatedCountEl) {
+          seatedCountEl.textContent = seatedCount.toLocaleString();
+          const seatedProgress = document.getElementById('seatedProgress');
+          const seatedPercent = document.getElementById('seatedPercent');
+          if (seatedProgress && paidCount > 0) {
+            const seatedPct = (seatedCount / paidCount) * 100;
+            seatedProgress.style.width = seatedPct + '%';
+            if (seatedPercent) seatedPercent.textContent = seatedPct.toFixed(1) + '%';
+          }
         }
-      }
 
-      // 체크인 완료
-      if (checkedInCountEl) {
-        checkedInCountEl.textContent = checkedInCount.toLocaleString();
-        const checkedInProgress = document.getElementById('checkedInProgress');
-        const checkedInPercent = document.getElementById('checkedInPercent');
-        if (checkedInProgress && paidCount > 0) {
-          const checkedInPct = (checkedInCount / paidCount) * 100;
-          checkedInProgress.style.width = checkedInPct + '%';
-          if (checkedInPercent) checkedInPercent.textContent = checkedInPct.toFixed(1) + '%';
+        // 체크인 완료
+        if (checkedInCountEl) {
+          checkedInCountEl.textContent = checkedInCount.toLocaleString();
+          const checkedInProgress = document.getElementById('checkedInProgress');
+          const checkedInPercent = document.getElementById('checkedInPercent');
+          if (checkedInProgress && paidCount > 0) {
+            const checkedInPct = (checkedInCount / paidCount) * 100;
+            checkedInProgress.style.width = checkedInPct + '%';
+            if (checkedInPercent) checkedInPercent.textContent = checkedInPct.toFixed(1) + '%';
+          }
         }
+      } catch (err) {
+        console.error('Error loading dashboard stats:', err);
       }
     }
 
@@ -1298,6 +1741,7 @@
             display_phone: p.guest2_phone || p.phone,
             display_ssn: p.guest2_ssn_first || p.ssn_first || '-',
             original_id: p.id,
+            original_name: p.user_name, // 주 신청자 이름 (동반자 취소 시 표시용)
             is_guest2_pending: !p.guest2_name, // 아직 입력 안됨
             representative_name: p.user_name, // 대리신청자 이름 (첫 번째 신청자)
             display_seat: p.seat_full_2 || '-', // 두 번째 좌석
@@ -1317,17 +1761,21 @@
           <td>${formatPhone(p.display_phone)}</td>
           <td>${p.display_ssn || '-'}</td>
           <td>
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                ${p.is_paid ? 'checked' : ''}
-                onchange="togglePayment(${p.original_id}, ${p.is_paid})"
-                style="width: 1.25rem; height: 1.25rem;"
-              />
-              <span class="${p.is_paid ? 'text-red-600 font-medium' : 'text-gray-500'}">
-                ${p.is_paid ? '입금 완료' : '입금 대기'}
-              </span>
-            </label>
+            ${p.is_cancelled ? `
+              <span class="text-gray-400 line-through">취소됨</span>
+            ` : `
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  ${p.is_paid ? 'checked' : ''}
+                  onchange="togglePayment(${p.original_id}, ${p.is_paid})"
+                  style="width: 1.25rem; height: 1.25rem;"
+                />
+                <span class="${p.is_paid ? 'text-red-600 font-medium' : 'text-gray-500'}">
+                  ${p.is_paid ? '입금 완료' : '입금 대기'}
+                </span>
+              </label>
+            `}
           </td>
           <td>
             <div class="flex items-center gap-1">
@@ -1371,9 +1819,19 @@
           <td class="text-sm text-gray-600">${formatDateTime(p.created_at)}</td>
           <td>
             <div class="flex gap-2">
+              <button
+                type="button"
+                onclick="openEditModal(${p.original_id}, ${p.is_guest ? 'true' : 'false'})"
+                class="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-colors"
+                title="정보 수정"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </button>
               ${p.seat_full && !p.is_guest ? `
-                <button 
-                  onclick="resetParticipantSeat(${p.original_id}, '${p.display_name}')" 
+                <button
+                  onclick="resetParticipantSeat(${p.original_id}, '${p.display_name}')"
                   class="p-2 text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded transition-colors"
                   title="좌석 초기화"
                 >
@@ -1382,10 +1840,21 @@
                   </svg>
                 </button>
               ` : ''}
-              <button 
-                onclick="deleteParticipant(${p.original_id}, '${p.display_name}')" 
+              ${p.is_guest ? `
+                <button
+                  onclick="cancelGuest2(${p.original_id}, '${p.original_name}', '${p.display_name}')"
+                  class="p-2 text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded transition-colors"
+                  title="동반자 취소"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6" />
+                  </svg>
+                </button>
+              ` : ''}
+              <button
+                onclick="deleteParticipant(${p.original_id}, '${p.display_name}')"
                 class="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
-                title="삭제"
+                title="${p.is_guest ? '신청 전체 삭제 (주신청자 포함)' : '삭제'}"
                 ${p.is_guest ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}
               >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1509,26 +1978,24 @@
     }
 
 
-    // 좌석 배정 공통 로직
+    // 좌석 배정 공통 로직 (새 형식: 그룹-번호)
     function getSeatAssignmentParams() {
-      const groupType = document.getElementById('groupType').value || 'korean';
-      const groupCount = parseInt(document.getElementById('groupCount').value) || 14;
-      const rowsPerGroup = parseInt(document.getElementById('rowsPerGroup').value);
-      const seatsPerRow = parseInt(document.getElementById('seatsPerRow').value);
+      const groupType = document.getElementById('groupType').value || 'alphabet';
+      const groupCount = parseInt(document.getElementById('groupCount').value) || 16;
 
-      if (!groupCount || !rowsPerGroup || !seatsPerRow) {
+      if (!groupCount) {
         return null;
       }
 
       const groups = getGroupNames(groupType, groupCount);
 
-      return { groupType, groupCount, rowsPerGroup, seatsPerRow, groups };
+      return { groupType, groupCount, groups };
     }
 
     async function assignSeatsCommon(endpoint, confirmMessage) {
       const params = getSeatAssignmentParams();
       if (!params) {
-        showError('모든 필드를 입력해주세요.');
+        showError('그룹 개수를 입력해주세요.');
         return;
       }
 
@@ -1541,15 +2008,13 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            groups: params.groups,
-            rowsPerGroup: params.rowsPerGroup,
-            seatsPerRow: params.seatsPerRow
+            groups: params.groups
           }),
         });
 
         const data = await response.json();
         if (data.success) {
-          showSuccess(data.message);
+          showSuccess(data.message + (data.total_available ? ` (총 ${data.total_available}석 중 ${data.assigned_count}석 배정)` : ''));
           loadParticipants(currentPage); // 현재 페이지 새로고침
         } else {
           showError(data.error || '좌석 배정 중 오류가 발생했습니다.');
@@ -1563,11 +2028,11 @@
     async function randomAssignSeats() {
       const params = getSeatAssignmentParams();
       if (!params) {
-        showError('모든 필드를 입력해주세요.');
+        showError('그룹 개수를 입력해주세요.');
         return;
       }
 
-      const confirmMessage = `입금 완료된 참가자들에게 랜덤으로 좌석을 배정하시겠습니까?\n\n그룹: ${params.groups.join(', ')}\n그룹당 열 수: ${params.rowsPerGroup}\n열당 좌석 수: ${params.seatsPerRow}`;
+      const confirmMessage = `입금 완료된 참가자들에게 랜덤으로 좌석을 배정하시겠습니까?\n\n그룹: ${params.groups.join(', ')}`;
       await assignSeatsCommon('/api/admin/participants/random-seats', confirmMessage);
     }
 
@@ -1621,6 +2086,33 @@
       }
     }
 
+    // 동반자만 취소 (2인 신청 -> 1인 신청)
+    async function cancelGuest2(participantId, mainName, guestName) {
+      const confirmMessage = `"${mainName}"님의 동반자 "${guestName}"를 취소하시겠습니까?\n\n• 2인 신청 → 1인 신청으로 변경됩니다\n• 동반자의 좌석도 함께 해제됩니다\n• 주 신청자는 유지됩니다`;
+
+      if (!confirm(confirmMessage)) return;
+
+      try {
+        const response = await authFetch(`/api/admin/participants/${participantId}/guest2`, {
+          method: 'DELETE',
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          alert(data.message || '동반자가 취소되었습니다.');
+          // 캐시 무효화 후 새로고침
+          participantsCache = null;
+          participantsCacheTime = null;
+          loadParticipants(currentPage, true);
+        } else {
+          alert(data.error || '동반자 취소 중 오류가 발생했습니다.');
+        }
+      } catch (err) {
+        console.error('Cancel guest2 error:', err);
+        alert('동반자 취소 중 오류가 발생했습니다. 다시 시도해주세요.');
+      }
+    }
+
     async function deleteParticipant(id, userName) {
       const confirmMessage = userName
         ? `"${userName}" 참가자 정보를 정말 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`
@@ -1649,11 +2141,11 @@
     async function ageBasedAssignSeats() {
       const params = getSeatAssignmentParams();
       if (!params) {
-        showError('모든 필드를 입력해주세요.');
+        showError('그룹 개수를 입력해주세요.');
         return;
       }
 
-      const confirmMessage = `입금 완료된 참가자들에게 연령대별로 좌석을 배정하시겠습니까?\n\n00년대생 → 90년대생 → 80년대생 순으로 앞좌석에 배정됩니다.\n\n그룹: ${params.groups.join(', ')}\n그룹당 열 수: ${params.rowsPerGroup}\n열당 좌석 수: ${params.seatsPerRow}`;
+      const confirmMessage = `입금 완료된 참가자들에게 연령대별로 좌석을 배정하시겠습니까?\n\n00년대생 → 90년대생 → 80년대생 순으로 앞좌석(A그룹부터)에 배정됩니다.\n\n그룹: ${params.groups.join(', ')}`;
       await assignSeatsCommon('/api/admin/participants/age-based-seats', confirmMessage);
     }
 
@@ -1713,8 +2205,8 @@
 
     // 탭 전환 함수
     function resetAllTabStyles() {
-      const tabs = ['participantsTab', 'paymentTab', 'inquiriesTab', 'checkinTab', 'storiesTab'];
-      const sections = ['participantsSection', 'paymentSection', 'inquiriesSection', 'checkinSection', 'storiesSection'];
+      const tabs = ['participantsTab', 'paymentTab', 'inquiriesTab', 'checkinTab', 'storiesTab', 'refundsTab'];
+      const sections = ['participantsSection', 'paymentSection', 'inquiriesSection', 'checkinSection', 'storiesSection', 'refundsSection'];
       tabs.forEach(tab => {
         const el = document.getElementById(tab);
         if (el) {
@@ -1735,6 +2227,8 @@
       document.getElementById('participantsTab').classList.remove('text-gray-600');
       // 탭 전환 시 항상 최신 데이터 로드 (캐시 무시)
       loadParticipants(1, true);
+      // 개인정보 동의 현황 로드
+      loadPrivacyStats();
     }
 
     function showPaymentTab() {
@@ -1779,9 +2273,213 @@
       loadStories();
     }
 
-    // 문의 목록 로드
-    let inquiries = [];
-    let filteredInquiries = [];
+    function showRefundsTab() {
+      resetAllTabStyles();
+      document.getElementById('refundsSection').classList.remove('hidden');
+      document.getElementById('refundsTab').classList.add('text-red-600', 'border-b-2', 'border-red-600');
+      document.getElementById('refundsTab').classList.remove('text-gray-600');
+      loadRefunds();
+    }
+
+    // 환불/취소 관련 함수
+    async function loadRefunds() {
+      const loadingEl = document.getElementById('refundLoading');
+      const tableEl = document.getElementById('refundsTable');
+      const emptyEl = document.getElementById('refundEmptyMessage');
+
+      loadingEl.classList.remove('hidden');
+      tableEl.classList.add('hidden');
+      emptyEl.classList.add('hidden');
+
+      try {
+        const response = await authFetch('/api/participants/refunds');
+        const data = await response.json();
+
+        if (data.success) {
+          refundsList = data.data || [];
+          filterRefunds();
+          updateRefundStats();
+          updatePendingRefundsBadge();
+        } else {
+          throw new Error(data.error || '환불 목록을 불러오는데 실패했습니다.');
+        }
+      } catch (err) {
+        console.error('Load refunds error:', err);
+        alert(err.message || '환불 목록을 불러오는데 실패했습니다.');
+      } finally {
+        loadingEl.classList.add('hidden');
+      }
+    }
+
+    function updateRefundStats() {
+      const pending = refundsList.filter(r => r.refund_status === 'pending').length;
+      const completed = refundsList.filter(r => r.refund_status === 'completed').length;
+      // 취소된 모든 사람 (환불 신청 여부 무관)
+      const cancelled = refundsList.filter(r => r.is_cancelled === 1).length;
+
+      document.getElementById('pendingRefundCount').textContent = pending;
+      document.getElementById('completedRefundCount').textContent = completed;
+      document.getElementById('cancelledCount').textContent = cancelled;
+    }
+
+    function updatePendingRefundsBadge() {
+      const pending = refundsList.filter(r => r.refund_status === 'pending').length;
+      const badge = document.getElementById('pendingRefundsBadge');
+      if (pending > 0) {
+        badge.textContent = pending;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+
+    function filterRefunds() {
+      const filter = document.getElementById('refundFilter').value;
+
+      if (filter === 'all') {
+        filteredRefundsList = refundsList;
+      } else if (filter === 'pending') {
+        filteredRefundsList = refundsList.filter(r => r.refund_status === 'pending');
+      } else if (filter === 'completed') {
+        filteredRefundsList = refundsList.filter(r => r.refund_status === 'completed');
+      } else if (filter === 'cancelled') {
+        // 취소된 모든 사람 표시 (환불 신청 여부 무관)
+        filteredRefundsList = refundsList.filter(r => r.is_cancelled === 1);
+      }
+
+      renderRefundsTable();
+    }
+
+    function renderRefundsTable() {
+      const tableEl = document.getElementById('refundsTable');
+      const bodyEl = document.getElementById('refundsBody');
+      const emptyEl = document.getElementById('refundEmptyMessage');
+      const countEl = document.getElementById('refundCountText');
+
+      if (filteredRefundsList.length === 0) {
+        tableEl.classList.add('hidden');
+        emptyEl.classList.remove('hidden');
+        countEl.textContent = '';
+        return;
+      }
+
+      tableEl.classList.remove('hidden');
+      emptyEl.classList.add('hidden');
+      countEl.textContent = `총 ${filteredRefundsList.length}건`;
+
+      bodyEl.innerHTML = filteredRefundsList.map(r => {
+        let statusBadge = '';
+        let actionButtons = '';
+
+        if (r.refund_status === 'pending') {
+          statusBadge = '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">환불 대기</span>';
+          actionButtons = `<button onclick="completeRefund(${r.id})" class="btn-primary-glass px-3 py-1 text-xs">환불 완료</button>`;
+        } else if (r.refund_status === 'completed') {
+          statusBadge = '<span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">환불 완료</span>';
+          actionButtons = `<span class="text-xs text-gray-500">${formatDateTime(r.refund_completed_at)}</span>`;
+        } else if (r.is_cancelled === 1) {
+          statusBadge = '<span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">취소됨</span>';
+          actionButtons = '-';
+        }
+
+        const cancelReason = r.cancel_reason || '-';
+        const refundReason = r.refund_reason || '';
+        const displayReason = refundReason || cancelReason;
+
+        return `
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-3">${statusBadge}</td>
+            <td class="px-4 py-3 font-medium">${r.user_name}</td>
+            <td class="px-4 py-3 text-sm text-gray-600">${r.phone}</td>
+            <td class="px-4 py-3 font-medium">${r.refund_amount ? r.refund_amount.toLocaleString() + '원' : '-'}</td>
+            <td class="px-4 py-3 text-sm">${r.refund_bank || '-'} ${r.refund_account || ''}</td>
+            <td class="px-4 py-3 text-sm">${r.refund_holder || '-'}</td>
+            <td class="px-4 py-3 text-sm text-gray-600 max-w-xs truncate" title="${displayReason}">${displayReason}</td>
+            <td class="px-4 py-3 text-sm text-gray-500">${formatDateTime(r.cancelled_at || r.created_at)}</td>
+            <td class="px-4 py-3 text-center">${actionButtons}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function completeRefund(participantId) {
+      if (!confirm('환불 완료 처리하시겠습니까?')) {
+        return;
+      }
+
+      try {
+        const response = await authFetch(`/api/participants/${participantId}/refund-complete`, {
+          method: 'PUT'
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          alert('환불 완료 처리되었습니다.');
+          loadRefunds();
+        } else {
+          throw new Error(data.error || '환불 완료 처리에 실패했습니다.');
+        }
+      } catch (err) {
+        console.error('Complete refund error:', err);
+        alert(err.message || '환불 완료 처리에 실패했습니다.');
+      }
+    }
+
+    // ========== 문의 관리 ==========
+
+    // 문의 엑셀 다운로드
+    function exportInquiriesToExcel() {
+      if (inquiries.length === 0) {
+        alert('다운로드할 문의 내역이 없습니다.');
+        return;
+      }
+
+      // BOM for UTF-8
+      const BOM = '\uFEFF';
+
+      // CSV 헤더
+      const headers = ['번호', '이름', '전화번호', '문의내용', '문의일시', '답변상태', '답변내용', '답변일시'];
+
+      // CSV 데이터 생성
+      const rows = inquiries.map((inq, index) => {
+        const escapeCsv = (str) => {
+          if (!str) return '';
+          const escaped = String(str).replace(/"/g, '""');
+          return `"${escaped}"`;
+        };
+
+        return [
+          index + 1,
+          escapeCsv(inq.user_name),
+          escapeCsv(inq.phone),
+          escapeCsv(inq.content),
+          escapeCsv(inq.created_at),
+          inq.is_answered ? '답변완료' : '미답변',
+          escapeCsv(inq.answer || ''),
+          escapeCsv(inq.answered_at || '')
+        ].join(',');
+      });
+
+      const csvContent = BOM + headers.join(',') + '\n' + rows.join('\n');
+
+      // 파일 다운로드
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+
+      const now = new Date();
+      const dateStr = now.toISOString().split('T')[0].replace(/-/g, '');
+      const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '').substring(0, 4);
+
+      link.setAttribute('href', url);
+      link.setAttribute('download', `문의내역_${dateStr}_${timeStr}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      alert(`총 ${inquiries.length}건의 문의 내역이 다운로드되었습니다.`);
+    }
 
     async function loadInquiries() {
       const loading = document.getElementById('inquiryLoading');
@@ -1900,9 +2598,41 @@
 
           ${inq.is_answered ? `
             <div class="mt-4 pt-4 border-t border-gray-200">
-              <p class="text-sm font-medium text-gray-700 mb-2">답변</p>
-              <p class="text-gray-900 whitespace-pre-wrap">${inq.answer}</p>
-              <p class="text-xs text-gray-400 mt-2">답변일시: ${formatDateTime(inq.answered_at)}</p>
+              <div class="flex justify-between items-start mb-2">
+                <p class="text-sm font-medium text-gray-700">답변</p>
+                <button
+                  onclick="toggleEditAnswer(${inq.id})"
+                  class="text-xs text-blue-600 hover:text-blue-700"
+                  id="editAnswerBtn-${inq.id}"
+                >
+                  수정
+                </button>
+              </div>
+              <div id="answerDisplay-${inq.id}">
+                <p class="text-gray-900 whitespace-pre-wrap">${inq.answer}</p>
+                <p class="text-xs text-gray-400 mt-2">답변일시: ${formatDateTime(inq.answered_at)}</p>
+              </div>
+              <div id="answerEdit-${inq.id}" class="hidden">
+                <textarea
+                  id="editAnswer-${inq.id}"
+                  class="input-glass w-full"
+                  rows="3"
+                >${inq.answer}</textarea>
+                <div class="flex gap-2 mt-2">
+                  <button
+                    onclick="cancelEditAnswer(${inq.id})"
+                    class="btn-secondary-glass"
+                  >
+                    취소
+                  </button>
+                  <button
+                    onclick="updateAnswer(${inq.id})"
+                    class="btn-primary-glass"
+                  >
+                    저장
+                  </button>
+                </div>
+              </div>
             </div>
           ` : `
             <div class="mt-4 pt-4 border-t border-gray-200">
@@ -1962,6 +2692,62 @@
       }
     }
 
+    // 답변 수정 토글
+    function toggleEditAnswer(id) {
+      const displayDiv = document.getElementById(`answerDisplay-${id}`);
+      const editDiv = document.getElementById(`answerEdit-${id}`);
+      const editBtn = document.getElementById(`editAnswerBtn-${id}`);
+
+      if (editDiv.classList.contains('hidden')) {
+        displayDiv.classList.add('hidden');
+        editDiv.classList.remove('hidden');
+        editBtn.textContent = '취소';
+      } else {
+        displayDiv.classList.remove('hidden');
+        editDiv.classList.add('hidden');
+        editBtn.textContent = '수정';
+      }
+    }
+
+    // 답변 수정 취소
+    function cancelEditAnswer(id) {
+      const displayDiv = document.getElementById(`answerDisplay-${id}`);
+      const editDiv = document.getElementById(`answerEdit-${id}`);
+      const editBtn = document.getElementById(`editAnswerBtn-${id}`);
+
+      displayDiv.classList.remove('hidden');
+      editDiv.classList.add('hidden');
+      editBtn.textContent = '수정';
+    }
+
+    // 답변 수정 저장
+    async function updateAnswer(id) {
+      const editInput = document.getElementById(`editAnswer-${id}`);
+      if (!editInput || !editInput.value.trim()) {
+        alert('답변 내용을 입력해주세요.');
+        return;
+      }
+
+      try {
+        const response = await authFetch(`/api/admin/inquiries/${id}/answer`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ answer: editInput.value.trim() }),
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          alert('답변이 수정되었습니다.');
+          loadInquiries();
+        } else {
+          alert(data.error || '답변 수정 중 오류가 발생했습니다.');
+        }
+      } catch (err) {
+        console.error('Update answer error:', err);
+        alert('답변 수정 중 오류가 발생했습니다.');
+      }
+    }
+
     async function deleteInquiry(id, userName) {
       if (!confirm(`"${userName}"님의 문의를 정말 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`)) {
         return;
@@ -1986,15 +2772,13 @@
     }
 
     // ========== 사연 관리 ==========
-    let stories = [];
-    let filteredStories = [];
 
     async function loadStories() {
       const loading = document.getElementById('storyLoading');
       if (loading) loading.classList.remove('hidden');
 
       try {
-        const response = await authFetch('/api/stories?limit=100');
+        const response = await authFetch('/api/admin/stories?limit=100');
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -2117,7 +2901,7 @@
 
     async function markStoryAsRead(id) {
       try {
-        const response = await authFetch(`/api/stories/${id}/read`, {
+        const response = await authFetch(`/api/admin/stories/${id}/read`, {
           method: 'PUT',
         });
 
@@ -2143,7 +2927,7 @@
       }
 
       try {
-        const response = await authFetch(`/api/stories/${id}`, {
+        const response = await authFetch(`/api/admin/stories/${id}`, {
           method: 'DELETE',
         });
 
@@ -2203,14 +2987,14 @@
       }
     }
 
-    // localStorage에 입금 데이터 저장 (debounce 적용)
+    // 서버에 입금 데이터 저장 (debounce 적용)
     function savePaymentDataToStorage() {
       // 이전 타이머 취소
       if (savePaymentDataTimeout) {
         clearTimeout(savePaymentDataTimeout);
       }
 
-      // 500ms 후 저장 (debounce)
+      // 1초 후 저장 (debounce)
       savePaymentDataTimeout = setTimeout(function () {
         try {
           // matchedParticipant는 객체이므로 ID만 저장
@@ -2226,78 +3010,96 @@
               matchedName: item.matchedName,
               matchedPhoneLast4: item.matchedPhoneLast4,
               matchedParticipantId: item.matchedParticipant ? item.matchedParticipant.id : null,
-              expectedParticipantIds: item.expectedParticipants ? item.expectedParticipants.map(function (p) { return p.id; }) : [],
               approved: item.approved
             };
           });
-          localStorage.setItem('paymentDataList', JSON.stringify(dataToSave));
+
+          // 서버에 저장
+          authFetch('/api/admin/participants/payment-records/sync', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ records: dataToSave })
+          })
+            .then(function (response) { return response.json(); })
+            .then(function (data) {
+              if (data.success) {
+                console.log('[Payment] 서버 저장 완료:', dataToSave.length, '개');
+              } else {
+                console.error('[Payment] 서버 저장 실패:', data.error);
+              }
+            })
+            .catch(function (err) {
+              console.error('[Payment] 서버 저장 오류:', err);
+            });
         } catch (err) {
           console.error('Error saving payment data to storage:', err);
         }
-      }, 500);
+      }, 1000);
     }
 
-    // localStorage에서 입금 데이터 복원
+    // 서버에서 입금 데이터 불러오기
     function loadPaymentDataFromStorage() {
-      try {
-        const saved = localStorage.getItem('paymentDataList');
-        if (!saved) return false;
+      // 먼저 참가자 목록 로드
+      authFetch('/api/admin/participants?limit=100000')
+        .then(function (response) { return response.json(); })
+        .then(function (data) {
+          if (data.success) {
+            allParticipants = data.participants || [];
+            console.log('[Payment] 참가자 목록 로드:', allParticipants.length, '명');
+          }
 
-        const savedData = JSON.parse(saved);
-        if (!Array.isArray(savedData) || savedData.length === 0) return false;
+          // 서버에서 입금 내역 불러오기
+          return authFetch('/api/admin/participants/payment-records');
+        })
+        .then(function (response) { return response.json(); })
+        .then(function (data) {
+          if (data.success && data.records && data.records.length > 0) {
+            console.log('[Payment] 서버에서 불러온 입금 내역:', data.records.length, '개');
 
-        // 참가자 목록 로드 (매칭을 위해 필요)
-        authFetch('/api/admin/participants?limit=9999') // 모든 참가자 로드
-          .then(function (response) { return response.json(); })
-          .then(function (data) {
-            if (data.success) {
-              allParticipants = data.participants || [];
+            // 서버 데이터를 paymentDataList로 변환
+            paymentDataList = data.records.map(function (record) {
+              let matchedParticipant = null;
+              if (record.matched_participant_id) {
+                matchedParticipant = allParticipants.find(function (p) {
+                  return p.id === record.matched_participant_id;
+                });
+              }
 
-              // 저장된 데이터 복원 (matchedParticipant와 expectedParticipants는 ID로 복원)
-              paymentDataList = savedData.map(function (item) {
-                let matchedParticipant = null;
-                if (item.matchedParticipantId) {
-                  matchedParticipant = allParticipants.find(function (p) {
-                    return p.id === item.matchedParticipantId;
-                  });
-                }
+              // 이름으로 예상되는 신청자 찾기
+              let expectedParticipants = [];
+              if (record.matched_name) {
+                expectedParticipants = allParticipants.filter(function (p) {
+                  return p.user_name.trim() === record.matched_name.trim();
+                });
+              }
 
-                let expectedParticipants = [];
-                if (item.expectedParticipantIds && item.expectedParticipantIds.length > 0) {
-                  expectedParticipants = allParticipants.filter(function (p) {
-                    return item.expectedParticipantIds.indexOf(p.id) !== -1;
-                  });
-                }
+              return {
+                date: record.date || '',
+                type: record.type || '',
+                amount: record.amount || '',
+                balance: record.balance || '',
+                transactionType: record.transaction_type || '',
+                content: record.content || '',
+                memo: record.memo || '',
+                matchedName: record.matched_name || '',
+                matchedPhoneLast4: record.matched_phone_last4 || '',
+                matchedParticipant: matchedParticipant,
+                expectedParticipants: expectedParticipants,
+                approved: record.approved === 1
+              };
+            });
 
-                return {
-                  date: item.date || '',
-                  type: item.type || '',
-                  amount: item.amount || '',
-                  balance: item.balance || '',
-                  transactionType: item.transactionType || '',
-                  content: item.content || '',
-                  memo: item.memo || '',
-                  matchedName: item.matchedName || '',
-                  matchedPhoneLast4: item.matchedPhoneLast4 || '',
-                  matchedParticipant: matchedParticipant,
-                  expectedParticipants: expectedParticipants,
-                  approved: item.approved || false
-                };
-              });
+            // 테이블에 복원된 데이터 표시
+            restorePaymentTableFromData();
+          } else {
+            console.log('[Payment] 서버에 저장된 입금 내역 없음');
+          }
+        })
+        .catch(function (err) {
+          console.error('[Payment] 서버에서 입금 내역 불러오기 오류:', err);
+        });
 
-              // 테이블에 복원된 데이터 표시
-              restorePaymentTableFromData();
-            }
-          })
-          .catch(function (err) {
-            console.error('Error loading participants for payment data:', err);
-          });
-
-        return true;
-      } catch (err) {
-        console.error('Error loading payment data from storage:', err);
-        return false;
-      }
+      return true;
     }
 
     // 저장된 데이터를 테이블에 복원
@@ -2351,29 +3153,24 @@
           ) : '<span class="text-gray-400 text-sm">-</span>'}
           </td>
           <td class="border border-gray-300 px-2 py-1">
-            ${item.expectedParticipants && item.expectedParticipants.length > 1 ? (() => {
-            // expectedParticipants가 2명 이상일 때만 동명이인 목록 표시
-            // 이미 매칭된 참가자를 제외한 동명이인 목록
-            const unapprovedDuplicates = item.expectedParticipants.filter(function (p) {
-              if (item.matchedParticipant && item.matchedParticipant.id === p.id) {
-                return false;
-              }
-              return true;
-            });
-
-            if (unapprovedDuplicates.length > 0) {
-              return '<div class="text-sm space-y-2">' + unapprovedDuplicates.map(function (p, pIndex) {
+            ${(() => {
+            // matchedParticipant가 정확히 매칭되었으면 비고란 비움
+            // matchedParticipant가 없고 동명이인이 여러 명일 때만 비고란에 동명이인 목록 표시
+            if (item.matchedParticipant) {
+              return '<span class="text-gray-400 text-sm">-</span>';
+            } else if (item.expectedParticipants && item.expectedParticipants.length > 1) {
+              return '<div class="text-sm space-y-2">' + item.expectedParticipants.map(function (p, pIndex) {
                 return '<div class="flex items-center justify-between gap-2 p-2 bg-gray-50 rounded border border-gray-200"><span class="text-gray-700">' + p.user_name + ' (' + formatPhone(p.phone) + ')</span><button onclick="approveDuplicateParticipant(' + index + ', ' + p.id + ')" style="background-color: #22c55e; color: white; padding: 0.25rem 0.75rem; border-radius: 0.25rem; font-weight: bold; font-size: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s; white-space: nowrap;" onmouseover="this.style.backgroundColor=\'#16a34a\'" onmouseout="this.style.backgroundColor=\'#22c55e\'">승인</button></div>';
               }).join('') + '</div>';
             } else {
               return '<span class="text-gray-400 text-sm">-</span>';
             }
-          })() : '<span class="text-gray-400 text-sm">-</span>'}
+          })()}
           </td>
           <td class="border border-gray-300 px-2 py-1">
             ${item.approved ? '<span class="text-green-600 font-semibold text-sm">승인됨</span>' : '<span class="text-gray-500 text-sm">대기중</span>'}
           </td>
-          <td class="border border-gray-300 px-2 py-2">
+          <td class="border border-gray-300 px-2 py-2 sticky right-0 bg-white z-10">
             <div class="flex gap-2">
               ${!item.approved ? `
                 <button onclick="approvePaymentFromTable(${index})" style="background-color: #22c55e; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: bold; font-size: 0.875rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#16a34a'" onmouseout="this.style.backgroundColor='#22c55e'">
@@ -2392,10 +3189,72 @@
       });
     }
 
+    // 더블클릭 방지용 변수
+    let isSavingPayment = false;
+    let isResettingPayment = false;
+
+    // 더블클릭 방지 래퍼 - 저장하기
+    async function savePaymentDataWithLock() {
+      if (isSavingPayment) {
+        console.log('[savePaymentData] 이미 저장 중...');
+        return;
+      }
+      isSavingPayment = true;
+      const btn = document.getElementById('savePaymentBtn');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = '⏳ 저장 중...';
+      }
+      try {
+        await savePaymentData();
+      } finally {
+        isSavingPayment = false;
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = '💾 저장하기';
+        }
+      }
+    }
+
+    // 더블클릭 방지 래퍼 - 초기화
+    async function resetPaymentTableWithLock() {
+      if (isResettingPayment) {
+        console.log('[resetPaymentTable] 이미 초기화 중...');
+        return;
+      }
+      isResettingPayment = true;
+      const btn = document.getElementById('resetPaymentBtn');
+      if (btn) {
+        btn.disabled = true;
+      }
+      try {
+        await resetPaymentTable();
+      } finally {
+        isResettingPayment = false;
+        if (btn) {
+          btn.disabled = false;
+        }
+      }
+    }
+
     // 입금 데이터 저장하기
     async function savePaymentData() {
+      console.log('[savePaymentData] 함수 시작');
+
+      // 자동 저장 타이머 취소 (중복 저장 방지)
+      if (savePaymentDataTimeout) {
+        clearTimeout(savePaymentDataTimeout);
+        savePaymentDataTimeout = null;
+        console.log('[savePaymentData] 자동 저장 타이머 취소됨');
+      }
+
       const tbody = document.getElementById('paymentTableBody');
-      if (!tbody) return;
+      if (!tbody) {
+        console.log('[savePaymentData] tbody 없음');
+        return;
+      }
+
+      console.log('[savePaymentData] tbody 행 개수:', tbody.querySelectorAll('tr').length);
 
       // 참가자 목록이 없으면 먼저 로드
       if (allParticipants.length === 0) {
@@ -2563,6 +3422,8 @@
         });
       });
 
+      console.log('[savePaymentData] 업데이트된 리스트 개수:', updatedList.length);
+
       if (updatedList.length === 0) {
         alert('저장할 데이터가 없습니다.');
         return;
@@ -2570,14 +3431,56 @@
 
       // paymentDataList 업데이트
       paymentDataList = updatedList;
-
-      // localStorage에 저장
-      savePaymentDataToStorage();
+      console.log('[savePaymentData] paymentDataList 업데이트 완료:', paymentDataList.length);
 
       // 테이블 업데이트
       updatePaymentTableWithMatches();
 
-      alert('입금 내역이 저장되었습니다.');
+      // 서버에 즉시 저장 (debounce 없이)
+      try {
+        const dataToSave = paymentDataList.map(function (item) {
+          return {
+            date: item.date,
+            type: item.type,
+            amount: item.amount,
+            balance: item.balance,
+            transactionType: item.transactionType,
+            content: item.content,
+            memo: item.memo,
+            matchedName: item.matchedName,
+            matchedPhoneLast4: item.matchedPhoneLast4,
+            matchedParticipantId: item.matchedParticipant ? item.matchedParticipant.id : null,
+            approved: item.approved
+          };
+        });
+
+        console.log('[savePaymentData] API 호출 시작, 데이터 개수:', dataToSave.length);
+        const response = await authFetch('/api/admin/participants/payment-records/sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ records: dataToSave })
+        });
+        console.log('[savePaymentData] API 응답 상태:', response.status);
+        const responseText = await response.text();
+        console.log('[savePaymentData] API 응답 본문:', responseText);
+
+        let result;
+        try {
+          result = JSON.parse(responseText);
+        } catch (parseErr) {
+          alert('서버 응답 파싱 오류: ' + responseText.substring(0, 200));
+          return;
+        }
+
+        if (result.success) {
+          alert('입금 내역이 서버에 저장되었습니다. (' + dataToSave.length + '개)');
+        } else {
+          alert('저장 실패: ' + (result.error || '알 수 없는 오류'));
+        }
+      } catch (err) {
+        console.error('Error saving payment data:', err);
+        alert('저장 중 오류가 발생했습니다: ' + (err.message || String(err)));
+      }
     }
 
     // 테이블에서 데이터 읽기 및 매칭
@@ -2585,25 +3488,21 @@
       const tbody = document.getElementById('paymentTableBody');
       if (!tbody) return;
 
-      // 참가자 목록 로드
-      try {
-        const response = await authFetch('/api/admin/participants');
-        const data = await response.json();
-        if (data.success) {
-          allParticipants = data.participants || [];
-        }
-      } catch (err) {
-        console.error('Error loading participants:', err);
-        alert('참가자 목록을 불러오는 중 오류가 발생했습니다.');
-        return;
-      }
-
       const rows = tbody.querySelectorAll('tr');
-      paymentDataList = [];
+      const tempDataList = [];
 
-      rows.forEach(function (row) {
+      // 먼저 테이블 데이터를 임시 배열에 저장 (API 호출 전)
+      // 모든 행을 순서대로 처리 (빈 행도 포함하여 인덱스 유지)
+      rows.forEach(function (row, rowIndex) {
         const inputs = row.querySelectorAll('input[type="text"]');
-        if (inputs.length < 7) return;
+        if (inputs.length < 7) {
+          // 입력 필드가 부족한 행은 빈 데이터로 추가
+          tempDataList.push({
+            date: '', type: '', amount: '', balance: '', transactionType: '', content: '', memo: '',
+            matchedName: '', matchedPhoneLast4: '', matchedParticipant: null, expectedParticipants: [], approved: false, isEmpty: true
+          });
+          return;
+        }
 
         const date = inputs[0].value.trim();
         const type = inputs[1].value.trim();
@@ -2613,15 +3512,60 @@
         const content = inputs[5].value.trim();
         const memo = inputs[6].value.trim();
 
-        // 빈 행은 제외
-        if (!date && !type && !amount && !content) return;
+        // 빈 행 체크
+        const isEmpty = !date && !type && !amount && !content;
+
+        // 기존 paymentDataList에서 approved 상태 유지
+        const existingItem = paymentDataList[rowIndex] || null;
+
+        tempDataList.push({
+          date: date,
+          type: type,
+          amount: amount,
+          balance: balance,
+          transactionType: transactionType,
+          content: content,
+          memo: memo,
+          matchedName: '',
+          matchedPhoneLast4: '',
+          matchedParticipant: null,
+          expectedParticipants: [],
+          approved: existingItem ? existingItem.approved : false,
+          isEmpty: isEmpty
+        });
+      });
+
+      // 임시 데이터를 바로 paymentDataList에 저장 (매칭 전이라도 저장)
+      paymentDataList = tempDataList;
+      savePaymentDataToStorage();
+
+      // 참가자 목록 로드 (매칭을 위해)
+      try {
+        const response = await authFetch('/api/admin/participants?limit=100000');
+        const data = await response.json();
+        if (data.success) {
+          allParticipants = data.participants || [];
+          console.log('[Payment] Loaded allParticipants:', allParticipants.length);
+        }
+      } catch (err) {
+        console.error('Error loading participants:', err);
+        // 매칭 실패해도 데이터는 이미 저장됨
+        return;
+      }
+
+      // 매칭 정보 업데이트
+      paymentDataList.forEach(function (item, index) {
+        // 빈 행은 건너뛰기
+        if (item.isEmpty) return;
+
+        const content = item.content;
+        const memo = item.memo;
 
         // 내용 또는 메모에서 이름과 전화번호 뒷자리 4개 추출
-        // 메모란을 우선 확인하고, 없으면 내용란에서 추출
         let matchedName = '';
         let matchedPhoneLast4 = '';
 
-        // 메모란에서 먼저 시도 (앞 공백 무시)
+        // 메모란에서 먼저 시도
         const memoTrimmed = memo.trim();
         const memoMatch = memoTrimmed.match(/^([가-힣a-zA-Z\s]+)(\d{4})?/);
         if (memoMatch && memoMatch[1].trim()) {
@@ -2629,7 +3573,7 @@
           matchedPhoneLast4 = memoMatch[2] || '';
         }
 
-        // 메모란에서 이름을 못 찾았으면 내용란에서 시도 (앞 공백 무시)
+        // 메모란에서 이름을 못 찾았으면 내용란에서 시도
         if (!matchedName) {
           const contentTrimmed = content.trim();
           const contentMatch = contentTrimmed.match(/^([가-힣a-zA-Z\s]+)(\d{4})?/);
@@ -2639,95 +3583,56 @@
           }
         }
 
+        item.matchedName = matchedName;
+        item.matchedPhoneLast4 = matchedPhoneLast4;
+
         // 신청자 매칭
-        let matchedParticipant = null;
         if (matchedName && matchedPhoneLast4) {
-          matchedParticipant = allParticipants.find(function (p) {
-            // 이름 매칭: 정확히 일치하거나, 한쪽이 다른 쪽을 포함하는 경우
-            // 단, 한글과 영문이 섞인 경우는 매칭하지 않음
+          item.matchedParticipant = allParticipants.find(function (p) {
             const pName = p.user_name.trim();
             const matchedNameTrimmed = matchedName.trim();
 
-            // 정확히 일치
             if (pName === matchedNameTrimmed) {
-              const phoneLast4 = p.phone.slice(-4);
-              return phoneLast4 === matchedPhoneLast4;
+              return p.phone.slice(-4) === matchedPhoneLast4;
             }
 
-            // 한쪽이 다른 쪽을 포함하는 경우 (같은 문자 체계만)
             const pNameHasHangul = /[가-힣]/.test(pName);
             const matchedNameHasHangul = /[가-힣]/.test(matchedNameTrimmed);
             const pNameHasEnglish = /[a-zA-Z]/.test(pName);
             const matchedNameHasEnglish = /[a-zA-Z]/.test(matchedNameTrimmed);
 
-            // 한글과 영문이 섞인 경우는 매칭하지 않음
             if ((pNameHasHangul && matchedNameHasEnglish) || (pNameHasEnglish && matchedNameHasHangul)) {
               return false;
             }
 
-            // 같은 문자 체계인 경우에만 포함 여부 확인
             const nameMatch = pName.includes(matchedNameTrimmed) || matchedNameTrimmed.includes(pName);
             if (nameMatch) {
-              const phoneLast4 = p.phone.slice(-4);
-              return phoneLast4 === matchedPhoneLast4;
+              return p.phone.slice(-4) === matchedPhoneLast4;
             }
-
             return false;
-          });
+          }) || null;
         }
 
-        // 예상되는 신청자 찾기 (이름만으로 매칭, 전화번호 뒷자리는 무시)
-        let expectedParticipants = [];
+        // 예상되는 신청자 찾기 (이름만으로 매칭)
         if (matchedName) {
-          expectedParticipants = allParticipants.filter(function (p) {
+          item.expectedParticipants = allParticipants.filter(function (p) {
             const pName = p.user_name.trim();
             const matchedNameTrimmed = matchedName.trim();
 
-            // 정확히 일치하는 경우 (전화번호 뒷자리 무시)
-            if (pName === matchedNameTrimmed) {
-              return true;
-            }
+            if (pName === matchedNameTrimmed) return true;
 
-            // 한쪽이 다른 쪽을 포함하는 경우 (같은 문자 체계만, 전화번호 뒷자리 무시)
             const pNameHasHangul = /[가-힣]/.test(pName);
             const matchedNameHasHangul = /[가-힣]/.test(matchedNameTrimmed);
             const pNameHasEnglish = /[a-zA-Z]/.test(pName);
             const matchedNameHasEnglish = /[a-zA-Z]/.test(matchedNameTrimmed);
 
-            // 한글과 영문이 섞인 경우는 매칭하지 않음
             if ((pNameHasHangul && matchedNameHasEnglish) || (pNameHasEnglish && matchedNameHasHangul)) {
               return false;
             }
 
-            // 같은 문자 체계인 경우에만 포함 여부 확인 (전화번호 뒷자리 무시)
-            const nameMatch = pName.includes(matchedNameTrimmed) || matchedNameTrimmed.includes(pName);
-            if (nameMatch) {
-              return true;
-            }
-
-            return false;
+            return pName.includes(matchedNameTrimmed) || matchedNameTrimmed.includes(pName);
           });
         }
-
-        // 기존 paymentDataList에서 해당 인덱스의 approved 상태 확인
-        const currentIndex = paymentDataList.length;
-        const existingItem = paymentDataList[currentIndex] || null;
-        const approved = existingItem ? existingItem.approved : false;
-
-        paymentDataList.push({
-          date: date,
-          type: type,
-          amount: amount,
-          balance: balance,
-          transactionType: transactionType,
-          content: content,
-          memo: memo,
-          matchedName: matchedName,
-          matchedPhoneLast4: matchedPhoneLast4,
-          matchedParticipant: matchedParticipant,
-          expectedParticipants: expectedParticipants,
-          approved: approved
-        });
       });
 
       // 매칭 결과를 테이블에 반영
@@ -2750,6 +3655,9 @@
         if (numberCell) {
           numberCell.textContent = index + 1;
         }
+
+        // 빈 행은 기본 상태 유지
+        if (item.isEmpty) return;
 
         // 매칭 결과 셀 업데이트
         // 셀 인덱스: 0=연번, 1=거래일시, 2=구분, 3=거래금액, 4=거래후잔액, 5=거래구분, 6=내용, 7=메모, 8=매칭된신청자, 9=예상되는신청자, 10=비고, 11=상태, 12=작업
@@ -2789,29 +3697,19 @@
         }
 
         if (noteCell) {
-          // expectedParticipants가 2명 이상일 때 비고 란에 동명이인 목록 표시
-          // matchedParticipant가 있어도 동명이인이 있으면 표시 (이미 승인된 참가자는 제외)
-          if (item.expectedParticipants && item.expectedParticipants.length > 1) {
-            // 이미 승인된 참가자를 제외한 동명이인 목록
-            const unapprovedDuplicates = item.expectedParticipants.filter(function (p) {
-              // matchedParticipant가 있고, 그 참가자가 이미 승인된 경우는 제외
-              if (item.matchedParticipant && item.matchedParticipant.id === p.id) {
-                return false;
-              }
-              return true;
+          // matchedParticipant가 정확히 매칭되었으면(이름+전화번호 뒷4자리 모두 일치) 비고란 비움
+          // matchedParticipant가 없고 동명이인이 여러 명일 때만 비고란에 동명이인 목록 표시
+          if (item.matchedParticipant) {
+            // 정확히 매칭된 경우 비고란 비움
+            noteCell.innerHTML = '<span class="text-gray-400 text-sm">-</span>';
+          } else if (item.expectedParticipants && item.expectedParticipants.length > 1) {
+            // 매칭 안됐고 동명이인이 여러 명인 경우
+            let noteHtml = '<div class="text-sm space-y-2">';
+            item.expectedParticipants.forEach(function (p) {
+              noteHtml += '<div class="flex items-center justify-between gap-2 p-2 bg-gray-50 rounded border border-gray-200"><span class="text-gray-700">' + p.user_name + ' (' + formatPhone(p.phone) + ')</span><button onclick="approveDuplicateParticipant(' + index + ', ' + p.id + ')" style="background-color: #22c55e; color: white; padding: 0.25rem 0.75rem; border-radius: 0.25rem; font-weight: bold; font-size: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s; white-space: nowrap;" onmouseover="this.style.backgroundColor=\'#16a34a\'" onmouseout="this.style.backgroundColor=\'#22c55e\'">승인</button></div>';
             });
-
-            if (unapprovedDuplicates.length > 0) {
-              let noteHtml = '<div class="text-sm space-y-2">';
-              unapprovedDuplicates.forEach(function (p) {
-                noteHtml += '<div class="flex items-center justify-between gap-2 p-2 bg-gray-50 rounded border border-gray-200"><span class="text-gray-700">' + p.user_name + ' (' + formatPhone(p.phone) + ')</span><button onclick="approveDuplicateParticipant(' + index + ', ' + p.id + ')" style="background-color: #22c55e; color: white; padding: 0.25rem 0.75rem; border-radius: 0.25rem; font-weight: bold; font-size: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s; white-space: nowrap;" onmouseover="this.style.backgroundColor=\'#16a34a\'" onmouseout="this.style.backgroundColor=\'#22c55e\'">승인</button></div>';
-              });
-              noteHtml += '</div>';
-              noteCell.innerHTML = noteHtml;
-            } else {
-              // 모든 동명이인이 승인된 경우
-              noteCell.innerHTML = '<span class="text-gray-400 text-sm">-</span>';
-            }
+            noteHtml += '</div>';
+            noteCell.innerHTML = noteHtml;
           } else {
             noteCell.innerHTML = '<span class="text-gray-400 text-sm">-</span>';
           }
@@ -2844,10 +3742,11 @@
       // 참가자 목록 로드 (없으면)
       if (allParticipants.length === 0) {
         try {
-          const response = await authFetch('/api/admin/participants');
+          const response = await authFetch('/api/admin/participants?limit=100000');
           const data = await response.json();
           if (data.success) {
             allParticipants = data.participants || [];
+            console.log('[Payment] Loaded allParticipants:', allParticipants.length);
           }
         } catch (err) {
           console.error('Error loading participants:', err);
@@ -3051,30 +3950,20 @@
       }
 
       if (noteCell) {
-        // expectedParticipants가 2명 이상일 때만 비고란 표시
-        if (item.expectedParticipants && item.expectedParticipants.length > 1) {
-          // 이미 매칭된 참가자를 제외한 동명이인 목록
-          const unapprovedDuplicates = item.expectedParticipants.filter(function (p) {
-            // matchedParticipant가 있고, 그 참가자가 이미 매칭된 경우는 제외
-            if (item.matchedParticipant && item.matchedParticipant.id === p.id) {
-              return false;
-            }
-            return true;
+        // matchedParticipant가 정확히 매칭되었으면(이름+전화번호 뒷4자리 모두 일치) 비고란 비움
+        // matchedParticipant가 없고 동명이인이 여러 명일 때만 비고란에 동명이인 목록 표시
+        if (item.matchedParticipant) {
+          // 정확히 매칭된 경우 비고란 비움
+          noteCell.innerHTML = '<span class="text-gray-400 text-sm">-</span>';
+        } else if (item.expectedParticipants && item.expectedParticipants.length > 1) {
+          // 매칭 안됐고 동명이인이 여러 명인 경우
+          let noteHtml = '<div class="text-sm space-y-2">';
+          item.expectedParticipants.forEach(function (p) {
+            noteHtml += '<div class="flex items-center justify-between gap-2 p-2 bg-gray-50 rounded border border-gray-200"><span class="text-gray-700">' + p.user_name + ' (' + formatPhone(p.phone) + ')</span><button onclick="approveDuplicateParticipant(' + index + ', ' + p.id + ')" style="background-color: #22c55e; color: white; padding: 0.25rem 0.75rem; border-radius: 0.25rem; font-weight: bold; font-size: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s; white-space: nowrap;" onmouseover="this.style.backgroundColor=\'#16a34a\'" onmouseout="this.style.backgroundColor=\'#22c55e\'">승인</button></div>';
           });
-
-          if (unapprovedDuplicates.length > 0) {
-            let noteHtml = '<div class="text-sm space-y-2">';
-            unapprovedDuplicates.forEach(function (p) {
-              noteHtml += '<div class="flex items-center justify-between gap-2 p-2 bg-gray-50 rounded border border-gray-200"><span class="text-gray-700">' + p.user_name + ' (' + formatPhone(p.phone) + ')</span><button onclick="approveDuplicateParticipant(' + index + ', ' + p.id + ')" style="background-color: #22c55e; color: white; padding: 0.25rem 0.75rem; border-radius: 0.25rem; font-weight: bold; font-size: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s; white-space: nowrap;" onmouseover="this.style.backgroundColor=\'#16a34a\'" onmouseout="this.style.backgroundColor=\'#22c55e\'">승인</button></div>';
-            });
-            noteHtml += '</div>';
-            noteCell.innerHTML = noteHtml;
-          } else {
-            // 모든 동명이인이 매칭된 경우
-            noteCell.innerHTML = '<span class="text-gray-400 text-sm">-</span>';
-          }
+          noteHtml += '</div>';
+          noteCell.innerHTML = noteHtml;
         } else {
-          // 동명이인이 2명 미만이면 비고란 비우기
           noteCell.innerHTML = '<span class="text-gray-400 text-sm">-</span>';
         }
       }
@@ -3360,9 +4249,9 @@
           updatePaymentRowNumbers();
 
           // 마지막 행의 내용 필드에서 자동 매칭 실행
-          setTimeout(function () {
-            parsePaymentDataFromTable();
-            // localStorage에 저장
+          setTimeout(async function () {
+            await parsePaymentDataFromTable();
+            // localStorage에 저장 (parsePaymentDataFromTable 완료 후)
             savePaymentDataToStorage();
           }, 100);
         });
@@ -3382,12 +4271,13 @@
         return;
       }
 
-      // 참가자 목록 로드
+      // 참가자 목록 로드 (전체)
       try {
-        const response = await authFetch('/api/admin/participants');
+        const response = await authFetch('/api/admin/participants?limit=100000');
         const data = await response.json();
         if (data.success) {
           allParticipants = data.participants || [];
+          console.log('[Payment] Loaded allParticipants for matching:', allParticipants.length);
         }
       } catch (err) {
         console.error('Error loading participants:', err);
@@ -3532,7 +4422,7 @@
           balance: values[headerMap.balance] || '',
           transactionType: values[headerMap.transactionType] || '',
           content: content,
-          memo: values[headerMap.memo] || '',
+          memo: memo,
           matchedName: matchedName,
           matchedPhoneLast4: matchedPhoneLast4,
           matchedParticipant: matchedParticipant,
@@ -3542,6 +4432,74 @@
       }
 
       displayPaymentData();
+    }
+
+    // 입금내역 정렬 관련 변수
+    let paymentSortColumn = null;
+    let paymentSortOrder = 'asc';
+
+    function sortPaymentData(column) {
+      // 같은 컬럼 클릭 시 정렬 순서 토글
+      if (paymentSortColumn === column) {
+        paymentSortOrder = paymentSortOrder === 'asc' ? 'desc' : 'asc';
+      } else {
+        paymentSortColumn = column;
+        paymentSortOrder = 'asc';
+      }
+
+      // 정렬 실행
+      paymentDataList.sort(function(a, b) {
+        let valA, valB;
+
+        if (column === 'amount' || column === 'balance') {
+          // 숫자 정렬 (콤마 제거)
+          valA = parseFloat((a[column] || '0').replace(/[^0-9.-]/g, '')) || 0;
+          valB = parseFloat((b[column] || '0').replace(/[^0-9.-]/g, '')) || 0;
+        } else if (column === 'approved') {
+          // 승인 상태 정렬
+          valA = a.approved ? 1 : 0;
+          valB = b.approved ? 1 : 0;
+        } else if (column === 'matchedName') {
+          // 매칭된 신청자 이름 정렬
+          valA = a.matchedParticipant ? a.matchedParticipant.user_name : '';
+          valB = b.matchedParticipant ? b.matchedParticipant.user_name : '';
+        } else {
+          // 문자열 정렬
+          valA = (a[column] || '').toString().toLowerCase();
+          valB = (b[column] || '').toString().toLowerCase();
+        }
+
+        if (valA < valB) return paymentSortOrder === 'asc' ? -1 : 1;
+        if (valA > valB) return paymentSortOrder === 'asc' ? 1 : -1;
+        return 0;
+      });
+
+      // 정렬 아이콘 업데이트
+      updatePaymentSortIcons();
+
+      // 테이블 다시 렌더링
+      displayPaymentData();
+
+      // localStorage에 저장
+      savePaymentDataToStorage();
+    }
+
+    function updatePaymentSortIcons() {
+      const columns = ['date', 'type', 'amount', 'balance', 'transactionType', 'content', 'memo', 'matchedName', 'approved'];
+      columns.forEach(function(col) {
+        const span = document.getElementById('paymentSort_' + col);
+        if (span) {
+          if (paymentSortColumn === col) {
+            span.textContent = paymentSortOrder === 'asc' ? '▲' : '▼';
+            span.classList.remove('text-gray-400');
+            span.classList.add('text-red-600');
+          } else {
+            span.textContent = '';
+            span.classList.remove('text-red-600');
+            span.classList.add('text-gray-400');
+          }
+        }
+      });
     }
 
     function displayPaymentData() {
@@ -3559,8 +4517,19 @@
         const hasPhoneLast4 = item.matchedPhoneLast4 !== '';
         const rowClass = hasMatch ? '' : 'bg-yellow-50';
 
+        // 예상되는 신청자 목록 생성
+        let expectedParticipantsHtml = '';
+        if (item.expectedParticipants && item.expectedParticipants.length > 0) {
+          expectedParticipantsHtml = item.expectedParticipants.map(function(p) {
+            return `<div class="text-xs text-blue-600">${p.user_name} (${formatPhone(p.phone)})</div>`;
+          }).join('');
+        } else {
+          expectedParticipantsHtml = '<span class="text-sm text-gray-400">-</span>';
+        }
+
         row.className = rowClass;
         row.innerHTML = `
+          <td class="border border-gray-300 px-2 py-1 text-sm text-center text-gray-500">${index + 1}</td>
           <td class="border border-gray-300 px-2 py-1">
             <input type="text" class="w-full border-0 bg-transparent text-sm" value="${item.date || ''}" onchange="updatePaymentData(${index}, 'date', this.value)" />
           </td>
@@ -3580,7 +4549,7 @@
             <input type="text" class="w-full border-0 bg-transparent text-sm" value="${item.content || ''}" onchange="updatePaymentData(${index}, 'content', this.value); reMatchPayment(${index})" />
           </td>
           <td class="border border-gray-300 px-2 py-1">
-            <input type="text" class="w-full border-0 bg-transparent text-sm" value="${item.memo || ''}" onchange="updatePaymentData(${index}, 'memo', this.value)" />
+            <input type="text" class="w-full border-0 bg-transparent text-sm" value="${item.memo || ''}" onchange="updatePaymentData(${index}, 'memo', this.value); reMatchPayment(${index})" />
           </td>
           <td class="border border-gray-300 px-2 py-1">
             ${hasMatch ? `
@@ -3597,6 +4566,10 @@
               </div>
             `}
           </td>
+          <td class="border border-gray-300 px-2 py-1">
+            ${expectedParticipantsHtml}
+          </td>
+          <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">-</td>
           <td class="border border-gray-300 px-2 py-1">
             ${item.approved ? '<span class="text-green-600 font-semibold text-sm">승인됨</span>' : '<span class="text-gray-500 text-sm">대기중</span>'}
           </td>
@@ -3628,27 +4601,54 @@
       if (!item) return;
 
       const content = item.content || '';
-      const nameMatch = content.match(/^([가-힣a-zA-Z\s]+)(\d{4})?/);
+      const memo = item.memo || '';
+
       let matchedName = '';
       let matchedPhoneLast4 = '';
 
-      if (nameMatch) {
-        matchedName = nameMatch[1].trim();
-        matchedPhoneLast4 = nameMatch[2] || '';
+      // 메모란에서 먼저 시도 (앞 공백 무시)
+      const memoTrimmed = memo.trim();
+      const memoMatch = memoTrimmed.match(/^([가-힣a-zA-Z\s]+)(\d{4})?/);
+      if (memoMatch && memoMatch[1].trim()) {
+        matchedName = memoMatch[1].trim();
+        matchedPhoneLast4 = memoMatch[2] || '';
+      }
+
+      // 메모란에서 이름을 못 찾았으면 내용란에서 시도 (앞 공백 무시)
+      if (!matchedName) {
+        const contentTrimmed = content.trim();
+        const contentMatch = contentTrimmed.match(/^([가-힣a-zA-Z\s]+)(\d{4})?/);
+        if (contentMatch) {
+          matchedName = contentMatch[1].trim();
+          matchedPhoneLast4 = contentMatch[2] || '';
+        }
       }
 
       let matchedParticipant = null;
       if (matchedName && matchedPhoneLast4) {
         matchedParticipant = allParticipants.find(function (p) {
-          const nameMatch = p.user_name === matchedName || p.user_name.includes(matchedName) || matchedName.includes(p.user_name);
+          const pName = p.user_name.trim();
+          const matchedNameTrimmed = matchedName.trim();
+          const nameMatch = pName === matchedNameTrimmed || pName.includes(matchedNameTrimmed) || matchedNameTrimmed.includes(pName);
           const phoneLast4 = p.phone.slice(-4);
           return nameMatch && phoneLast4 === matchedPhoneLast4;
+        });
+      }
+
+      // 예상되는 신청자 찾기 (이름만으로 매칭)
+      let expectedParticipants = [];
+      if (matchedName) {
+        expectedParticipants = allParticipants.filter(function (p) {
+          const pName = p.user_name.trim();
+          const matchedNameTrimmed = matchedName.trim();
+          return pName === matchedNameTrimmed || pName.includes(matchedNameTrimmed) || matchedNameTrimmed.includes(pName);
         });
       }
 
       item.matchedName = matchedName;
       item.matchedPhoneLast4 = matchedPhoneLast4;
       item.matchedParticipant = matchedParticipant;
+      item.expectedParticipants = expectedParticipants;
       item.approved = false;
 
       displayPaymentData();
@@ -3662,18 +4662,18 @@
       const newRow = document.createElement('tr');
       newRow.innerHTML = `
         <td class="border border-gray-300 px-2 py-1 text-sm text-center text-gray-500">${rowCount + 1}</td>
-        <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
-        <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
-        <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
-        <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
-        <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
-        <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this); reMatchPaymentFromInput(this)" /></td>
-        <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this); reMatchPaymentFromInput(this)" /></td>
+        <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" placeholder="거래일시" onchange="updatePaymentDataFromInput(this)" /></td>
+        <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" placeholder="구분" onchange="updatePaymentDataFromInput(this)" /></td>
+        <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" placeholder="거래금액" onchange="updatePaymentDataFromInput(this)" /></td>
+        <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" placeholder="거래 후 잔액" onchange="updatePaymentDataFromInput(this)" /></td>
+        <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" placeholder="거래구분" onchange="updatePaymentDataFromInput(this)" /></td>
+        <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" placeholder="내용" onchange="updatePaymentDataFromInput(this); reMatchPaymentFromInput(this)" /></td>
+        <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" placeholder="메모" onchange="updatePaymentDataFromInput(this); reMatchPaymentFromInput(this)" /></td>
         <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">-</td>
         <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">-</td>
-        <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">-</td>
+        <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" placeholder="비고" /></td>
         <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">대기중</td>
-        <td class="border border-gray-300 px-2 py-2">
+        <td class="border border-gray-300 px-2 py-2 sticky right-0 bg-white z-10">
           <div class="flex gap-2">
             <button onclick="approvePaymentFromTable(${rowCount})" style="background-color: #22c55e; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: bold; font-size: 0.875rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#16a34a'" onmouseout="this.style.backgroundColor='#22c55e'">승인</button>
             <button onclick="removePaymentRowFromTable(this)" style="background-color: #ef4444; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: bold; font-size: 0.875rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#dc2626'" onmouseout="this.style.backgroundColor='#ef4444'">삭제</button>
@@ -3721,13 +4721,307 @@
       });
     }
 
-    function resetPaymentTable() {
-      if (!confirm('입금 내역을 모두 초기화하시겠습니까?\n\n모든 데이터가 삭제됩니다.')) {
+    // CSV 파일 업로드 핸들러
+    async function handleCSVUpload(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      // 파일명 표시
+      document.getElementById('csvFileName').textContent = file.name;
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        const csvText = e.target.result;
+        await parseCSVData(csvText);
+      };
+      reader.readAsText(file, 'UTF-8');
+
+      // 파일 선택 초기화 (같은 파일 다시 선택 가능하도록)
+      input.value = '';
+    }
+
+    // CSV 데이터 파싱 및 테이블 생성
+    async function parseCSVData(csvText) {
+      const lines = csvText.split('\n').filter(line => line.trim());
+      if (lines.length < 2) {
+        alert('CSV 파일에 헤더와 최소 1개의 데이터 행이 필요합니다.');
         return;
       }
 
+      // CSV 파싱 함수 (쉼표 구분, 따옴표 내 쉼표 처리)
+      function parseCSVLine(line) {
+        const result = [];
+        let current = '';
+        let inQuotes = false;
+
+        for (let i = 0; i < line.length; i++) {
+          const char = line[i];
+
+          if (char === '"') {
+            inQuotes = !inQuotes;
+          } else if (char === ',' && !inQuotes) {
+            result.push(current.trim());
+            current = '';
+          } else {
+            current += char;
+          }
+        }
+        result.push(current.trim());
+        return result;
+      }
+
+      // 헤더 파싱
+      const headers = parseCSVLine(lines[0]);
+
+      // 헤더 인덱스 찾기
+      const headerMap = {};
+      headers.forEach(function(h, i) {
+        const hLower = h.toLowerCase();
+        if (hLower.includes('거래일시') || hLower.includes('일시') || hLower.includes('날짜')) headerMap.date = i;
+        if (hLower.includes('구분') && !hLower.includes('거래구분')) headerMap.type = i;
+        if (hLower.includes('거래금액') || (hLower.includes('금액') && !hLower.includes('잔액'))) headerMap.amount = i;
+        if (hLower.includes('잔액')) headerMap.balance = i;
+        if (hLower.includes('거래구분')) headerMap.transactionType = i;
+        if (hLower.includes('내용') || hLower.includes('적요')) headerMap.content = i;
+        if (hLower.includes('메모') || hLower.includes('비고')) headerMap.memo = i;
+      });
+
+      console.log('[CSV] Header map:', headerMap);
+      console.log('[CSV] Headers:', headers);
+
+      // 데이터 행 파싱
+      const newPaymentDataList = [];
+      for (let i = 1; i < lines.length; i++) {
+        const values = parseCSVLine(lines[i]);
+        if (values.length === 0 || (values.length === 1 && !values[0])) continue;
+
+        const date = headerMap.date !== undefined ? (values[headerMap.date] || '') : '';
+        const type = headerMap.type !== undefined ? (values[headerMap.type] || '') : '';
+        const amount = headerMap.amount !== undefined ? (values[headerMap.amount] || '') : '';
+        const balance = headerMap.balance !== undefined ? (values[headerMap.balance] || '') : '';
+        const transactionType = headerMap.transactionType !== undefined ? (values[headerMap.transactionType] || '') : '';
+        const content = headerMap.content !== undefined ? (values[headerMap.content] || '') : '';
+        const memo = headerMap.memo !== undefined ? (values[headerMap.memo] || '') : '';
+
+        // 빈 행 체크
+        const isEmpty = !date && !type && !amount && !content;
+        if (isEmpty) continue;
+
+        newPaymentDataList.push({
+          date: date,
+          type: type,
+          amount: amount,
+          balance: balance,
+          transactionType: transactionType,
+          content: content,
+          memo: memo,
+          matchedName: '',
+          matchedPhoneLast4: '',
+          matchedParticipant: null,
+          expectedParticipants: [],
+          approved: false,
+          isEmpty: false
+        });
+      }
+
+      if (newPaymentDataList.length === 0) {
+        alert('파싱된 데이터가 없습니다. CSV 형식을 확인해주세요.');
+        return;
+      }
+
+      // paymentDataList에 저장
+      paymentDataList = newPaymentDataList;
+      savePaymentDataToStorage();
+
+      // 테이블 UI 업데이트
+      updatePaymentTableUI();
+
+      // 참가자 목록 로드 후 매칭 수행
+      try {
+        const response = await authFetch('/api/admin/participants?limit=100000');
+        const data = await response.json();
+        if (data.success) {
+          allParticipants = data.participants || [];
+          console.log('[CSV] Loaded allParticipants:', allParticipants.length);
+        }
+      } catch (err) {
+        console.error('Error loading participants:', err);
+      }
+
+      // 매칭 정보 업데이트
+      performPaymentMatching();
+
+      // 테이블 다시 업데이트 (매칭 정보 포함)
+      updatePaymentTableWithMatches();
+      savePaymentDataToStorage();
+
+      alert('CSV 파일이 업로드되었습니다. ' + newPaymentDataList.length + '개의 데이터가 로드되었습니다.');
+    }
+
+    // 매칭 로직 수행
+    function performPaymentMatching() {
+      paymentDataList.forEach(function(item, index) {
+        if (item.isEmpty) return;
+
+        const content = item.content;
+        const memo = item.memo;
+
+        // 내용 또는 메모에서 이름과 전화번호 뒷자리 4개 추출
+        let matchedName = '';
+        let matchedPhoneLast4 = '';
+
+        // 메모란에서 먼저 시도
+        const memoTrimmed = memo.trim();
+        const memoMatch = memoTrimmed.match(/^([가-힣a-zA-Z\s]+)(\d{4})?/);
+        if (memoMatch && memoMatch[1].trim()) {
+          matchedName = memoMatch[1].trim();
+          matchedPhoneLast4 = memoMatch[2] || '';
+        }
+
+        // 메모란에서 이름을 못 찾았으면 내용란에서 시도
+        if (!matchedName) {
+          const contentTrimmed = content.trim();
+          const contentMatch = contentTrimmed.match(/^([가-힣a-zA-Z\s]+)(\d{4})?/);
+          if (contentMatch) {
+            matchedName = contentMatch[1].trim();
+            matchedPhoneLast4 = contentMatch[2] || '';
+          }
+        }
+
+        item.matchedName = matchedName;
+        item.matchedPhoneLast4 = matchedPhoneLast4;
+
+        // 신청자 매칭
+        if (matchedName && matchedPhoneLast4) {
+          item.matchedParticipant = allParticipants.find(function(p) {
+            const pName = p.user_name.trim();
+            const matchedNameTrimmed = matchedName.trim();
+
+            if (pName === matchedNameTrimmed) {
+              const phoneLast4 = p.phone.slice(-4);
+              return phoneLast4 === matchedPhoneLast4;
+            }
+
+            // 한쪽이 다른 쪽을 포함하는 경우
+            const pNameHasHangul = /[가-힣]/.test(pName);
+            const matchedNameHasHangul = /[가-힣]/.test(matchedNameTrimmed);
+
+            if (pNameHasHangul === matchedNameHasHangul) {
+              if (pName.includes(matchedNameTrimmed) || matchedNameTrimmed.includes(pName)) {
+                const phoneLast4 = p.phone.slice(-4);
+                return phoneLast4 === matchedPhoneLast4;
+              }
+            }
+
+            return false;
+          }) || null;
+        }
+
+        // 예상되는 신청자 찾기 (이름만으로)
+        if (matchedName) {
+          item.expectedParticipants = allParticipants.filter(function(p) {
+            return p.user_name.trim() === matchedName.trim();
+          });
+        }
+      });
+    }
+
+    // 테이블 UI 업데이트 (데이터 기반으로 테이블 행 생성)
+    function updatePaymentTableUI() {
+      const tbody = document.getElementById('paymentTableBody');
+      if (!tbody) return;
+
+      tbody.innerHTML = '';
+
+      paymentDataList.forEach(function(item, index) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="border border-gray-300 px-2 py-1 text-sm text-center text-gray-500">${index + 1}</td>
+          <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" value="${escapeHtml(item.date)}" onchange="updatePaymentDataFromInput(this)" /></td>
+          <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" value="${escapeHtml(item.type)}" onchange="updatePaymentDataFromInput(this)" /></td>
+          <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" value="${escapeHtml(item.amount)}" onchange="updatePaymentDataFromInput(this)" /></td>
+          <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" value="${escapeHtml(item.balance)}" onchange="updatePaymentDataFromInput(this)" /></td>
+          <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" value="${escapeHtml(item.transactionType)}" onchange="updatePaymentDataFromInput(this)" /></td>
+          <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" value="${escapeHtml(item.content)}" onchange="updatePaymentDataFromInput(this); reMatchPaymentFromInput(this)" /></td>
+          <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" value="${escapeHtml(item.memo)}" onchange="updatePaymentDataFromInput(this); reMatchPaymentFromInput(this)" /></td>
+          <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">-</td>
+          <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">-</td>
+          <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">-</td>
+          <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">대기중</td>
+          <td class="border border-gray-300 px-2 py-2 sticky right-0 bg-white z-10">
+            <div class="flex gap-2">
+              <button onclick="approvePaymentFromTable(${index})" style="background-color: #22c55e; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: bold; font-size: 0.875rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#16a34a'" onmouseout="this.style.backgroundColor='#22c55e'">승인</button>
+              <button onclick="removePaymentRowFromTable(this)" style="background-color: #ef4444; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: bold; font-size: 0.875rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#dc2626'" onmouseout="this.style.backgroundColor='#ef4444'">삭제</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // 빈 행이 하나도 없으면 추가
+      if (paymentDataList.length === 0) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="border border-gray-300 px-2 py-1 text-sm text-center text-gray-500">1</td>
+          <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
+          <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
+          <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
+          <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
+          <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this)" /></td>
+          <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this); reMatchPaymentFromInput(this)" /></td>
+          <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this); reMatchPaymentFromInput(this)" /></td>
+          <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">-</td>
+          <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">-</td>
+          <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">-</td>
+          <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">대기중</td>
+          <td class="border border-gray-300 px-2 py-2 sticky right-0 bg-white z-10">
+            <div class="flex gap-2">
+              <button onclick="approvePaymentFromTable(0)" style="background-color: #22c55e; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: bold; font-size: 0.875rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#16a34a'" onmouseout="this.style.backgroundColor='#22c55e'">승인</button>
+              <button onclick="removePaymentRowFromTable(this)" style="background-color: #ef4444; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: bold; font-size: 0.875rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#dc2626'" onmouseout="this.style.backgroundColor='#ef4444'">삭제</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      }
+    }
+
+    // HTML 이스케이프 함수
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    async function resetPaymentTable() {
+      if (!confirm('입금 내역을 모두 초기화하시겠습니까?\n\n모든 데이터가 삭제됩니다. (서버에서도 삭제됨)')) {
+        return;
+      }
+
+      // 서버에서 삭제
+      try {
+        const response = await authFetch('/api/admin/participants/payment-records', {
+          method: 'DELETE'
+        });
+        const data = await response.json();
+        if (data.success) {
+          console.log('[Payment] 서버 초기화 완료');
+          alert('입금 내역이 초기화되었습니다.');
+        } else {
+          console.error('[Payment] 서버 초기화 실패:', data.error);
+          alert('초기화 실패: ' + (data.error || '알 수 없는 오류'));
+        }
+      } catch (err) {
+        console.error('[Payment] 서버 초기화 오류:', err);
+        alert('초기화 중 오류가 발생했습니다.');
+      }
+
       paymentDataList = [];
-      localStorage.removeItem('paymentDataList');
+
+      // CSV 파일명 초기화
+      const csvFileName = document.getElementById('csvFileName');
+      if (csvFileName) csvFileName.textContent = '';
+
       const tbody = document.getElementById('paymentTableBody');
       if (tbody) {
         tbody.innerHTML = `
@@ -3742,8 +5036,9 @@
             <td class="border border-gray-300 px-2 py-1"><input type="text" class="w-full border-0 bg-transparent text-sm" onchange="updatePaymentDataFromInput(this); reMatchPaymentFromInput(this)" /></td>
             <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">-</td>
             <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">-</td>
+            <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">-</td>
             <td class="border border-gray-300 px-2 py-1 text-sm text-gray-400">대기중</td>
-            <td class="border border-gray-300 px-2 py-2">
+            <td class="border border-gray-300 px-2 py-2 sticky right-0 bg-white z-10">
               <div class="flex gap-2">
                 <button onclick="approvePaymentFromTable(0)" style="background-color: #22c55e; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: bold; font-size: 0.875rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#16a34a'" onmouseout="this.style.backgroundColor='#22c55e'">승인</button>
                 <button onclick="removePaymentRowFromTable(this)" style="background-color: #ef4444; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: bold; font-size: 0.875rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); cursor: pointer; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#dc2626'" onmouseout="this.style.backgroundColor='#ef4444'">삭제</button>
@@ -3758,6 +5053,189 @@
       if (confirm('이 행을 삭제하시겠습니까?')) {
         paymentDataList.splice(index, 1);
         displayPaymentData();
+      }
+    }
+
+    // 현재 필터 상태
+    let currentPaymentFilter = 'all';
+
+    // 필터 버튼 스타일 업데이트
+    function updateFilterButtonStyles(activeFilter) {
+      const filterIds = ['filterAll', 'filterMatched', 'filterUnmatched', 'filterDuplicate', 'filterNoPhone', 'filterPending', 'filterApproved'];
+      filterIds.forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) {
+          if (id === 'filter' + activeFilter.charAt(0).toUpperCase() + activeFilter.slice(1) ||
+              (activeFilter === 'all' && id === 'filterAll') ||
+              (activeFilter === 'noPhone' && id === 'filterNoPhone')) {
+            btn.style.backgroundColor = '#6b7280';
+            btn.style.color = 'white';
+          } else {
+            btn.style.backgroundColor = '#e5e7eb';
+            btn.style.color = '#374151';
+          }
+        }
+      });
+    }
+
+    // 필터링 함수
+    function filterPaymentData(filterType) {
+      currentPaymentFilter = filterType;
+      updateFilterButtonStyles(filterType);
+
+      const tbody = document.getElementById('paymentTableBody');
+      if (!tbody) return;
+
+      const rows = tbody.querySelectorAll('tr');
+      let visibleCount = 0;
+
+      rows.forEach((row, index) => {
+        const item = paymentDataList[index];
+        if (!item) {
+          row.style.display = '';
+          return;
+        }
+
+        let shouldShow = false;
+
+        switch (filterType) {
+          case 'all':
+            shouldShow = true;
+            break;
+          case 'matched':
+            shouldShow = item.matchedParticipant !== null;
+            break;
+          case 'unmatched':
+            shouldShow = item.matchedParticipant === null && item.matchedPhoneLast4 !== '';
+            break;
+          case 'duplicate':
+            shouldShow = item.matchedParticipant === null && item.expectedParticipants && item.expectedParticipants.length > 1;
+            break;
+          case 'noPhone':
+            shouldShow = item.matchedPhoneLast4 === '' || !item.matchedPhoneLast4;
+            break;
+          case 'pending':
+            shouldShow = !item.approved;
+            break;
+          case 'approved':
+            shouldShow = item.approved === true;
+            break;
+        }
+
+        row.style.display = shouldShow ? '' : 'none';
+        if (shouldShow) visibleCount++;
+      });
+
+      // 필터 카운트 표시
+      const filterCount = document.getElementById('filterCount');
+      if (filterCount) {
+        filterCount.textContent = `(${visibleCount}/${paymentDataList.length}개 표시)`;
+      }
+    }
+
+    // 매칭된 항목 일괄승인
+    async function bulkApproveMatched() {
+      // 매칭되었지만 아직 승인되지 않은 항목 찾기
+      const itemsToApprove = paymentDataList.filter(item =>
+        item.matchedParticipant !== null && !item.approved
+      );
+
+      if (itemsToApprove.length === 0) {
+        alert('승인할 매칭된 항목이 없습니다.');
+        return;
+      }
+
+      if (!confirm(`매칭된 ${itemsToApprove.length}개 항목을 일괄 승인하시겠습니까?\n\n(미매칭, 동명이인, 전화번호 없음 항목은 제외됩니다)`)) {
+        return;
+      }
+
+      const btn = document.getElementById('bulkApproveBtn');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = '⏳ 처리 중...';
+      }
+
+      let successCount = 0;
+      let failCount = 0;
+
+      try {
+        for (let i = 0; i < paymentDataList.length; i++) {
+          const item = paymentDataList[i];
+          if (item.matchedParticipant && !item.approved) {
+            try {
+              const response = await authFetch('/api/admin/participants/' + item.matchedParticipant.id + '/payment', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ is_paid: true }),
+              });
+
+              const data = await response.json();
+              if (response.ok) {
+                item.approved = true;
+                successCount++;
+              } else {
+                console.error('Failed to approve:', item.matchedParticipant.user_name, data.error);
+                failCount++;
+              }
+            } catch (err) {
+              console.error('Error approving:', item.matchedParticipant.user_name, err);
+              failCount++;
+            }
+          }
+        }
+
+        // 테이블 업데이트
+        restorePaymentTableFromData();
+
+        // 현재 필터 다시 적용
+        filterPaymentData(currentPaymentFilter);
+
+        // 서버에 즉시 저장 (debounce 없이)
+        try {
+          const dataToSave = paymentDataList.map(function (item) {
+            return {
+              date: item.date,
+              type: item.type,
+              amount: item.amount,
+              balance: item.balance,
+              transactionType: item.transactionType,
+              content: item.content,
+              memo: item.memo,
+              matchedName: item.matchedName,
+              matchedPhoneLast4: item.matchedPhoneLast4,
+              matchedParticipantId: item.matchedParticipant ? item.matchedParticipant.id : null,
+              approved: item.approved
+            };
+          });
+
+          const saveResponse = await authFetch('/api/admin/participants/payment-records/sync', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ records: dataToSave })
+          });
+          const saveData = await saveResponse.json();
+          if (saveData.success) {
+            console.log('[BulkApprove] 입금 내역 저장 완료:', dataToSave.length, '개');
+          } else {
+            console.error('[BulkApprove] 저장 실패:', saveData.error);
+          }
+        } catch (saveErr) {
+          console.error('[BulkApprove] 저장 오류:', saveErr);
+        }
+
+        // 캐시 무효화
+        participantsCache = null;
+        participantsCacheTime = null;
+
+        alert(`일괄 승인 완료!\n\n성공: ${successCount}개\n실패: ${failCount}개`);
+      } catch (err) {
+        console.error('Bulk approve error:', err);
+        alert('일괄 승인 중 오류가 발생했습니다.');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = '✓ 매칭된 항목 일괄승인';
+        }
       }
     }
 
@@ -4351,7 +5829,493 @@
         console.error('Error loading recent checkins:', err);
       }
     }
+
+    // ===== 참가자 정보 수정 모달 =====
+    async function openEditModal(participantId, isGuest = false) {
+      editingParticipantId = participantId;
+      editingIsGuest = isGuest;
+
+      // 참가자 데이터 찾기 (현재 표시된 목록, 캐시, allParticipants에서 순차적으로 검색)
+      let participant = null;
+
+      // 1. 현재 표시된 participants 배열에서 찾기
+      if (Array.isArray(participants)) {
+        participant = participants.find(p => p.id === participantId);
+      }
+
+      // 2. 캐시에서 찾기
+      if (!participant && Array.isArray(participantsCache)) {
+        participant = participantsCache.find(p => p.id === participantId);
+      }
+
+      // 3. allParticipants에서 찾기
+      if (!participant && Array.isArray(allParticipants)) {
+        participant = allParticipants.find(p => p.id === participantId);
+      }
+
+      // 4. 여전히 없으면 API로 직접 조회
+      if (!participant) {
+        try {
+          const response = await authFetch(`/api/admin/participants?search=${participantId}&limit=1`);
+          const data = await response.json();
+          if (data.success && data.participants && data.participants.length > 0) {
+            participant = data.participants.find(p => p.id === participantId);
+          }
+        } catch (err) {
+          console.error('Error fetching participant:', err);
+        }
+      }
+
+      if (!participant) {
+        alert('참가자 정보를 찾을 수 없습니다. 페이지를 새로고침 해주세요.');
+        return;
+      }
+
+      // 모달 제목 설정
+      const titleEl = document.getElementById('editModalTitle');
+
+      if (isGuest) {
+        // 동반자 수정 모드
+        titleEl.textContent = `동반자 정보 수정 (신청자: ${participant.user_name})`;
+
+        // 본인 정보 필드 숨기기
+        document.getElementById('editMainFields').classList.add('hidden');
+        // 취소/환불 정보 숨기기 (동반자는 별도 취소/환불 없음)
+        document.getElementById('editCancelRefundFields').classList.add('hidden');
+        // 본인 좌석 정보 숨기기
+        document.getElementById('editMainSeatFields').classList.add('hidden');
+
+        // 동반자 정보 필드 표시
+        document.getElementById('editGuestFields').classList.remove('hidden');
+        document.getElementById('editGuestSeatFields').classList.remove('hidden');
+
+        // 동반자 정보 채우기
+        document.getElementById('editGuest2Name').value = participant.guest2_name || '';
+        document.getElementById('editGuest2Phone').value = participant.guest2_phone || '';
+        document.getElementById('editGuest2Ssn').value = participant.guest2_ssn_first || '';
+        // 동반자 좌석
+        document.getElementById('editSeatGroup2').value = participant.seat_group_2 || '';
+        document.getElementById('editSeatRow2').value = participant.seat_row_2 || '';
+        document.getElementById('editSeatNumber2').value = participant.seat_number_2 || '';
+        // 동반자 비밀번호 표시
+        const guestPwDisplay = participant.guest2_password
+          ? `변경됨 (${participant.guest2_password})`
+          : `생년월일 (${participant.guest2_ssn_first || '미등록'})`;
+        document.getElementById('editGuestPasswordDisplay').textContent = guestPwDisplay;
+      } else {
+        // 본인 수정 모드
+        titleEl.textContent = `신청자 정보 수정 (ID: ${participant.id})`;
+
+        // 본인 정보 필드 표시
+        document.getElementById('editMainFields').classList.remove('hidden');
+        // 취소/환불 정보 표시
+        document.getElementById('editCancelRefundFields').classList.remove('hidden');
+        // 본인 좌석 정보 표시
+        document.getElementById('editMainSeatFields').classList.remove('hidden');
+
+        // 동반자 정보 필드 숨기기
+        document.getElementById('editGuestFields').classList.add('hidden');
+        document.getElementById('editGuestSeatFields').classList.add('hidden');
+
+        // 본인 정보 채우기
+        document.getElementById('editUserName').value = participant.user_name || '';
+        document.getElementById('editPhone').value = participant.phone || '';
+        document.getElementById('editSsnFirst').value = participant.ssn_first || '';
+        document.getElementById('editTicketCount').value = participant.ticket_count || 1;
+        document.getElementById('editIsPaid').value = participant.is_paid ? '1' : '0';
+        document.getElementById('editIsCheckedIn').value = participant.is_checked_in ? '1' : '0';
+
+        // 취소/환불 정보 채우기
+        document.getElementById('editIsCancelled').value = participant.is_cancelled ? '1' : '0';
+        document.getElementById('editRefundStatus').value = participant.refund_status || '';
+        document.getElementById('editRefundAmount').value = participant.refund_amount || '';
+        document.getElementById('editRefundBank').value = participant.refund_bank || '';
+        document.getElementById('editRefundAccount').value = participant.refund_account || '';
+        document.getElementById('editRefundHolder').value = participant.refund_holder || '';
+        document.getElementById('editRefundReason').value = participant.refund_reason || '';
+
+        // 좌석 정보 채우기
+        document.getElementById('editSeatGroup').value = participant.seat_group || '';
+        document.getElementById('editSeatRow').value = participant.seat_row || '';
+        document.getElementById('editSeatNumber').value = participant.seat_number || '';
+
+        // 본인 비밀번호 표시
+        const mainPwDisplay = participant.password
+          ? `변경됨 (${participant.password})`
+          : `생년월일 (${participant.ssn_first || '미등록'})`;
+        document.getElementById('editMainPasswordDisplay').textContent = mainPwDisplay;
+      }
+
+      // 모달 표시
+      document.getElementById('editParticipantModal').classList.remove('hidden');
+    }
+
+    // 비밀번호 리셋
+    async function resetPassword(target) {
+      if (!editingParticipantId) return;
+
+      const targetName = target === 'guest' ? '동반자' : '신청자';
+      if (!confirm(`${targetName}의 비밀번호를 생년월일로 초기화하시겠습니까?`)) return;
+
+      try {
+        const response = await authFetch(`/api/admin/participants/${editingParticipantId}/reset-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ target })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          alert(data.message);
+          // 비밀번호 표시 업데이트
+          if (target === 'guest') {
+            document.getElementById('editGuestPasswordDisplay').textContent = `생년월일 (${data.reset_to || '미등록'})`;
+          } else {
+            document.getElementById('editMainPasswordDisplay').textContent = `생년월일 (${data.reset_to || '미등록'})`;
+          }
+        } else {
+          alert(data.error || '비밀번호 초기화에 실패했습니다.');
+        }
+      } catch (error) {
+        console.error('Error resetting password:', error);
+        alert('비밀번호 초기화 중 오류가 발생했습니다.');
+      }
+    }
+
+    function closeEditModal() {
+      document.getElementById('editParticipantModal').classList.add('hidden');
+      editingParticipantId = null;
+      editingIsGuest = false;
+    }
+
+    async function saveParticipantEdit() {
+      if (!editingParticipantId) return;
+
+      let updateData = {};
+
+      if (editingIsGuest) {
+        // 동반자 정보만 수정
+        const guest2Name = document.getElementById('editGuest2Name').value.trim();
+
+        updateData = {
+          guest2_name: guest2Name || null,
+          guest2_phone: document.getElementById('editGuest2Phone').value.trim() || null,
+          guest2_ssn_first: document.getElementById('editGuest2Ssn').value.trim() || null,
+          // 동반자 좌석
+          seat_group_2: document.getElementById('editSeatGroup2').value.trim() || null,
+          seat_row_2: parseInt(document.getElementById('editSeatRow2').value) || null,
+          seat_number_2: parseInt(document.getElementById('editSeatNumber2').value) || null,
+        };
+
+        // seat_full_2 생성
+        if (updateData.seat_group_2 && updateData.seat_row_2 && updateData.seat_number_2) {
+          updateData.seat_full_2 = `${updateData.seat_group_2}-${updateData.seat_row_2}-${updateData.seat_number_2}`;
+        } else {
+          updateData.seat_full_2 = null;
+        }
+      } else {
+        // 본인 정보만 수정
+        const userName = document.getElementById('editUserName').value.trim();
+        const phone = document.getElementById('editPhone').value.trim();
+
+        if (!userName) {
+          alert('이름은 필수입니다.');
+          return;
+        }
+        if (!phone) {
+          alert('전화번호는 필수입니다.');
+          return;
+        }
+
+        updateData = {
+          user_name: userName,
+          phone: phone,
+          ssn_first: document.getElementById('editSsnFirst').value.trim() || null,
+          ticket_count: parseInt(document.getElementById('editTicketCount').value),
+          is_paid: document.getElementById('editIsPaid').value === '1' ? 1 : 0,
+          is_checked_in: document.getElementById('editIsCheckedIn').value === '1' ? 1 : 0,
+          // 취소/환불 정보
+          is_cancelled: document.getElementById('editIsCancelled').value === '1' ? 1 : 0,
+          refund_status: document.getElementById('editRefundStatus').value || null,
+          refund_amount: parseInt(document.getElementById('editRefundAmount').value) || null,
+          refund_bank: document.getElementById('editRefundBank').value || null,
+          refund_account: document.getElementById('editRefundAccount').value.trim() || null,
+          refund_holder: document.getElementById('editRefundHolder').value.trim() || null,
+          refund_reason: document.getElementById('editRefundReason').value.trim() || null,
+          // 좌석 정보
+          seat_group: document.getElementById('editSeatGroup').value.trim() || null,
+          seat_row: parseInt(document.getElementById('editSeatRow').value) || null,
+          seat_number: parseInt(document.getElementById('editSeatNumber').value) || null,
+        };
+
+        // seat_full 생성
+        if (updateData.seat_group && updateData.seat_row && updateData.seat_number) {
+          updateData.seat_full = `${updateData.seat_group}-${updateData.seat_row}-${updateData.seat_number}`;
+        } else {
+          updateData.seat_full = null;
+        }
+      }
+
+      try {
+        const response = await authFetch(`/api/admin/participants/${editingParticipantId}/full`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updateData),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          const errorMsg = data.details ? `${data.error} (${data.details})` : (data.error || '수정 실패');
+          throw new Error(errorMsg);
+        }
+
+        if (data.success) {
+          alert(editingIsGuest ? '동반자 정보가 수정되었습니다.' : '신청자 정보가 수정되었습니다.');
+          closeEditModal();
+          // 캐시 무효화 후 새로고침
+          participantsCache = null;
+          participantsCacheTime = null;
+          loadParticipants(currentPage, true);
+          // 환불/취소 탭도 새로고침
+          loadRefunds();
+        }
+      } catch (err) {
+        console.error('saveParticipantEdit error:', err);
+        alert('수정 중 오류가 발생했습니다: ' + (err.message || ''));
+      }
+    }
+
+    // 개인정보 동의 현황 로드
+    async function loadPrivacyStats() {
+      try {
+        const response = await authFetch('/api/admin/participants/privacy-stats');
+
+        if (!response.ok) {
+          console.error('Failed to load privacy stats');
+          return;
+        }
+
+        const data = await response.json();
+        if (data.success && data.stats) {
+          document.getElementById('privacyTotalCount').textContent = data.stats.total.toLocaleString();
+          document.getElementById('privacyAgreedCount').textContent = data.stats.agreed.toLocaleString();
+          document.getElementById('privacyPendingCount').textContent = data.stats.pending.toLocaleString();
+          document.getElementById('privacyRate').textContent = data.stats.rate + '%';
+        }
+      } catch (err) {
+        console.error('loadPrivacyStats error:', err);
+      }
+    }
   </script>
+
+  <!-- 참가자 정보 수정 모달 (전체) -->
+  <div id="editParticipantModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 p-6 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-6">
+        <h3 id="editModalTitle" class="text-xl font-bold text-gray-900">참가자 정보 수정</h3>
+        <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- 본인 정보 필드 -->
+      <div id="editMainFields" class="space-y-4 mb-4">
+        <h4 class="font-semibold text-gray-700 border-b pb-2">신청자 정보</h4>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">이름 *</label>
+            <input type="text" id="editUserName" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">전화번호 *</label>
+            <input type="text" id="editPhone" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="01012345678" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">생년월일 (6자리)</label>
+            <input type="text" id="editSsnFirst" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="YYMMDD" maxlength="6" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">티켓 수</label>
+            <select id="editTicketCount" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+              <option value="1">1인</option>
+              <option value="2">2인</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">입금 상태</label>
+            <select id="editIsPaid" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+              <option value="0">입금 대기</option>
+              <option value="1">입금 완료</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">체크인</label>
+            <select id="editIsCheckedIn" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+              <option value="0">미입장</option>
+              <option value="1">입장완료</option>
+            </select>
+          </div>
+        </div>
+        <!-- 비밀번호 관리 -->
+        <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="text-sm font-medium text-gray-700">비밀번호:</span>
+              <span id="editMainPasswordDisplay" class="ml-2 text-sm text-gray-600">-</span>
+            </div>
+            <button type="button" onclick="resetPassword('main')" class="px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white text-sm rounded-lg transition-colors">
+              비밀번호 리셋
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 동반참가자 정보 필드 -->
+      <div id="editGuestFields" class="hidden space-y-4 mb-4">
+        <h4 class="font-semibold text-gray-700 border-b pb-2">동반참가자 정보</h4>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">이름</label>
+            <input type="text" id="editGuest2Name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">전화번호</label>
+            <input type="text" id="editGuest2Phone" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="01012345678" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">생년월일 (6자리)</label>
+            <input type="text" id="editGuest2Ssn" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="YYMMDD" maxlength="6" />
+          </div>
+        </div>
+        <!-- 동반자 비밀번호 관리 -->
+        <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="text-sm font-medium text-gray-700">비밀번호:</span>
+              <span id="editGuestPasswordDisplay" class="ml-2 text-sm text-gray-600">-</span>
+            </div>
+            <button type="button" onclick="resetPassword('guest')" class="px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white text-sm rounded-lg transition-colors">
+              비밀번호 리셋
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 취소/환불 정보 -->
+      <div id="editCancelRefundFields" class="space-y-4 mb-4">
+        <h4 class="font-semibold text-gray-700 border-b pb-2">취소/환불 정보</h4>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">취소 상태</label>
+            <select id="editIsCancelled" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+              <option value="0">정상</option>
+              <option value="1">취소됨</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">환불 상태</label>
+            <select id="editRefundStatus" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+              <option value="">미신청</option>
+              <option value="pending">환불 대기</option>
+              <option value="completed">환불 완료</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">환불 금액</label>
+            <input type="number" id="editRefundAmount" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="35000" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">환불 은행</label>
+            <select id="editRefundBank" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+              <option value="">선택</option>
+              <option value="KB국민은행">KB국민은행</option>
+              <option value="신한은행">신한은행</option>
+              <option value="우리은행">우리은행</option>
+              <option value="하나은행">하나은행</option>
+              <option value="NH농협은행">NH농협은행</option>
+              <option value="IBK기업은행">IBK기업은행</option>
+              <option value="카카오뱅크">카카오뱅크</option>
+              <option value="토스뱅크">토스뱅크</option>
+              <option value="케이뱅크">케이뱅크</option>
+              <option value="SC제일은행">SC제일은행</option>
+              <option value="씨티은행">씨티은행</option>
+              <option value="대구은행">대구은행</option>
+              <option value="부산은행">부산은행</option>
+              <option value="경남은행">경남은행</option>
+              <option value="광주은행">광주은행</option>
+              <option value="전북은행">전북은행</option>
+              <option value="제주은행">제주은행</option>
+              <option value="새마을금고">새마을금고</option>
+              <option value="신협">신협</option>
+              <option value="우체국">우체국</option>
+              <option value="수협">수협</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">계좌번호</label>
+            <input type="text" id="editRefundAccount" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="계좌번호" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">예금주</label>
+            <input type="text" id="editRefundHolder" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="예금주명" />
+          </div>
+          <div class="col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-1">환불 사유</label>
+            <input type="text" id="editRefundReason" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="환불 사유" />
+          </div>
+        </div>
+      </div>
+
+      <!-- 본인 좌석 정보 -->
+      <div id="editMainSeatFields" class="space-y-4 mb-6">
+        <h4 class="font-semibold text-gray-700 border-b pb-2">좌석 정보</h4>
+        <div class="grid grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">좌석 그룹</label>
+            <input type="text" id="editSeatGroup" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="가" maxlength="2" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">열</label>
+            <input type="number" id="editSeatRow" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="1" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">좌석번호</label>
+            <input type="number" id="editSeatNumber" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="1" />
+          </div>
+        </div>
+      </div>
+
+      <!-- 동반자 좌석 정보 -->
+      <div id="editGuestSeatFields" class="hidden space-y-4 mb-6">
+        <h4 class="font-semibold text-gray-700 border-b pb-2">좌석 정보</h4>
+        <div class="grid grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">좌석 그룹</label>
+            <input type="text" id="editSeatGroup2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="가" maxlength="2" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">열</label>
+            <input type="number" id="editSeatRow2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="1" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">좌석번호</label>
+            <input type="number" id="editSeatNumber2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="1" />
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-3">
+        <button onclick="closeEditModal()" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+          취소
+        </button>
+        <button onclick="saveParticipantEdit()" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
+          저장
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- 프린트 영역 (네모닉 3x3 용지용) -->
   <div id="printArea">
@@ -4360,6 +6324,103 @@
       <p id="printSeat" class="print-seat"></p>
       <hr class="print-divider" />
       <p class="print-event">한동훈 토크콘서트</p>
+    </div>
+  </div>
+
+  <!-- 참가자 신규 등록 모달 -->
+  <div id="addParticipantModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-4 p-6 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-bold text-gray-900">참가자 신규 등록</h2>
+        <button onclick="closeAddParticipantModal()" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form id="addParticipantForm" class="space-y-4">
+        <!-- 신청자 정보 -->
+        <div class="border-b pb-4">
+          <h3 class="font-semibold text-gray-800 mb-3">신청자 정보</h3>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">이름 <span class="text-red-500">*</span></label>
+              <input type="text" id="addUserName" class="input-glass w-full" required placeholder="홍길동" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">전화번호 <span class="text-red-500">*</span></label>
+              <input type="tel" id="addPhone" class="input-glass w-full" required placeholder="01012345678" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">생년월일 <span class="text-red-500">*</span></label>
+              <input type="text" id="addSsnFirst" class="input-glass w-full" required placeholder="880101" maxlength="6" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">입금 상태</label>
+              <select id="addIsPaid" class="input-glass w-full">
+                <option value="0">입금 대기</option>
+                <option value="1">입금 완료</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 동반자 정보 (선택) -->
+        <div class="border-b pb-4">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-semibold text-gray-800">동반자 정보 (선택)</h3>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="addHasCompanion" onchange="toggleCompanionFields()" class="w-4 h-4 accent-red-600" />
+              <span class="text-sm text-gray-600">동반자 있음</span>
+            </label>
+          </div>
+          <div id="companionFields" class="hidden grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">동반자 이름</label>
+              <input type="text" id="addCompanionName" class="input-glass w-full" placeholder="동반자 이름" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">동반자 전화번호</label>
+              <input type="tel" id="addCompanionPhone" class="input-glass w-full" placeholder="01098765432" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">동반자 생년월일</label>
+              <input type="text" id="addCompanionSsn" class="input-glass w-full" placeholder="900202" maxlength="6" />
+            </div>
+          </div>
+        </div>
+
+        <!-- 좌석 정보 (선택) -->
+        <div class="pb-4">
+          <h3 class="font-semibold text-gray-800 mb-3">좌석 정보 (선택)</h3>
+          <div class="grid grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">그룹</label>
+              <input type="text" id="addSeatGroup" class="input-glass w-full" placeholder="가" maxlength="2" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">열</label>
+              <input type="number" id="addSeatRow" class="input-glass w-full" placeholder="1" min="1" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">좌석번호</label>
+              <input type="number" id="addSeatNumber" class="input-glass w-full" placeholder="1" min="1" />
+            </div>
+          </div>
+        </div>
+
+        <!-- 메모 -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">관리자 메모</label>
+          <textarea id="addAdminNote" class="input-glass w-full" rows="2" placeholder="관리자가 참고할 메모 (예: 관리자가 강제등록함)"></textarea>
+        </div>
+
+        <div class="flex gap-3 pt-4">
+          <button type="button" onclick="closeAddParticipantModal()" class="flex-1 btn-secondary-glass">취소</button>
+          <button type="button" onclick="handleAddParticipantSubmit(event)" class="flex-1 btn-primary-glass" style="background: rgba(16, 185, 129, 0.9);">등록하기</button>
+        </div>
+      </form>
     </div>
   </div>
 </body>
