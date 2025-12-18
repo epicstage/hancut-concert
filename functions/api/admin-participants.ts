@@ -8,8 +8,7 @@ import {
   generateAvailableSeats,
   getAssignedSeats,
   assignSeatsToParticipant,
-  shuffleArray,
-  findPairSeatsInSameGroup
+  shuffleArray
 } from './utils';
 
 export const adminParticipantsRouter = new Hono<{ Bindings: Env }>();
@@ -382,55 +381,103 @@ adminParticipantsRouter.post('/random-seats', async (c) => {
       }, 400);
     }
 
-    // 1인/2인 참가자 분리
-    const singleParticipants = paidParticipants.results.filter(p => (p.ticket_count || 1) === 1);
-    const pairParticipants = paidParticipants.results.filter(p => p.ticket_count === 2);
-
-    // 셔플
-    const shuffledSingles = shuffleArray(singleParticipants);
-    const shuffledPairs = shuffleArray(pairParticipants);
+    // 참가자 랜덤 셔플 (좌석은 순차 배정, 참가자만 랜덤)
+    const shuffledParticipants = shuffleArray([...paidParticipants.results]);
 
     let assignedCount = 0;
-    const usedSeats = new Set<string>();
 
-    // 2인 신청자 먼저 배정 (같은 그룹 보장)
-    for (const participant of shuffledPairs) {
-      const pairResult = findPairSeatsInSameGroup(freeSeats, usedSeats);
-      if (!pairResult) {
-        return c.json({ error: '2인 신청자를 위한 같은 그룹 좌석이 부족합니다.' }, 400);
-      }
-
-      const { seat1, seat2 } = pairResult;
-      usedSeats.add(`${seat1.group}-${seat1.number}`);
-      usedSeats.add(`${seat2.group}-${seat2.number}`);
-
-      await assignSeatsToParticipant(c.env.DB, participant.id, 2, seat1, seat2);
-      assignedCount += 2;
+    // 그룹별 좌석을 순서대로 관리 (A부터 순차적으로 채움)
+    const seatsByGroup: Record<string, { seat: Seat; used: boolean }[]> = {};
+    for (const seat of freeSeats) {
+      if (!seatsByGroup[seat.group]) seatsByGroup[seat.group] = [];
+      seatsByGroup[seat.group].push({ seat, used: false });
+    }
+    // 각 그룹 내 좌석 번호순 정렬
+    for (const group of Object.keys(seatsByGroup)) {
+      seatsByGroup[group].sort((a, b) => parseInt(a.seat.number) - parseInt(b.seat.number));
     }
 
-    // 1인 신청자 배정
-    const remainingSeats = shuffleArray(freeSeats.filter(seat => {
-      const seatKey = `${seat.group}-${seat.number}`;
-      return !usedSeats.has(seatKey);
-    }));
+    const groupOrder = body.groups; // A, B, C, ... 순서
 
-    let seatIndex = 0;
-    for (const participant of shuffledSingles) {
-      if (seatIndex >= remainingSeats.length) break;
+    // 2인용 같은 그룹 연속 좌석 찾기 (앞 그룹부터 순차적으로)
+    const findPairInGroup = (): { seat1: Seat; seat2: Seat } | null => {
+      for (const group of groupOrder) {
+        const seats = seatsByGroup[group] || [];
+        const available = seats.filter(s => !s.used);
 
-      const seat = remainingSeats[seatIndex++];
-      await assignSeatsToParticipant(c.env.DB, participant.id, 1, seat);
-      assignedCount += 1;
+        if (available.length < 2) continue;
+
+        // 연속 좌석 찾기
+        for (let i = 0; i < available.length - 1; i++) {
+          const num1 = parseInt(available[i].seat.number);
+          const num2 = parseInt(available[i + 1].seat.number);
+          if (num2 - num1 === 1) {
+            return { seat1: available[i].seat, seat2: available[i + 1].seat };
+          }
+        }
+        // 연속 없으면 같은 그룹 앞쪽 2개
+        if (available.length >= 2) {
+          return { seat1: available[0].seat, seat2: available[1].seat };
+        }
+      }
+      return null;
+    };
+
+    // 1인용 좌석 찾기 (앞 그룹부터 순차적으로)
+    const findSingleSeat = (): Seat | null => {
+      for (const group of groupOrder) {
+        const seats = seatsByGroup[group] || [];
+        const available = seats.find(s => !s.used);
+        if (available) {
+          return available.seat;
+        }
+      }
+      return null;
+    };
+
+    // 좌석 사용 표시
+    const markUsed = (seat: Seat) => {
+      const entry = seatsByGroup[seat.group]?.find(s => s.seat.number === seat.number);
+      if (entry) entry.used = true;
+    };
+
+    // 참가자별 좌석 배정 (랜덤 순서로 처리하되, 좌석은 앞에서부터 순차 배정)
+    let pairCount = 0;
+    let singleCount = 0;
+
+    for (const participant of shuffledParticipants) {
+      const ticketCount = participant.ticket_count || 1;
+
+      if (ticketCount === 2) {
+        const pair = findPairInGroup();
+        if (!pair) {
+          return c.json({ error: '2인 신청자를 위한 같은 그룹 좌석이 부족합니다.' }, 400);
+        }
+        markUsed(pair.seat1);
+        markUsed(pair.seat2);
+        await assignSeatsToParticipant(c.env.DB, participant.id, 2, pair.seat1, pair.seat2);
+        assignedCount += 2;
+        pairCount++;
+      } else {
+        const seat = findSingleSeat();
+        if (!seat) {
+          return c.json({ error: '1인 신청자를 위한 좌석이 부족합니다.' }, 400);
+        }
+        markUsed(seat);
+        await assignSeatsToParticipant(c.env.DB, participant.id, 1, seat);
+        assignedCount += 1;
+        singleCount++;
+      }
     }
 
     return c.json({
       success: true,
-      message: `${assignedCount}명의 참가자에게 좌석이 랜덤 배정되었습니다. (2인 신청자는 같은 그룹)`,
+      message: `${assignedCount}명의 참가자에게 좌석이 랜덤 배정되었습니다. (앞 그룹부터 순차 배정, 2인은 같은 그룹)`,
       assigned_count: assignedCount,
       total_available: availableSeats.length,
       groups_used: body.groups,
-      pair_count: shuffledPairs.length,
-      single_count: shuffledSingles.length
+      pair_count: pairCount,
+      single_count: singleCount
     });
   } catch (error) {
     console.error('Error random seat assignment:', error);
