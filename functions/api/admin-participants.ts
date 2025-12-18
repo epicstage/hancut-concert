@@ -440,7 +440,7 @@ adminParticipantsRouter.post('/random-seats', async (c) => {
 
 // 연령대별 좌석 배정 (새 형식: 그룹-번호)
 // 어린 사람(2000년대생 → 90년대생 → 80년대생 순)이 앞자리(A그룹)에 배정
-// 2인 신청자는 반드시 같은 그룹에 배정
+// 2인 신청자는 반드시 같은 그룹에 배정, 둘 중 더 어린 사람 기준으로 순서 결정
 adminParticipantsRouter.post('/age-based-seats', async (c) => {
   try {
     const body = await c.req.json<{
@@ -453,15 +453,16 @@ adminParticipantsRouter.post('/age-based-seats', async (c) => {
       return c.json({ error: '좌석 그룹 배열은 필수입니다.' }, 400);
     }
 
+    // 2인 신청자의 경우 동반인 주민번호도 함께 조회
     const paidParticipants = await c.env.DB.prepare(
-      'SELECT id, ssn_first, ticket_count FROM participants WHERE is_paid = 1 AND (seat_full IS NULL OR seat_full = "") AND deleted_at IS NULL ORDER BY created_at ASC'
-    ).all<{ id: number; ssn_first: string | null; ticket_count: number }>();
+      'SELECT id, ssn_first, ticket_count, guest2_ssn_first FROM participants WHERE is_paid = 1 AND (seat_full IS NULL OR seat_full = "") AND deleted_at IS NULL ORDER BY created_at ASC'
+    ).all<{ id: number; ssn_first: string | null; ticket_count: number; guest2_ssn_first: string | null }>();
 
     if (!paidParticipants.results || paidParticipants.results.length === 0) {
       return c.json({ error: '좌석을 배정할 입금 완료 참가자가 없습니다.' }, 400);
     }
 
-    // 연령대 우선순위 함수
+    // 연령대 우선순위 함수 (낮을수록 젊음)
     const getPriority = (ssnFirst: string | null) => {
       if (!ssnFirst || ssnFirst.length < 2) return 999; // SSN 없으면 맨 뒤
 
@@ -474,28 +475,46 @@ adminParticipantsRouter.post('/age-based-seats', async (c) => {
       return 6;
     };
 
-    // 1인/2인 분리
-    const singleParticipants = paidParticipants.results.filter(p => (p.ticket_count || 1) === 1);
-    const pairParticipants = paidParticipants.results.filter(p => p.ticket_count === 2);
-
-    // 연령대별 정렬
-    const sortByAge = (a: typeof paidParticipants.results[0], b: typeof paidParticipants.results[0]) => {
-      const priorityA = getPriority(a.ssn_first);
-      const priorityB = getPriority(b.ssn_first);
-
-      if (priorityA !== priorityB) return priorityA - priorityB;
-
-      // 같은 연령대 내 세부 정렬
-      if (!a.ssn_first || !b.ssn_first) return 0;
-      const yearA = parseInt(a.ssn_first.substring(0, 2));
-      const yearB = parseInt(b.ssn_first.substring(0, 2));
-
-      if (priorityA === 1) return yearB - yearA; // 2000년대: 25가 00보다 앞
-      return yearA - yearB; // 1900년대: 90이 99보다 앞
+    // 세부 연령 점수 (낮을수록 젊음, 같은 priority 내에서 비교용)
+    const getDetailedAge = (ssnFirst: string | null, priority: number) => {
+      if (!ssnFirst || ssnFirst.length < 2) return 999;
+      const year = parseInt(ssnFirst.substring(0, 2));
+      if (priority === 1) return 25 - year; // 2000년대: 25가 가장 젊음 -> 0, 00은 25
+      return year; // 1900년대: 90이 가장 젊음 -> 90
     };
 
-    singleParticipants.sort(sortByAge);
-    pairParticipants.sort(sortByAge);
+    // 2인 신청자의 경우 둘 중 더 어린 사람의 나이를 기준으로 함
+    const getYoungerAge = (p: typeof paidParticipants.results[0]) => {
+      if ((p.ticket_count || 1) === 1) {
+        // 1인 신청자
+        return { priority: getPriority(p.ssn_first), detailed: getDetailedAge(p.ssn_first, getPriority(p.ssn_first)) };
+      }
+      // 2인 신청자: 본인과 동반인 중 더 어린 사람
+      const priority1 = getPriority(p.ssn_first);
+      const priority2 = getPriority(p.guest2_ssn_first);
+
+      if (priority1 < priority2) {
+        return { priority: priority1, detailed: getDetailedAge(p.ssn_first, priority1) };
+      } else if (priority2 < priority1) {
+        return { priority: priority2, detailed: getDetailedAge(p.guest2_ssn_first, priority2) };
+      } else {
+        // 같은 연령대면 세부 나이 비교
+        const detailed1 = getDetailedAge(p.ssn_first, priority1);
+        const detailed2 = getDetailedAge(p.guest2_ssn_first, priority2);
+        return detailed1 <= detailed2
+          ? { priority: priority1, detailed: detailed1 }
+          : { priority: priority2, detailed: detailed2 };
+      }
+    };
+
+    // 연령대별 정렬 (2인 신청자는 둘 중 어린 사람 기준)
+    const sortByAge = (a: typeof paidParticipants.results[0], b: typeof paidParticipants.results[0]) => {
+      const ageA = getYoungerAge(a);
+      const ageB = getYoungerAge(b);
+
+      if (ageA.priority !== ageB.priority) return ageA.priority - ageB.priority;
+      return ageA.detailed - ageB.detailed;
+    };
 
     const totalSeatsNeeded = paidParticipants.results.reduce((sum, p) => sum + (p.ticket_count || 1), 0);
     const availableSeats = generateAvailableSeats(body.groups);
@@ -514,12 +533,11 @@ adminParticipantsRouter.post('/age-based-seats', async (c) => {
     }
 
     let assignedCount = 0;
-    const usedSeats = new Set<string>();
 
     // 2인 신청자와 1인 신청자를 연령대순으로 병합하되, 2인은 같은 그룹 보장
-    // 전략: 연령대 순서대로 처리하면서 2인은 같은 그룹에서 연속 좌석 찾기
+    // 2인 신청자는 둘 중 더 어린 사람 기준으로 순서 결정
 
-    // 모든 참가자를 연령대순 정렬
+    // 모든 참가자를 연령대순 정렬 (2인은 둘 중 어린 사람 기준)
     const allParticipants = [...paidParticipants.results].sort(sortByAge);
 
     // 그룹별 좌석을 순서대로 관리
@@ -609,14 +627,18 @@ adminParticipantsRouter.post('/age-based-seats', async (c) => {
       }
     }
 
+    // 통계 정보
+    const pairCount = allParticipants.filter(p => p.ticket_count === 2).length;
+    const singleCount = allParticipants.filter(p => (p.ticket_count || 1) === 1).length;
+
     return c.json({
       success: true,
-      message: `${assignedCount}명의 참가자에게 연령대별로 좌석이 배정되었습니다.`,
+      message: `${assignedCount}명의 참가자에게 연령대별로 좌석이 배정되었습니다. (2인 신청자는 둘 중 어린 사람 기준, 같은 그룹)`,
       assigned_count: assignedCount,
       total_available: availableSeats.length,
       groups_used: body.groups,
-      with_ssn: participantsWithSsn.length,
-      without_ssn: participantsWithoutSsn.length
+      pair_count: pairCount,
+      single_count: singleCount
     });
   } catch (error) {
     console.error('Error age-based seat assignment:', error);
