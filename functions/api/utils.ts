@@ -180,6 +180,53 @@ export async function assignSeatsToParticipant(
   }
 }
 
+// 2인 신청자를 위해 같은 그룹에서 연속 좌석 2개 찾기
+export function findPairSeatsInSameGroup(
+  freeSeats: Seat[],
+  usedSeats: Set<string>
+): { seat1: Seat; seat2: Seat } | null {
+  // 그룹별로 사용 가능한 좌석 정리
+  const seatsByGroup: Record<string, Seat[]> = {};
+
+  for (const seat of freeSeats) {
+    const seatKey = `${seat.group}-${seat.number}`;
+    if (usedSeats.has(seatKey)) continue;
+
+    if (!seatsByGroup[seat.group]) {
+      seatsByGroup[seat.group] = [];
+    }
+    seatsByGroup[seat.group].push(seat);
+  }
+
+  // 각 그룹에서 연속된 좌석 2개 찾기
+  for (const group of Object.keys(seatsByGroup)) {
+    const seats = seatsByGroup[group];
+    if (seats.length < 2) continue;
+
+    // 번호순 정렬
+    seats.sort((a, b) => parseInt(a.number) - parseInt(b.number));
+
+    // 연속된 좌석 찾기
+    for (let i = 0; i < seats.length - 1; i++) {
+      const num1 = parseInt(seats[i].number);
+      const num2 = parseInt(seats[i + 1].number);
+      if (num2 - num1 === 1) {
+        return { seat1: seats[i], seat2: seats[i + 1] };
+      }
+    }
+  }
+
+  // 연속 좌석이 없으면 같은 그룹 내 아무 2개 반환
+  for (const group of Object.keys(seatsByGroup)) {
+    const seats = seatsByGroup[group];
+    if (seats.length >= 2) {
+      return { seat1: seats[0], seat2: seats[1] };
+    }
+  }
+
+  return null;
+}
+
 // 주민번호 앞자리 검증 (YYMMDD)
 export function validateSsnFirst(ssnFirst: string): { valid: boolean; error?: string } {
   if (ssnFirst.length !== 6 || !/^\d+$/.test(ssnFirst)) {

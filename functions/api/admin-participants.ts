@@ -8,7 +8,8 @@ import {
   generateAvailableSeats,
   getAssignedSeats,
   assignSeatsToParticipant,
-  shuffleArray
+  shuffleArray,
+  findPairSeatsInSameGroup
 } from './utils';
 
 export const adminParticipantsRouter = new Hono<{ Bindings: Env }>();
@@ -344,6 +345,7 @@ adminParticipantsRouter.delete('/:id/seat', async (c) => {
 });
 
 // 랜덤 좌석 배정 (새 형식: 그룹-번호)
+// 2인 신청자는 반드시 같은 그룹에 배정
 adminParticipantsRouter.post('/random-seats', async (c) => {
   try {
     const body = await c.req.json<{
@@ -380,38 +382,55 @@ adminParticipantsRouter.post('/random-seats', async (c) => {
       }, 400);
     }
 
-    const shuffledSeats = shuffleArray(freeSeats);
+    // 1인/2인 참가자 분리
+    const singleParticipants = paidParticipants.results.filter(p => (p.ticket_count || 1) === 1);
+    const pairParticipants = paidParticipants.results.filter(p => p.ticket_count === 2);
+
+    // 셔플
+    const shuffledSingles = shuffleArray(singleParticipants);
+    const shuffledPairs = shuffleArray(pairParticipants);
 
     let assignedCount = 0;
-    let seatIndex = 0;
+    const usedSeats = new Set<string>();
 
-    for (const participant of paidParticipants.results) {
-      const ticketCount = participant.ticket_count || 1;
-
-      if (seatIndex >= shuffledSeats.length) break;
-
-      const seat1 = shuffledSeats[seatIndex++];
-
-      if (ticketCount === 2) {
-        if (seatIndex >= shuffledSeats.length) {
-          return c.json({ error: '2인 신청을 위한 두 번째 좌석이 부족합니다.' }, 400);
-        }
-
-        const seat2 = shuffledSeats[seatIndex++];
-        await assignSeatsToParticipant(c.env.DB, participant.id, ticketCount, seat1, seat2);
-        assignedCount += 2;
-      } else {
-        await assignSeatsToParticipant(c.env.DB, participant.id, ticketCount, seat1);
-        assignedCount += 1;
+    // 2인 신청자 먼저 배정 (같은 그룹 보장)
+    for (const participant of shuffledPairs) {
+      const pairResult = findPairSeatsInSameGroup(freeSeats, usedSeats);
+      if (!pairResult) {
+        return c.json({ error: '2인 신청자를 위한 같은 그룹 좌석이 부족합니다.' }, 400);
       }
+
+      const { seat1, seat2 } = pairResult;
+      usedSeats.add(`${seat1.group}-${seat1.number}`);
+      usedSeats.add(`${seat2.group}-${seat2.number}`);
+
+      await assignSeatsToParticipant(c.env.DB, participant.id, 2, seat1, seat2);
+      assignedCount += 2;
+    }
+
+    // 1인 신청자 배정
+    const remainingSeats = shuffleArray(freeSeats.filter(seat => {
+      const seatKey = `${seat.group}-${seat.number}`;
+      return !usedSeats.has(seatKey);
+    }));
+
+    let seatIndex = 0;
+    for (const participant of shuffledSingles) {
+      if (seatIndex >= remainingSeats.length) break;
+
+      const seat = remainingSeats[seatIndex++];
+      await assignSeatsToParticipant(c.env.DB, participant.id, 1, seat);
+      assignedCount += 1;
     }
 
     return c.json({
       success: true,
-      message: `${assignedCount}명의 참가자에게 좌석이 랜덤 배정되었습니다.`,
+      message: `${assignedCount}명의 참가자에게 좌석이 랜덤 배정되었습니다. (2인 신청자는 같은 그룹)`,
       assigned_count: assignedCount,
       total_available: availableSeats.length,
-      groups_used: body.groups
+      groups_used: body.groups,
+      pair_count: shuffledPairs.length,
+      single_count: shuffledSingles.length
     });
   } catch (error) {
     console.error('Error random seat assignment:', error);
@@ -421,6 +440,7 @@ adminParticipantsRouter.post('/random-seats', async (c) => {
 
 // 연령대별 좌석 배정 (새 형식: 그룹-번호)
 // 어린 사람(2000년대생 → 90년대생 → 80년대생 순)이 앞자리(A그룹)에 배정
+// 2인 신청자는 반드시 같은 그룹에 배정
 adminParticipantsRouter.post('/age-based-seats', async (c) => {
   try {
     const body = await c.req.json<{
@@ -441,43 +461,43 @@ adminParticipantsRouter.post('/age-based-seats', async (c) => {
       return c.json({ error: '좌석을 배정할 입금 완료 참가자가 없습니다.' }, 400);
     }
 
-    const participantsWithSsn = paidParticipants.results.filter(p => p.ssn_first && p.ssn_first.length >= 2);
-    const participantsWithoutSsn = paidParticipants.results.filter(p => !p.ssn_first || p.ssn_first.length < 2);
+    // 연령대 우선순위 함수
+    const getPriority = (ssnFirst: string | null) => {
+      if (!ssnFirst || ssnFirst.length < 2) return 999; // SSN 없으면 맨 뒤
 
-    if (participantsWithSsn.length === 0) {
-      return c.json({ error: '주민번호 앞자리가 있는 입금 완료 참가자가 없습니다.' }, 400);
-    }
+      const year = parseInt(ssnFirst.substring(0, 2));
+      if (year >= 0 && year <= 25) return 1;   // 2000~2025년생 (가장 젊음)
+      if (year >= 90 && year <= 99) return 2;  // 1990년대생
+      if (year >= 80 && year <= 89) return 3;  // 1980년대생
+      if (year >= 70 && year <= 79) return 4;  // 1970년대생
+      if (year >= 60 && year <= 69) return 5;  // 1960년대생
+      return 6;
+    };
 
-    // 연령대별 정렬 (어린 순: 2000년대 → 90년대 → 80년대)
-    participantsWithSsn.sort((a, b) => {
-      const yearA = parseInt(a.ssn_first!.substring(0, 2));
-      const yearB = parseInt(b.ssn_first!.substring(0, 2));
+    // 1인/2인 분리
+    const singleParticipants = paidParticipants.results.filter(p => (p.ticket_count || 1) === 1);
+    const pairParticipants = paidParticipants.results.filter(p => p.ticket_count === 2);
 
-      const getPriority = (year: number) => {
-        if (year >= 0 && year <= 25) return 1;   // 2000~2025년생 (가장 젊음)
-        if (year >= 90 && year <= 99) return 2;  // 1990년대생
-        if (year >= 80 && year <= 89) return 3;  // 1980년대생
-        if (year >= 70 && year <= 79) return 4;  // 1970년대생
-        if (year >= 60 && year <= 69) return 5;  // 1960년대생
-        return 6;  // 그 외
-      };
+    // 연령대별 정렬
+    const sortByAge = (a: typeof paidParticipants.results[0], b: typeof paidParticipants.results[0]) => {
+      const priorityA = getPriority(a.ssn_first);
+      const priorityB = getPriority(b.ssn_first);
 
-      const priorityA = getPriority(yearA);
-      const priorityB = getPriority(yearB);
+      if (priorityA !== priorityB) return priorityA - priorityB;
 
-      if (priorityA !== priorityB) {
-        return priorityA - priorityB;
-      }
+      // 같은 연령대 내 세부 정렬
+      if (!a.ssn_first || !b.ssn_first) return 0;
+      const yearA = parseInt(a.ssn_first.substring(0, 2));
+      const yearB = parseInt(b.ssn_first.substring(0, 2));
 
-      // 같은 연령대 내에서는 출생년도 내림차순 (더 젊은 사람이 앞)
-      if (priorityA === 1) {
-        return yearB - yearA; // 2000년대: 25가 00보다 앞
-      }
+      if (priorityA === 1) return yearB - yearA; // 2000년대: 25가 00보다 앞
       return yearA - yearB; // 1900년대: 90이 99보다 앞
-    });
+    };
 
-    const sortedParticipants = [...participantsWithSsn, ...participantsWithoutSsn];
-    const totalSeatsNeeded = sortedParticipants.reduce((sum, p) => sum + (p.ticket_count || 1), 0);
+    singleParticipants.sort(sortByAge);
+    pairParticipants.sort(sortByAge);
+
+    const totalSeatsNeeded = paidParticipants.results.reduce((sum, p) => sum + (p.ticket_count || 1), 0);
     const availableSeats = generateAvailableSeats(body.groups);
     const assignedSet = await getAssignedSeats(c.env.DB);
 
@@ -494,25 +514,97 @@ adminParticipantsRouter.post('/age-based-seats', async (c) => {
     }
 
     let assignedCount = 0;
-    let seatIndex = 0;
+    const usedSeats = new Set<string>();
 
-    for (const participant of sortedParticipants) {
+    // 2인 신청자와 1인 신청자를 연령대순으로 병합하되, 2인은 같은 그룹 보장
+    // 전략: 연령대 순서대로 처리하면서 2인은 같은 그룹에서 연속 좌석 찾기
+
+    // 모든 참가자를 연령대순 정렬
+    const allParticipants = [...paidParticipants.results].sort(sortByAge);
+
+    // 그룹별 좌석을 순서대로 관리
+    const seatsByGroup: Record<string, { seat: Seat; used: boolean }[]> = {};
+    for (const seat of freeSeats) {
+      if (!seatsByGroup[seat.group]) seatsByGroup[seat.group] = [];
+      seatsByGroup[seat.group].push({ seat, used: false });
+    }
+    // 각 그룹 내 좌석 번호순 정렬
+    for (const group of Object.keys(seatsByGroup)) {
+      seatsByGroup[group].sort((a, b) => parseInt(a.seat.number) - parseInt(b.seat.number));
+    }
+
+    // 그룹 순서 (A부터)
+    const groupOrder = body.groups;
+    let currentGroupIndex = 0;
+
+    // 각 그룹에서 다음 사용 가능한 좌석 인덱스
+    const groupSeatIndex: Record<string, number> = {};
+    for (const g of groupOrder) groupSeatIndex[g] = 0;
+
+    // 2인용 같은 그룹 연속 좌석 찾기 함수
+    const findPairInGroup = (startGroupIdx: number): { seat1: Seat; seat2: Seat; groupIdx: number } | null => {
+      for (let gi = startGroupIdx; gi < groupOrder.length; gi++) {
+        const group = groupOrder[gi];
+        const seats = seatsByGroup[group] || [];
+        const available = seats.filter(s => !s.used);
+
+        if (available.length < 2) continue;
+
+        // 연속 좌석 찾기
+        for (let i = 0; i < available.length - 1; i++) {
+          const num1 = parseInt(available[i].seat.number);
+          const num2 = parseInt(available[i + 1].seat.number);
+          if (num2 - num1 === 1) {
+            return { seat1: available[i].seat, seat2: available[i + 1].seat, groupIdx: gi };
+          }
+        }
+        // 연속 없으면 같은 그룹 아무거나
+        if (available.length >= 2) {
+          return { seat1: available[0].seat, seat2: available[1].seat, groupIdx: gi };
+        }
+      }
+      return null;
+    };
+
+    // 1인용 좌석 찾기
+    const findSingleSeat = (startGroupIdx: number): { seat: Seat; groupIdx: number } | null => {
+      for (let gi = startGroupIdx; gi < groupOrder.length; gi++) {
+        const group = groupOrder[gi];
+        const seats = seatsByGroup[group] || [];
+        const available = seats.find(s => !s.used);
+        if (available) {
+          return { seat: available.seat, groupIdx: gi };
+        }
+      }
+      return null;
+    };
+
+    // 좌석 사용 표시
+    const markUsed = (seat: Seat) => {
+      const group = seat.group;
+      const entry = seatsByGroup[group]?.find(s => s.seat.number === seat.number);
+      if (entry) entry.used = true;
+    };
+
+    for (const participant of allParticipants) {
       const ticketCount = participant.ticket_count || 1;
 
-      if (seatIndex >= freeSeats.length) break;
-
-      const seat1 = freeSeats[seatIndex++];
-
       if (ticketCount === 2) {
-        if (seatIndex >= freeSeats.length) {
-          return c.json({ error: '2인 신청을 위한 두 번째 좌석이 부족합니다.' }, 400);
+        const pair = findPairInGroup(0); // 전체 그룹에서 찾기 (연령대순 앞그룹 우선)
+        if (!pair) {
+          return c.json({ error: '2인 신청자를 위한 같은 그룹 좌석이 부족합니다.' }, 400);
         }
-
-        const seat2 = freeSeats[seatIndex++];
-        await assignSeatsToParticipant(c.env.DB, participant.id, ticketCount, seat1, seat2);
+        markUsed(pair.seat1);
+        markUsed(pair.seat2);
+        await assignSeatsToParticipant(c.env.DB, participant.id, 2, pair.seat1, pair.seat2);
         assignedCount += 2;
       } else {
-        await assignSeatsToParticipant(c.env.DB, participant.id, ticketCount, seat1);
+        const single = findSingleSeat(0);
+        if (!single) {
+          return c.json({ error: '1인 신청자를 위한 좌석이 부족합니다.' }, 400);
+        }
+        markUsed(single.seat);
+        await assignSeatsToParticipant(c.env.DB, participant.id, 1, single.seat);
         assignedCount += 1;
       }
     }
