@@ -558,7 +558,7 @@
       isPrinting = false;
       if (printQueue.length > 0) {
         const next = printQueue.shift();
-        setTimeout(() => printCheckinLabel(next.name, next.seat), 500);
+        setTimeout(() => printCheckinLabel(next.name, next.seat), 150);
       }
     });
 
@@ -580,7 +580,8 @@
         printSeat.textContent = seat || '좌석 미배정';
       }
 
-      setTimeout(() => window.print(), 100);
+      // 즉시 프린트 호출 (DOM 업데이트 후 마이크로태스크로)
+      requestAnimationFrame(() => window.print());
     }
   </script>
 </body>
