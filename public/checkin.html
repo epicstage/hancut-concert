@@ -552,25 +552,33 @@
 
     // 프린트 관련
     let isPrinting = false;
-    let printQueue = [];
+    let lastPrintedKey = '';
+    let lastPrintedTime = 0;
+    const PRINT_COOLDOWN = 3000; // 같은 명찰 3초 내 중복 방지
 
     window.addEventListener('afterprint', function() {
       isPrinting = false;
-      if (printQueue.length > 0) {
-        const next = printQueue.shift();
-        setTimeout(() => printCheckinLabel(next.name, next.seat), 150);
-      }
     });
 
     function printCheckinLabel(name, seat) {
+      const printKey = `${name}-${seat}`;
+      const now = Date.now();
+
+      // 같은 명찰을 3초 내에 다시 프린트하려고 하면 무시
+      if (printKey === lastPrintedKey && (now - lastPrintedTime) < PRINT_COOLDOWN) {
+        console.log('중복 프린트 방지:', printKey);
+        return;
+      }
+
+      // 이미 프린트 중이면 무시 (큐 없이 단순히 스킵)
       if (isPrinting) {
-        if (!printQueue.some(p => p.name === name && p.seat === seat)) {
-          printQueue.push({ name, seat });
-        }
+        console.log('프린트 진행 중, 스킵:', printKey);
         return;
       }
 
       isPrinting = true;
+      lastPrintedKey = printKey;
+      lastPrintedTime = now;
 
       const printName = document.getElementById('printName');
       const printSeat = document.getElementById('printSeat');
@@ -580,7 +588,7 @@
         printSeat.textContent = seat || '좌석 미배정';
       }
 
-      // 즉시 프린트 호출 (DOM 업데이트 후 마이크로태스크로)
+      // 즉시 프린트 호출
       requestAnimationFrame(() => window.print());
     }
   </script>
