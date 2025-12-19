@@ -367,13 +367,14 @@
           if (data.alreadyCheckedIn) {
             resultDiv.innerHTML = `
               <div class="flex items-center gap-3">
-                <span class="text-3xl">⚠️</span>
+                <span class="text-3xl">🔄</span>
                 <div>
-                  <p class="font-bold text-lg text-yellow-800">${data.message}</p>
-                  <p class="text-green-700">${data.participant.user_name} | ${data.participant.seat_full || '좌석 미배정'}</p>
+                  <p class="font-bold text-lg text-blue-800">재발급: ${data.participant.user_name}</p>
+                  <p class="text-blue-700">${data.participant.seat_full || '좌석 미배정'}</p>
                 </div>
               </div>
             `;
+            resultDiv.className = 'mb-4 p-4 rounded-lg bg-blue-50 border border-blue-200';
           } else {
             resultDiv.innerHTML = `
               <div class="flex items-center gap-3">
@@ -384,12 +385,12 @@
                 </div>
               </div>
             `;
+          }
 
-            // 자동 프린트
-            const autoPrint = document.getElementById('autoPrintCheckin');
-            if (autoPrint && autoPrint.checked) {
-              printCheckinLabel(data.participant.user_name, data.participant.seat_full || '좌석 미배정');
-            }
+          // 자동 프린트 (신규/재발급 모두)
+          const autoPrint = document.getElementById('autoPrintCheckin');
+          if (autoPrint && autoPrint.checked) {
+            printCheckinLabel(data.participant.user_name, data.participant.seat_full || '좌석 미배정');
           }
 
           // 최근 체크인 목록에 추가
